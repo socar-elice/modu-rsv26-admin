@@ -163,6 +163,7 @@ body {
   margin-left: var(--lnb-w);
   padding: 28px 32px 80px;
   min-height: calc(100vh - var(--header-h));
+  max-width: calc(var(--lnb-w) + 960px);
 }
 .main__breadcrumb {
   font-size: 12px; color: var(--color-gray-400);
@@ -196,7 +197,7 @@ body {
 .card__header h3 {
   font-size: 15px; font-weight: 700; color: var(--color-gray-900);
 }
-.card__body { padding: 24px; }
+.card__body { padding: 20px 24px; }
 
 /* ============================================================
    Form Table (label-value)
@@ -210,10 +211,11 @@ body {
 }
 .form-table tr:last-child { border-bottom: none; }
 .form-table th {
-  width: 200px;
+  width: 180px; min-width: 180px;
   padding: 14px 0;
   font-size: 13px; font-weight: 600; color: var(--color-gray-600);
-  text-align: left; vertical-align: middle;
+  text-align: left; vertical-align: top;
+  padding-top: 16px;
   white-space: nowrap;
 }
 .form-table td {
@@ -226,7 +228,7 @@ body {
    ============================================================ */
 .form-input,
 .form-select {
-  width: 100%; max-width: 400px;
+  width: 100%; max-width: 360px;
   padding: 9px 12px;
   font-size: 13.5px;
   color: var(--color-gray-800);
@@ -266,6 +268,29 @@ body {
 .checkbox-group input[type="checkbox"] {
   width: 16px; height: 16px; cursor: pointer;
   accent-color: var(--color-primary);
+}
+
+/* Day-of-week buttons */
+.day-btn-group {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  padding: 16px 16px 0;
+}
+.day-btn {
+  width: 42px; height: 36px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-gray-600);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition);
+  display: flex; align-items: center; justify-content: center;
+}
+.day-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.day-btn.active {
+  background: var(--color-primary);
+  color: var(--color-white);
+  border-color: var(--color-primary);
 }
 
 /* Inline field */
@@ -380,7 +405,7 @@ body {
    Pricing Section
    ============================================================ */
 .pricing-table {
-  width: 100%;
+  width: 100%; max-width: 720px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 13.5px;
@@ -813,18 +838,60 @@ input[type="number"] { -moz-appearance: textfield; }
             <th>주차권 유형</th>
             <td>
               <select class="form-select" id="ticketType" style="max-width:200px;">
-                <option value="short" selected>단기권</option>
-                <option value="monthly">월정기권</option>
-                <option value="multi_day">연박권</option>
-                <option value="free_pass">자유이용권</option>
+                <option value="">선택하세요</option>
+                <optgroup label="──── 일반권 ────">
+                  <option value="당일권">당일권</option>
+                  <option value="주간권">주간권</option>
+                  <option value="오전권">오전권</option>
+                  <option value="오후권">오후권</option>
+                  <option value="야간권">야간권</option>
+                  <option value="심야권">심야권</option>
+                  <option value="시간권">시간권</option>
+                  <option value="연박권">연박권</option>
+                </optgroup>
+                <optgroup label="──── 장기권 ────">
+                  <option value="기간권">기간권</option>
+                  <option value="월단위권">월단위권</option>
+                  <option value="일할권">일할권</option>
+                </optgroup>
+                <optgroup label="──── 단기권 ────">
+                  <option value="단기권">단기권</option>
+                </optgroup>
               </select>
             </td>
           </tr>
-          <tr>
+          <tr id="rowUnit" style="display:none;">
+            <th>이용개월 수</th>
+            <td>
+              <div class="inline-field">
+                <input type="number" class="form-input form-input--sm" id="ticketUnit" min="1" value="1">
+                <span class="unit-label">개월</span>
+              </div>
+            </td>
+          </tr>
+          <tr id="rowHourAmount" style="display:none;">
+            <th>이용가능 시간</th>
+            <td>
+              <div class="inline-field">
+                <input type="number" class="form-input form-input--sm" id="hourAmount" min="1" placeholder="0">
+                <span class="unit-label">시간</span>
+              </div>
+            </td>
+          </tr>
+          <tr id="rowStayDays" style="display:none;">
+            <th>이용일 수</th>
+            <td>
+              <div class="inline-field">
+                <input type="number" class="form-input form-input--sm" id="stayDays" min="1" placeholder="0">
+                <span class="unit-label">일</span>
+              </div>
+            </td>
+          </tr>
+          <tr id="rowMinDays">
             <th>최소 이용일 수</th>
             <td><input type="number" class="form-input form-input--lg" id="minDays" placeholder="단위를 입력하세요 (ex. 2일력 -> 최소이용 기간 2일)"></td>
           </tr>
-          <tr>
+          <tr id="rowMaxDays">
             <th>최대 이용가능일 수</th>
             <td><input type="number" class="form-input form-input--lg" id="maxDays" placeholder="단위를 입력하세요 (ex. 14일력 -> 최대이용 기간 14일)"></td>
           </tr>
@@ -844,7 +911,31 @@ input[type="number"] { -moz-appearance: textfield; }
             <th>판매 종료일</th>
             <td><input type="date" class="form-input form-input--md" id="saleEndDate" value="2099-12-31"></td>
           </tr>
-          <tr>
+          <tr id="rowSaleStartTime" style="display:none;">
+            <th>판매 시작시간</th>
+            <td>
+              <input type="time" step="1" class="form-input form-input--md" id="saleStartTime" value="00:00:00">
+            </td>
+          </tr>
+          <tr id="rowSaleEndTime" style="display:none;">
+            <th>판매 종료시간</th>
+            <td>
+              <input type="time" step="1" class="form-input form-input--md" id="saleEndTime" value="23:59:00">
+            </td>
+          </tr>
+          <tr id="rowParkingStartTime">
+            <th>주차가능 시작시간</th>
+            <td>
+              <input type="time" step="1" class="form-input form-input--md" id="parkingStartTime" value="00:00:00">
+            </td>
+          </tr>
+          <tr id="rowParkingEndTime">
+            <th>주차가능 종료시간</th>
+            <td>
+              <input type="time" step="1" class="form-input form-input--md" id="parkingEndTime" value="23:59:00">
+            </td>
+          </tr>
+          <tr id="rowKeywords">
             <th>상품 키워드</th>
             <td>
               <div class="checkbox-group">
@@ -857,7 +948,7 @@ input[type="number"] { -moz-appearance: textfield; }
               </div>
             </td>
           </tr>
-          <tr>
+          <tr id="rowPurchaseStart">
             <th>이용일 시작일 기준<br>구매가능 시작일</th>
             <td>
               <div class="inline-field">
@@ -876,7 +967,7 @@ input[type="number"] { -moz-appearance: textfield; }
               </div>
             </td>
           </tr>
-          <tr>
+          <tr id="rowPurchaseEnd">
             <th>이용일 시작일 기준<br>구매가능 마감일</th>
             <td>
               <div class="inline-field">
@@ -896,7 +987,7 @@ input[type="number"] { -moz-appearance: textfield; }
               <div id="summaryArea"></div>
             </td>
           </tr>
-          <tr>
+          <tr id="rowAirport">
             <th>(임시)공항선택</th>
             <td>
               <select class="form-select" id="airportSelect" style="max-width:200px;">
@@ -929,7 +1020,7 @@ input[type="number"] { -moz-appearance: textfield; }
     </div>
 
     <!-- 최소이용금액 -->
-    <div class="card">
+    <div class="card" id="sectionMinPrice">
       <div class="card__header"><h3>최소이용금액</h3></div>
       <div class="card__body">
         <p style="font-size:13px; color:var(--color-gray-500); margin-bottom:16px;">
@@ -963,7 +1054,20 @@ input[type="number"] { -moz-appearance: textfield; }
       <div class="card">
         <div class="card__header"><h3>기본 판매정책</h3></div>
         <div class="card__body" style="padding:0;">
-          <table class="pricing-table">
+          <!-- 판매요일 선택 -->
+          <div id="bulkSaleDaysArea">
+            <div style="padding:16px 16px 4px; font-size:13px; font-weight:600; color:var(--color-gray-600);">판매 요일</div>
+            <div class="day-btn-group" id="bulkDayBtnGroup">
+              <button type="button" class="day-btn active" data-day="mon">월</button>
+              <button type="button" class="day-btn active" data-day="tue">화</button>
+              <button type="button" class="day-btn active" data-day="wed">수</button>
+              <button type="button" class="day-btn active" data-day="thu">목</button>
+              <button type="button" class="day-btn active" data-day="fri">금</button>
+              <button type="button" class="day-btn active" data-day="sat">토</button>
+              <button type="button" class="day-btn active" data-day="sun">일</button>
+            </div>
+          </div>
+          <table class="pricing-table" style="margin-top:12px;">
             <thead>
               <tr>
                 <th>판매금액</th>
@@ -980,7 +1084,7 @@ input[type="number"] { -moz-appearance: textfield; }
             </tbody>
           </table>
           <p style="font-size:12px; color:var(--color-gray-400); padding:12px 16px; margin:0;">
-            모든 요일(월~일)에 동일한 금액과 수량이 적용됩니다.
+            선택한 요일에 동일한 금액과 수량이 적용됩니다.
           </p>
         </div>
       </div>
@@ -1058,7 +1162,7 @@ input[type="number"] { -moz-appearance: textfield; }
     </div>
 
     <!-- 공휴일 판매정책 -->
-    <div class="card">
+    <div class="card" id="sectionHolidayPricing">
       <div class="card__header"><h3>공휴일 판매정책</h3></div>
       <div class="card__body" style="padding:0;">
         <table class="pricing-table" id="holidayPricingTable">
@@ -1127,6 +1231,104 @@ input[type="number"] { -moz-appearance: textfield; }
       </div>
     </div>
 
+
+    <!-- ─── 안내메시지 설정 (일반권/단기권) ─── -->
+    <div class="card">
+      <div class="card__header"><h3>안내메시지 설정</h3></div>
+      <div class="card__body">
+        <table class="form-table">
+          <tbody>
+            <tr>
+              <th>안내사항</th>
+              <td>
+                <textarea class="form-input" id="gnNotice" maxlength="500" rows="5" style="max-width:500px; resize:vertical;" placeholder="안내사항을 입력하세요"></textarea>
+                <div class="form-helper" style="text-align:right; max-width:500px;"><span id="gnNoticeCount">0</span>/500</div>
+              </td>
+            </tr>
+            <tr>
+              <th>구매전 주의사항</th>
+              <td>
+                <textarea class="form-input" id="gnBeforeWarning" maxlength="300" rows="4" style="max-width:500px; resize:vertical;" placeholder="구매전 주의사항를 입력하세요"></textarea>
+                <div class="form-helper" style="text-align:right; max-width:500px;"><span id="gnBeforeCount">0</span>/300</div>
+              </td>
+            </tr>
+            <tr>
+              <th>구매후 주의사항</th>
+              <td>
+                <textarea class="form-input" id="gnAfterWarning" maxlength="300" rows="4" style="max-width:500px; resize:vertical;" placeholder="구매후 주의사항를 입력하세요"></textarea>
+                <div class="form-helper" style="text-align:right; max-width:500px;"><span id="gnAfterCount">0</span>/300</div>
+              </td>
+            </tr>
+            <tr>
+              <th>안내메시지 타입</th>
+              <td>
+                <div class="inline-field" style="gap:20px;">
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="radio" name="gnMsgType" value="KAKAO" checked style="accent-color:var(--color-primary);"> KAKAO
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="radio" name="gnMsgType" value="SMS" style="accent-color:var(--color-primary);"> SMS
+                  </label>
+                </div>
+              </td>
+            </tr>
+            <tr id="rowGnTemplate">
+              <th>템플릿 선택</th>
+              <td>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="radio" name="gnTemplateId" value="25008" checked style="accent-color:var(--color-primary);">
+                    앱-제휴구매-유저-기계식아님-25008
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="radio" name="gnTemplateId" value="25007" style="accent-color:var(--color-primary);">
+                    앱-제휴구매-유저-기계식-25007
+                  </label>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 템플릿 내용 / 미리보기 (일반권) -->
+    <div id="gnTemplatePreviewArea" style="display:flex; gap:20px; margin-bottom:20px;">
+      <div style="flex:1;">
+        <div style="font-size:14px; font-weight:700; color:var(--color-gray-800); margin-bottom:8px;">템플릿 내용</div>
+        <div id="gnTemplateContent" style="background:var(--color-gray-50); border:1px solid var(--color-gray-200); border-radius:var(--radius-md); padding:16px; font-size:13px; color:var(--color-gray-700); line-height:1.7; white-space:pre-wrap; min-height:200px;"></div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:14px; font-weight:700; color:var(--color-gray-800); margin-bottom:8px;">메시지 적용 미리보기</div>
+        <div id="gnTemplatePreview" style="background:var(--color-gray-50); border:1px solid var(--color-gray-200); border-radius:var(--radius-md); padding:16px; font-size:13px; color:var(--color-gray-700); line-height:1.7; white-space:pre-wrap; min-height:200px;"></div>
+      </div>
+    </div>
+
+    <!-- 카카오 템플릿 변수 (일반권) -->
+    <div class="card" id="gnKakaoVarSection">
+      <div class="card__header"><h3>카카오 템플릿 변수</h3></div>
+      <div class="card__body">
+        <table class="form-table">
+          <tbody>
+            <tr>
+              <th>POSITION</th>
+              <td>
+                <input type="text" class="form-input form-input--lg" id="gnPosition" maxlength="100" placeholder="주차장 위치 정보를 입력하세요">
+                <div class="form-helper" style="text-align:right; max-width:500px;"><span id="gnPositionCount">0</span>/100</div>
+              </td>
+            </tr>
+            <tr>
+              <th>TICKET_NOTICE</th>
+              <td>
+                <textarea class="form-input" id="gnTicketNotice" maxlength="300" rows="4" style="max-width:500px; resize:vertical;" placeholder="TICKET_NOTICE를 입력하세요"></textarea>
+                <div class="form-helper" style="text-align:right; max-width:500px;"><span id="gnTicketNoticeCount">0</span>/300</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div><!-- /pricingContent -->
 
   <!-- ─── Actions ─── -->
@@ -1139,6 +1341,235 @@ input[type="number"] { -moz-appearance: textfield; }
       </button>
     </div>
   </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════
+       정기권 전용 섹션들
+       ═══════════════════════════════════════════════════════ -->
+  <div id="longTermSections" style="display:none;">
+
+    <!-- ─── 가격 판매정책 ─── -->
+    <div class="card">
+      <div class="card__header"><h3>가격 판매정책</h3></div>
+      <div class="card__body">
+        <table class="form-table">
+          <tbody>
+            <tr>
+              <th>이용요일</th>
+              <td>
+                <div class="day-btn-group" id="ltDayBtnGroup">
+                  <button type="button" class="day-btn active" data-day="mon">월</button>
+                  <button type="button" class="day-btn active" data-day="tue">화</button>
+                  <button type="button" class="day-btn active" data-day="wed">수</button>
+                  <button type="button" class="day-btn active" data-day="thu">목</button>
+                  <button type="button" class="day-btn active" data-day="fri">금</button>
+                  <button type="button" class="day-btn active" data-day="sat">토</button>
+                  <button type="button" class="day-btn active" data-day="sun">일</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>최대판매수량</th>
+              <td>
+                <div class="inline-field">
+                  <input type="number" class="form-input form-input--sm" id="ltMaxSalesQty" min="0" placeholder="0">
+                  <span class="unit-label">개</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>판매금액</th>
+              <td>
+                <div class="inline-field">
+                  <input type="number" class="form-input form-input--md" id="ltSalePrice" min="0" placeholder="판매금액을 입력하세요">
+                  <span class="unit-label">원</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>정산비율</th>
+              <td>
+                <div class="inline-field">
+                  <input type="number" class="form-input form-input--sm" id="ltSettlementRatio" min="0" max="100" value="0">
+                  <span class="unit-label">%</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>정산금액</th>
+              <td>
+                <div class="inline-field">
+                  <input type="text" class="form-input form-input--md" id="ltSettlementAmount" value="0" readonly>
+                  <span class="unit-label">원</span>
+                </div>
+                <div class="form-helper">판매금액 × 정산비율로 자동 계산됩니다.</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── 정기권 연장 설정 ─── -->
+    <div class="card">
+      <div class="card__header"><h3>정기권 연장 설정</h3></div>
+      <div class="card__body">
+        <table class="form-table">
+          <tbody>
+            <tr>
+              <th>연장 가능 여부</th>
+              <td>
+                <select class="form-select" id="ltRenewalPossible" style="max-width:160px;">
+                  <option value="" selected>선택</option>
+                  <option value="true">가능</option>
+                  <option value="false">불가능</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <th>연장 단위 기간</th>
+              <td>
+                <div class="inline-field">
+                  <input type="number" class="form-input form-input--sm lt-renewal-field" id="ltRenewalUnit" min="1" placeholder="-" disabled>
+                  <span class="unit-label">개월</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>연장 판매금액</th>
+              <td>
+                <div class="inline-field">
+                  <input type="number" class="form-input form-input--md lt-renewal-field" id="ltRenewalPrice" min="0" placeholder="-" disabled>
+                  <span class="unit-label">원</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>정산비율</th>
+              <td>
+                <div class="inline-field">
+                  <input type="number" class="form-input form-input--sm lt-renewal-field" id="ltRenewalRatio" min="0" max="100" value="0" disabled>
+                  <span class="unit-label">%</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <th>연장 정산금액</th>
+              <td>
+                <div class="inline-field">
+                  <input type="text" class="form-input form-input--md" id="ltRenewalSettlement" value="-" readonly>
+                  <span class="unit-label">원</span>
+                </div>
+                <div class="form-helper">연장 판매금액 × 정산비율로 자동 계산됩니다.</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── 안내메시지 설정 ─── -->
+    <div class="card">
+      <div class="card__header"><h3>안내메시지 설정</h3></div>
+      <div class="card__body">
+        <table class="form-table">
+          <tbody>
+            <tr>
+              <th>안내사항</th>
+              <td>
+                <textarea class="form-input" id="ltNotice" maxlength="500" rows="5" style="max-width:500px; resize:vertical;" placeholder="안내사항을 입력하세요"></textarea>
+                <div class="form-helper" style="text-align:right; max-width:500px;"><span id="ltNoticeCount">0</span>/500</div>
+              </td>
+            </tr>
+            <tr>
+              <th>구매전 주의사항</th>
+              <td>
+                <textarea class="form-input" id="ltBeforeWarning" maxlength="300" rows="4" style="max-width:500px; resize:vertical;" placeholder="구매전 주의사항를 입력하세요"></textarea>
+                <div class="form-helper" style="text-align:right; max-width:500px;"><span id="ltBeforeCount">0</span>/300</div>
+              </td>
+            </tr>
+            <tr>
+              <th>구매후 주의사항</th>
+              <td>
+                <textarea class="form-input" id="ltAfterWarning" maxlength="300" rows="4" style="max-width:500px; resize:vertical;" placeholder="구매후 주의사항를 입력하세요"></textarea>
+                <div class="form-helper" style="text-align:right; max-width:500px;"><span id="ltAfterCount">0</span>/300</div>
+              </td>
+            </tr>
+            <tr>
+              <th>안내메시지 타입</th>
+              <td>
+                <div class="inline-field" style="gap:20px;">
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="radio" name="ltMsgType" value="KAKAO" checked style="accent-color:var(--color-primary);"> KAKAO
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="radio" name="ltMsgType" value="SMS" style="accent-color:var(--color-primary);"> SMS
+                  </label>
+                </div>
+              </td>
+            </tr>
+            <tr id="rowLtTemplate">
+              <th>템플릿 선택</th>
+              <td>
+                <div style="display:flex; flex-direction:column; gap:10px;">
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="radio" name="ltTemplateId" value="25037" checked style="accent-color:var(--color-primary);">
+                    앱-제휴정기-유저-기계식아님-25037 (월정기)
+                  </label>
+                  <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                    <input type="radio" name="ltTemplateId" value="25036" style="accent-color:var(--color-primary);">
+                    앱-제휴정기-유저-기계식-25036
+                  </label>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── 템플릿 내용 / 미리보기 ─── -->
+    <div id="ltTemplatePreviewArea" style="display:flex; gap:20px; margin-bottom:20px;">
+      <div style="flex:1;">
+        <div style="font-size:14px; font-weight:700; color:var(--color-gray-800); margin-bottom:8px;">템플릿 내용</div>
+        <div id="ltTemplateContent" style="background:var(--color-gray-50); border:1px solid var(--color-gray-200); border-radius:var(--radius-md); padding:16px; font-size:13px; color:var(--color-gray-700); line-height:1.7; white-space:pre-wrap; min-height:200px;"></div>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:14px; font-weight:700; color:var(--color-gray-800); margin-bottom:8px;">메시지 적용 미리보기</div>
+        <div id="ltTemplatePreview" style="background:var(--color-gray-50); border:1px solid var(--color-gray-200); border-radius:var(--radius-md); padding:16px; font-size:13px; color:var(--color-gray-700); line-height:1.7; white-space:pre-wrap; min-height:200px;"></div>
+      </div>
+    </div>
+
+    <!-- ─── 카카오 템플릿 변수 ─── -->
+    <div class="card" id="ltKakaoVarSection">
+      <div class="card__header"><h3>카카오 템플릿 변수</h3></div>
+      <div class="card__body">
+        <table class="form-table">
+          <tbody>
+            <tr>
+              <th>TICKET_NOTICE</th>
+              <td>
+                <textarea class="form-input" id="ltTicketNotice" maxlength="300" rows="4" style="max-width:500px; resize:vertical;" placeholder="TICKET_NOTICE를 입력하세요"></textarea>
+                <div class="form-helper" style="text-align:right; max-width:500px;"><span id="ltTicketNoticeCount">0</span>/300</div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ─── Actions (정기권) ─── -->
+    <div class="card">
+      <div class="actions-bar">
+        <button type="button" class="btn btn--secondary" onclick="handleCancel()">취소</button>
+        <button type="button" class="btn btn--primary" onclick="handleSave()">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.7 3.3l-6 6L4 6.7"/></svg>
+          생성하기
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /longTermSections -->
 
 </main>
 
@@ -1248,6 +1679,143 @@ input[type="number"] { -moz-appearance: textfield; }
     $startUnitLabel.textContent = UNIT_KR[newUnit] + ' 전까지';
   });
 
+  /* ─── 주차권 유형별 기본값 ─── */
+  var TICKET_TYPE_DEFAULTS = {
+    '당일권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 1, maxDays: 1 },
+    '주간권':   { startTime: '05:00:00', endTime: '22:00:00', minDays: 1, maxDays: 7 },
+    '오전권':   { startTime: '00:00:00', endTime: '12:00:00', minDays: 1, maxDays: 1 },
+    '오후권':   { startTime: '12:00:00', endTime: '23:59:00', minDays: 1, maxDays: 1 },
+    '야간권':   { startTime: '18:00:00', endTime: '23:59:00', minDays: 1, maxDays: 1 },
+    '심야권':   { startTime: '19:00:00', endTime: '07:00:00', minDays: 1, maxDays: 1 },
+    '시간권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 1, maxDays: 1 },
+    '연박권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 2, maxDays: 14 },
+    '단기권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 1, maxDays: 30 },
+    '기간권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 30, maxDays: 365 },
+    '월단위권': { startTime: '00:00:00', endTime: '23:59:00', minDays: 30, maxDays: 365 },
+    '일할권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 1, maxDays: 30 }
+  };
+
+  var LONG_TERM_TYPES = ['기간권', '월단위권', '일할권'];
+
+  /* ─── 주차권 유형 변경 핸들러 ─── */
+  var $ticketType = document.getElementById('ticketType');
+  var $minDays = document.getElementById('minDays');
+  var $maxDays = document.getElementById('maxDays');
+  var $ticketName = document.getElementById('ticketName');
+  var $parkingStartTime = document.getElementById('parkingStartTime');
+  var $parkingEndTime = document.getElementById('parkingEndTime');
+  var $saleStartDate = document.getElementById('saleStartDate');
+  var $saleEndDate = document.getElementById('saleEndDate');
+
+  /* 단기권 템플릿 영역 (일반권에도 동일 적용) */
+  var shortTermRows = [
+    document.getElementById('rowParkingStartTime'),
+    document.getElementById('rowParkingEndTime')
+  ];
+
+  var shortTermOnlyRows = [
+    document.getElementById('rowMinDays'),
+    document.getElementById('rowMaxDays'),
+    document.getElementById('sectionMinPrice')
+  ];
+
+  function applyTicketTypeDefaults(typeName) {
+    var defaults = TICKET_TYPE_DEFAULTS[typeName];
+    if (!defaults) return;
+
+    /* 기본값 적용 */
+    $parkingStartTime.value = defaults.startTime;
+    $parkingEndTime.value = defaults.endTime;
+    $minDays.value = defaults.minDays;
+    $maxDays.value = defaults.maxDays;
+
+    /* 주차권 이름을 권종명으로 디폴트 셋팅 */
+    $ticketName.value = typeName;
+  }
+
+  /* 정기권 전용 행/섹션 */
+  var longTermOnlyRows = [
+    document.getElementById('rowUnit'),
+    document.getElementById('rowSaleStartTime'),
+    document.getElementById('rowSaleEndTime')
+  ];
+
+  var nonLongTermRows = [
+    document.getElementById('rowKeywords'),
+    document.getElementById('rowPurchaseStart'),
+    document.getElementById('rowPurchaseEnd'),
+    document.getElementById('rowAirport')
+  ];
+
+  var $pricingModeSelector = document.getElementById('pricingModeSelector');
+  var $pricingContent = document.getElementById('pricingContent');
+  var $longTermSections = document.getElementById('longTermSections');
+  var $actionsCard = document.querySelector('.actions-bar').closest('.card');
+
+  function updateTemplateVisibility(typeName) {
+    var isLongTerm = LONG_TERM_TYPES.indexOf(typeName) !== -1;
+    var isShortTerm = (typeName === '단기권');
+
+    /* 일반권·단기권 → 주차시간 표시, 장기권 → 주차시간도 표시 */
+    shortTermRows.forEach(function (row) {
+      if (row) row.style.display = '';
+    });
+
+    /* 최소/최대 이용일 수 → 단기권만 표시 */
+    shortTermOnlyRows.forEach(function (row) {
+      if (row) row.style.display = isShortTerm ? '' : 'none';
+    });
+
+    /* 정기권 전용 행 표시/숨김 */
+    longTermOnlyRows.forEach(function (row) {
+      if (row) row.style.display = isLongTerm ? '' : 'none';
+    });
+
+    /* 시간권 → 이용가능 시간, 연박권 → 이용일 수 */
+    var $rowHourAmount = document.getElementById('rowHourAmount');
+    var $rowStayDays = document.getElementById('rowStayDays');
+    if ($rowHourAmount) $rowHourAmount.style.display = (typeName === '시간권') ? '' : 'none';
+    if ($rowStayDays) $rowStayDays.style.display = (typeName === '연박권') ? '' : 'none';
+
+    /* 일반권/단기권 전용 행 (정기권에서 숨김) */
+    nonLongTermRows.forEach(function (row) {
+      if (row) row.style.display = isLongTerm ? 'none' : '';
+    });
+
+    /* 공휴일 판매정책 → 장기권 숨김 */
+    var $holidaySection = document.getElementById('sectionHolidayPricing');
+    if ($holidaySection) $holidaySection.style.display = isLongTerm ? 'none' : '';
+
+    /* 요금 모드선택 + 기존 가격섹션 ↔ 정기권 섹션 토글 */
+    if ($pricingModeSelector) $pricingModeSelector.style.display = isLongTerm ? 'none' : '';
+    if ($pricingContent) $pricingContent.style.display = isLongTerm ? 'none' : '';
+    if ($longTermSections) $longTermSections.style.display = isLongTerm ? '' : 'none';
+
+    /* 기존 Actions bar는 정기권일 때 숨김 (정기권 섹션에 자체 Actions 있음) */
+    if ($actionsCard) $actionsCard.style.display = isLongTerm ? 'none' : '';
+  }
+
+  $ticketType.addEventListener('change', function () {
+    var typeName = $ticketType.value;
+    if (!typeName) return;
+
+    updateTemplateVisibility(typeName);
+    applyTicketTypeDefaults(typeName);
+    updateBulkSaleDaysVisibility(typeName);
+  });
+
+  /* 초기 상태: 선택 안 된 상태이므로 조건부 행 모두 숨김 */
+  shortTermRows.forEach(function (row) {
+    if (row) row.style.display = 'none';
+  });
+  shortTermOnlyRows.forEach(function (row) {
+    if (row) row.style.display = 'none';
+  });
+  longTermOnlyRows.forEach(function (row) {
+    if (row) row.style.display = 'none';
+  });
+  if ($longTermSections) $longTermSections.style.display = 'none';
+
   /* ─── Pricing mode toggle ─── */
   var $modeSelector = document.getElementById('pricingModeSelector');
   var $dailySection = document.getElementById('dailyPricingSection');
@@ -1278,6 +1846,22 @@ input[type="number"] { -moz-appearance: textfield; }
   $bulkPrice.addEventListener('input', function () {
     $bulkSettle.value = calcSettlement(parseFloat($bulkPrice.value) || 0);
   });
+
+  /* ─── 판매요일 버튼 토글 (일괄요금) ─── */
+  var $bulkDayBtnGroup = document.getElementById('bulkDayBtnGroup');
+  var $bulkSaleDaysArea = document.getElementById('bulkSaleDaysArea');
+
+  $bulkDayBtnGroup.addEventListener('click', function (e) {
+    var btn = e.target.closest('.day-btn');
+    if (!btn) return;
+    btn.classList.toggle('active');
+  });
+
+  /* 일괄요금 판매요일: 장기권일 때 숨김 */
+  function updateBulkSaleDaysVisibility(typeName) {
+    var isLongTerm = LONG_TERM_TYPES.indexOf(typeName) !== -1;
+    if ($bulkSaleDaysArea) $bulkSaleDaysArea.style.display = isLongTerm ? 'none' : '';
+  }
 
   /* ─── Settlement calculation ─── */
   function calcSettlement(price) {
@@ -1319,6 +1903,186 @@ input[type="number"] { -moz-appearance: textfield; }
       });
     });
   });
+
+
+  /* ═══════════════════════════════════════════════════════
+     정기권 전용 JS
+     ═══════════════════════════════════════════════════════ */
+
+  /* ─── 정기권 이용요일 토글 ─── */
+  var $ltDayBtnGroup = document.getElementById('ltDayBtnGroup');
+  $ltDayBtnGroup.addEventListener('click', function (e) {
+    var btn = e.target.closest('.day-btn');
+    if (!btn) return;
+    btn.classList.toggle('active');
+  });
+
+  /* ─── 정기권 정산금액 자동 계산 ─── */
+  var $ltSalePrice = document.getElementById('ltSalePrice');
+  var $ltSettlementRatio = document.getElementById('ltSettlementRatio');
+  var $ltSettlementAmount = document.getElementById('ltSettlementAmount');
+
+  function calcLtSettlement() {
+    var price = parseFloat($ltSalePrice.value) || 0;
+    var ratio = parseFloat($ltSettlementRatio.value) || 0;
+    $ltSettlementAmount.value = Math.round(price * ratio / 100).toLocaleString();
+  }
+
+  $ltSalePrice.addEventListener('input', calcLtSettlement);
+  $ltSettlementRatio.addEventListener('input', calcLtSettlement);
+
+  /* ─── 연장 가능 여부 토글 ─── */
+  var $ltRenewalPossible = document.getElementById('ltRenewalPossible');
+  var ltRenewalFields = document.querySelectorAll('.lt-renewal-field');
+  var $ltRenewalSettlement = document.getElementById('ltRenewalSettlement');
+
+  function updateRenewalFields() {
+    var enabled = ($ltRenewalPossible.value === 'true');
+    ltRenewalFields.forEach(function (field) {
+      field.disabled = !enabled;
+      if (!enabled) {
+        if (field.id !== 'ltRenewalRatio') field.value = '';
+        field.placeholder = '-';
+      }
+    });
+    $ltRenewalSettlement.value = enabled ? '0' : '-';
+    calcRenewalSettlement();
+  }
+
+  $ltRenewalPossible.addEventListener('change', updateRenewalFields);
+
+  /* ─── 연장 정산금액 자동 계산 ─── */
+  var $ltRenewalPrice = document.getElementById('ltRenewalPrice');
+  var $ltRenewalRatio = document.getElementById('ltRenewalRatio');
+
+  function calcRenewalSettlement() {
+    if ($ltRenewalPossible.value !== 'true') return;
+    var price = parseFloat($ltRenewalPrice.value) || 0;
+    var ratio = parseFloat($ltRenewalRatio.value) || 0;
+    $ltRenewalSettlement.value = Math.round(price * ratio / 100).toLocaleString();
+  }
+
+  $ltRenewalPrice.addEventListener('input', calcRenewalSettlement);
+  $ltRenewalRatio.addEventListener('input', calcRenewalSettlement);
+
+  /* ─── 안내메시지 글자수 카운터 ─── */
+  function bindCounter(textareaId, counterId) {
+    var ta = document.getElementById(textareaId);
+    var ct = document.getElementById(counterId);
+    if (!ta || !ct) return;
+    ta.addEventListener('input', function () { ct.textContent = ta.value.length; });
+  }
+  bindCounter('ltNotice', 'ltNoticeCount');
+  bindCounter('ltBeforeWarning', 'ltBeforeCount');
+  bindCounter('ltAfterWarning', 'ltAfterCount');
+  bindCounter('ltTicketNotice', 'ltTicketNoticeCount');
+
+  /* ─── 안내메시지 타입 토글 (KAKAO/SMS) ─── */
+  var ltMsgRadios = document.querySelectorAll('input[name="ltMsgType"]');
+  var $rowLtTemplate = document.getElementById('rowLtTemplate');
+  var $ltTemplatePreviewArea = document.getElementById('ltTemplatePreviewArea');
+  var $ltKakaoVarSection = document.getElementById('ltKakaoVarSection');
+
+  function updateLtMsgType() {
+    var isKakao = document.querySelector('input[name="ltMsgType"]:checked').value === 'KAKAO';
+    if ($rowLtTemplate) $rowLtTemplate.style.display = isKakao ? '' : 'none';
+    if ($ltTemplatePreviewArea) $ltTemplatePreviewArea.style.display = isKakao ? 'flex' : 'none';
+    if ($ltKakaoVarSection) $ltKakaoVarSection.style.display = isKakao ? '' : 'none';
+  }
+
+  ltMsgRadios.forEach(function (r) { r.addEventListener('change', updateLtMsgType); });
+  updateLtMsgType();
+
+  /* ─── 정기권 템플릿 내용 ─── */
+  var LT_TEMPLATES = {
+    '25037': '[모두의주차장 #{STATUS}]\n서비스 제공: (주)쏘카\n\n[상품정보]\n▼ 주차장 명: #{PARKINGLOT_NAME}\n▼ 상품명: #{PRODUCT_NAME}\n▼ 차량번호: #{CAR_NUM}\n▼ 이용기간: #{PERIOD_OF_USE}\n▼ 월주차권 이용시간: #{START_TIME} ~ #{END_TIME}\n\n[유의사항]\n${TICKET_NOTICE}',
+    '25036': '[모두의주차장 #{STATUS}]\n서비스 제공: (주)쏘카\n\n[상품정보]\n▼ 주차장 명: #{PARKINGLOT_NAME}\n▼ 상품명: #{PRODUCT_NAME}\n▼ 차량번호: #{CAR_NUM}\n▼ 이용기간: #{PERIOD_OF_USE}\n▼ 월주차권 이용시간: #{START_TIME} ~ #{END_TIME}\n\n⚠️ 기계식 주차장은 차량 규격을 반드시 확인해주세요.\n\n[유의사항]\n${TICKET_NOTICE}'
+  };
+
+  var ltTemplateRadios = document.querySelectorAll('input[name="ltTemplateId"]');
+  var $ltTemplateContent = document.getElementById('ltTemplateContent');
+  var $ltTemplatePreview = document.getElementById('ltTemplatePreview');
+  var $ltTicketNotice = document.getElementById('ltTicketNotice');
+
+  function updateLtTemplate() {
+    var templateId = document.querySelector('input[name="ltTemplateId"]:checked').value;
+    var raw = LT_TEMPLATES[templateId] || '';
+    $ltTemplateContent.textContent = raw;
+
+    var preview = raw;
+    var noticeVal = $ltTicketNotice.value || '';
+    preview = preview.replace(/\$\{TICKET_NOTICE\}/g, noticeVal);
+    $ltTemplatePreview.textContent = preview;
+  }
+
+  ltTemplateRadios.forEach(function (r) { r.addEventListener('change', updateLtTemplate); });
+  $ltTicketNotice.addEventListener('input', updateLtTemplate);
+  updateLtTemplate();
+
+
+  /* ═══════════════════════════════════════════════════════
+     일반권/단기권 안내메시지 JS
+     ═══════════════════════════════════════════════════════ */
+
+  /* ─── 글자수 카운터 ─── */
+  bindCounter('gnNotice', 'gnNoticeCount');
+  bindCounter('gnBeforeWarning', 'gnBeforeCount');
+  bindCounter('gnAfterWarning', 'gnAfterCount');
+  bindCounter('gnTicketNotice', 'gnTicketNoticeCount');
+
+  var $gnPosition = document.getElementById('gnPosition');
+  var $gnPositionCount = document.getElementById('gnPositionCount');
+  if ($gnPosition && $gnPositionCount) {
+    $gnPosition.addEventListener('input', function () {
+      $gnPositionCount.textContent = $gnPosition.value.length;
+    });
+  }
+
+  /* ─── 안내메시지 타입 토글 (KAKAO/SMS) ─── */
+  var gnMsgRadios = document.querySelectorAll('input[name="gnMsgType"]');
+  var $rowGnTemplate = document.getElementById('rowGnTemplate');
+  var $gnTemplatePreviewArea = document.getElementById('gnTemplatePreviewArea');
+  var $gnKakaoVarSection = document.getElementById('gnKakaoVarSection');
+
+  function updateGnMsgType() {
+    var isKakao = document.querySelector('input[name="gnMsgType"]:checked').value === 'KAKAO';
+    if ($rowGnTemplate) $rowGnTemplate.style.display = isKakao ? '' : 'none';
+    if ($gnTemplatePreviewArea) $gnTemplatePreviewArea.style.display = isKakao ? 'flex' : 'none';
+    if ($gnKakaoVarSection) $gnKakaoVarSection.style.display = isKakao ? '' : 'none';
+  }
+  gnMsgRadios.forEach(function (r) { r.addEventListener('change', updateGnMsgType); });
+  updateGnMsgType();
+
+  /* ─── 일반권 템플릿 ─── */
+  var GN_TEMPLATES = {
+    '25008': '[모두의주차장] 주차권 구매 완료\n\n안녕하세요, #{이름}님!\n#{주차장명} 주차권 구매가 완료되었습니다.\n\n■ 주차권 정보\n- 주차장: #{주차장명}\n- 주차권: #{주차권명}\n- 이용기간: #{이용시작일} ~ #{이용종료일}\n- 주차가능시간: #{주차시작시간} ~ #{주차종료시간}\n- 위치: #{POSITION}\n\n■ 이용 안내\n#{TICKET_NOTICE}\n\n※ 입차 시 차량번호가 자동으로 인식됩니다.\n※ 주차권 관련 문의: 모두의주차장 고객센터',
+    '25007': '[모두의주차장] 기계식 주차장 주차권 구매 완료\n\n안녕하세요, #{이름}님!\n#{주차장명} 기계식 주차장 주차권 구매가 완료되었습니다.\n\n■ 주차권 정보\n- 주차장: #{주차장명}\n- 주차권: #{주차권명}\n- 이용기간: #{이용시작일} ~ #{이용종료일}\n- 주차가능시간: #{주차시작시간} ~ #{주차종료시간}\n- 위치: #{POSITION}\n\n■ 기계식 주차장 이용 안내\n#{TICKET_NOTICE}\n\n⚠️ 기계식 주차장은 차량 규격을 반드시 확인해주세요.\n※ 주차권 관련 문의: 모두의주차장 고객센터'
+  };
+
+  var gnTemplateRadios = document.querySelectorAll('input[name="gnTemplateId"]');
+  var $gnTemplateContent = document.getElementById('gnTemplateContent');
+  var $gnTemplatePreview = document.getElementById('gnTemplatePreview');
+  var $gnTicketNotice = document.getElementById('gnTicketNotice');
+
+  function updateGnTemplate() {
+    var templateId = document.querySelector('input[name="gnTemplateId"]:checked').value;
+    var raw = GN_TEMPLATES[templateId] || '';
+    $gnTemplateContent.textContent = raw;
+
+    var preview = raw;
+    if ($gnTicketNotice.value) {
+      preview = preview.replace(/#\{TICKET_NOTICE\}/g, $gnTicketNotice.value);
+    }
+    if ($gnPosition && $gnPosition.value) {
+      preview = preview.replace(/#\{POSITION\}/g, $gnPosition.value);
+    }
+    $gnTemplatePreview.textContent = preview;
+  }
+
+  gnTemplateRadios.forEach(function (r) { r.addEventListener('change', updateGnTemplate); });
+  $gnTicketNotice.addEventListener('input', updateGnTemplate);
+  if ($gnPosition) $gnPosition.addEventListener('input', updateGnTemplate);
+  updateGnTemplate();
 
   /* ─── Toast ─── */
   function showToast(message, type) {
