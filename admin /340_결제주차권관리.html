@@ -15,6 +15,8 @@
 
 /* App Layout */
 .app-layout { display: flex; min-height: 100vh; padding-top: var(--header-h); }
+/* [폭 고정] flex:1로 main이 항상 남은 공간 전체를 차지하도록 보장 */
+.app-layout > .main { flex: 1; min-width: 0; overflow-x: hidden; margin-top: 0; }
 
 /* Page Header */
 .page-header { margin-bottom: var(--space-6); }
@@ -208,7 +210,7 @@
   border-radius: 2px;
 }
 
-/* Payment Status */
+/* Payment Status — 350 pay-badge 스타일과 통일 */
 .payment-status {
   display: inline-flex; align-items: center;
   padding: var(--space-1) var(--space-3);
@@ -216,11 +218,12 @@
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-sm);
   background: var(--color-bg-surface);
+  white-space: nowrap;
 }
 .payment-status.completed { color: var(--color-status-success); border-color: var(--color-status-success); }
-.payment-status.cancelled { color: var(--color-status-error); border-color: var(--color-status-error); }
+.payment-status.cancelled { color: #b91c1c; border-color: #fca5a5; background: #fef2f2; }
 
-/* Entry Status */
+/* Entry Status — 톤다운 뉴트럴 팔레트 (350 캘린더와 동일) */
 .entry-status {
   display: inline-flex; align-items: center;
   padding: var(--space-1) var(--space-3);
@@ -228,10 +231,10 @@
   border-radius: var(--radius-sm);
   white-space: nowrap;
 }
-.entry-status.waiting { color: var(--color-text-tertiary); background: var(--color-bg-secondary); }
-.entry-status.available { color: var(--color-status-info); background: #E8F4FF; }
-.entry-status.active { color: var(--color-status-success); background: #F0FDF4; }
-.entry-status.done { color: var(--color-status-warning); background: #FFF7ED; }
+.entry-status.waiting { color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; }
+.entry-status.available { color: #4d7060; background: #f7faf8; border: 1px solid #d5e5da; }
+.entry-status.active { color: #2563eb; background: #f0f4ff; border: 1px solid #dbeafe; }
+.entry-status.done { color: #6b7280; background: #f9fafb; border: 1px solid #e5e7eb; }
 
 .no-data { font-size: var(--font-size-sm); color: var(--color-text-disabled); }
 
@@ -359,6 +362,84 @@
 <body>
     <div id="root"></div>
 
+    <script type="text/babel">
+    // ============================================================
+    // parking-ticket-table.js (인라인)
+    // 공통 주차권 목록 테이블 컴포넌트
+    // ============================================================
+    (function () {
+        'use strict';
+
+        function ParkingTicketTable({
+            columns,
+            data,
+            onRowClick,
+            tableClassName = 'data-table',
+            emptyMessage = '검색 결과가 없습니다.',
+            emptyIcon,
+            emptyClassName = 'empty-state'
+        }) {
+            return (
+                <table className={tableClassName}>
+                    <thead>
+                        <tr>
+                            {columns.map((col, i) => (
+                                <th key={col.key || i} style={col.headerStyle}>{col.header}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {data.length === 0 ? (
+                            <tr>
+                                <td colSpan={columns.length}>
+                                    <div className={emptyClassName}>
+                                        {emptyIcon && <div className={`${emptyClassName}-icon`}>{emptyIcon}</div>}
+                                        <p>{emptyMessage}</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : (
+                            data.map((item, idx) => (
+                                <tr key={item.id || idx} onClick={onRowClick ? () => onRowClick(item) : undefined}>
+                                    {columns.map((col, colIdx) => (
+                                        <td key={col.key || colIdx} className={col.className}>
+                                            {col.render ? col.render(item) : item[col.key]}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            );
+        }
+
+        function Pagination({ currentPage, totalPages, onPageChange }) {
+            if (totalPages <= 1) return null;
+
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            const pages = [];
+            for (let i = startPage; i <= endPage; i++) pages.push(i);
+
+            return (
+                <div className="pagination-wrapper">
+                    <button className="page-btn" disabled={currentPage <= 1} onClick={() => onPageChange(1)}>«</button>
+                    <button className="page-btn" disabled={currentPage <= 1} onClick={() => onPageChange(currentPage - 1)}>‹</button>
+                    {pages.map(p => (
+                        <button key={p} className={`page-btn ${p === currentPage ? 'active' : ''}`}
+                            onClick={() => onPageChange(p)}>{p}</button>
+                    ))}
+                    <button className="page-btn" disabled={currentPage >= totalPages} onClick={() => onPageChange(currentPage + 1)}>›</button>
+                    <button className="page-btn" disabled={currentPage >= totalPages} onClick={() => onPageChange(totalPages)}>»</button>
+                </div>
+            );
+        }
+
+        window.ParkingTicketTable = ParkingTicketTable;
+        window.Pagination = Pagination;
+    })();
+    </script>
     <script type="text/babel">
         const { useState, useMemo, useEffect, useCallback, useRef } = React;
 
@@ -933,30 +1014,7 @@
             );
         }
 
-        // ============================================================
-        // Pagination Component
-        // ============================================================
-        function Pagination({ currentPage, totalPages, onPageChange }) {
-            if (totalPages <= 1) return null;
-
-            const startPage = Math.max(1, currentPage - 2);
-            const endPage = Math.min(totalPages, startPage + 4);
-            const pages = [];
-            for (let i = startPage; i <= endPage; i++) pages.push(i);
-
-            return (
-                <div className="pagination-wrapper">
-                    <button className="page-btn" disabled={currentPage <= 1} onClick={() => onPageChange(1)}>«</button>
-                    <button className="page-btn" disabled={currentPage <= 1} onClick={() => onPageChange(currentPage - 1)}>‹</button>
-                    {pages.map(p => (
-                        <button key={p} className={`page-btn ${p === currentPage ? 'active' : ''}`}
-                            onClick={() => onPageChange(p)}>{p}</button>
-                    ))}
-                    <button className="page-btn" disabled={currentPage >= totalPages} onClick={() => onPageChange(currentPage + 1)}>›</button>
-                    <button className="page-btn" disabled={currentPage >= totalPages} onClick={() => onPageChange(totalPages)}>»</button>
-                </div>
-            );
-        }
+        // Pagination → parking-ticket-table.js (window.Pagination)
 
         // ============================================================
         // VehicleDetailPanel Component
@@ -1171,8 +1229,8 @@
             { id: 'sales', label: '판매관리', children: [
                 { label: '대쉬보드', href: '#' },
                 { label: '결제현황 관리', href: '#' },
-                { label: '결제주차권관리', href: '340_결제주차권관리.html', active: true },
-                { label: '결제주차권관리(캘린더)', href: '350_결제주차권관리_캘린더(월간수요).html' },
+                { label: '주차관리', href: '340_결제주차권관리.html', active: true },
+                { label: '주차관리(캘린더)', href: '350_결제주차권관리_캘린더(월간수요).html' },
                 { label: '맵뷰', href: '#' },
                 { label: '환불관리', href: '#' },
             ]},
@@ -1180,7 +1238,7 @@
             { id: 'erp', label: 'ERP', children: [{ label: '매출내역 전송', href: '#' }, { label: '정산내역서 전송', href: '#' }] },
             { id: 'info', label: '정보 관리', children: [{ label: '일반주차장 관리', href: '#' }, { label: '수정요청', href: '#' }, { label: '등록요청', href: '#' }] },
             { id: 'share', label: '공유 관리', children: [{ label: '공유주차장', href: '#' }, { label: 'IoT 관리', href: '#' }, { label: '공유시간정책', href: '#' }] },
-            { id: 'partner', label: '제휴 관리', children: [{ label: '제휴주차장 관리', href: '#' }, { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true }, { label: '월주차 현황', href: '#' }, { label: '월주차 신청', href: '#' }, { label: '거래처(BP)', href: '#' }, { label: '정산대상(STG)', href: '#' }, { label: '제휴신청목록', href: '#' }, { label: '제휴주차상품 예약관리', href: '#' }, { label: '제휴계약관리', href: '#' }] },
+            { id: 'partner', label: '제휴 관리', children: [{ label: '제휴주차장 관리', href: '#' }, { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true }, { label: '제휴상품상세', href: '320_제휴상품상세.html', indent: true }, { label: '월주차 현황', href: '#' }, { label: '월주차 신청', href: '#' }, { label: '거래처(BP)', href: '#' }, { label: '정산대상(STG)', href: '#' }, { label: '제휴신청목록', href: '#' }, { label: '제휴주차상품 예약관리', href: '#' }, { label: '제휴계약관리', href: '#' }] },
             { id: 'autopay', label: '자동결제 관리', children: [{ label: '자동결제 관리', href: '#' }] },
             { id: 'charger', label: '충전소 관리', children: [{ label: 'EV 충전소', href: '#' }] },
             { id: 'coupon', label: '포인트/쿠폰/상품권 관리', children: [{ label: '포인트 관리', href: '#' }, { label: '쿠폰 관리', href: '#' }, { label: '상품권 관리', href: '#' }] },
@@ -1547,105 +1605,105 @@
                 setToast({ type: 'success', message: '구매자 정보가 수정되었습니다.' });
             }, []);
 
+            // 테이블 컬럼 정의 (ParkingTicketTable 공통 컴포넌트용)
+            const vehicleColumns = useMemo(() => [
+                {
+                    key: 'vehicleNumber', header: '차량번호',
+                    render: (v) => (
+                        <div className="td-vehicle">
+                            <span className="vehicle-number">{v.vehicleNumber}</span>
+                        </div>
+                    )
+                },
+                {
+                    key: 'productType', header: '상품유형',
+                    render: (v) => (
+                        <span className={`product-type-tag ${getProductTypeClass(v.productType)}`}>
+                            {v.productType}
+                        </span>
+                    )
+                },
+                {
+                    key: 'parkingLotName', header: '주차장명', className: 'td-parking',
+                    render: (v) => (
+                        <>
+                            {v.parkingLotName}
+                            {v.isWebDiscount && <span className="parking-type-tag" style={{marginLeft: 6}}>웹할인</span>}
+                        </>
+                    )
+                },
+                { key: 'productName', header: '상품명', className: 'td-product' },
+                {
+                    key: 'usagePeriodStart', header: '이용시작', className: 'td-datetime',
+                    render: (v) => <>{formatDateOnly(v.usagePeriodStart)}<br/>{formatTimeOnly(v.usagePeriodStart)}</>
+                },
+                {
+                    key: 'usagePeriodEnd', header: '이용종료', className: 'td-datetime',
+                    render: (v) => <>{formatDateOnly(v.usagePeriodEnd)}<br/>{formatTimeOnly(v.usagePeriodEnd)}</>
+                },
+                {
+                    key: 'expectedEntryTime', header: '입차예상', className: 'td-datetime',
+                    render: (v) => v.expectedEntryTime
+                        ? <>{formatDateOnly(v.expectedEntryTime)}<br/>{formatTimeOnly(v.expectedEntryTime)}</>
+                        : <span className="no-data">-</span>
+                },
+                {
+                    key: 'entryTime', header: '입차일시', className: 'td-datetime',
+                    render: (v) => v.entryTime
+                        ? <>{formatDateOnly(v.entryTime)}<br/>{formatTimeOnly(v.entryTime)}</>
+                        : <span className="no-data">-</span>
+                },
+                {
+                    key: 'exitTime', header: '출차일시', className: 'td-datetime',
+                    render: (v) => v.exitTime
+                        ? <>{formatDateOnly(v.exitTime)}<br/>{formatTimeOnly(v.exitTime)}</>
+                        : <span className="no-data">-</span>
+                },
+                {
+                    key: 'entryStatus', header: '이용상태',
+                    render: (v) => {
+                        const status = getEntryStatus(v);
+                        return <span className={`entry-status ${getEntryStatusClass(status)}`}>{status}</span>;
+                    }
+                },
+                {
+                    key: 'paymentStatus', header: '결제상태',
+                    render: (v) => (
+                        <span className={`payment-status ${getPaymentStatusClass(v.paymentStatus)}`}>
+                            {v.paymentStatus}
+                        </span>
+                    )
+                },
+            ], []);
+
             return (
                 <div className="app-layout">
                     <Header onMenuToggle={() => setLnbOpen(prev => !prev)} />
                     <div className={`lnb-overlay ${lnbOpen ? 'show' : ''}`} onClick={() => setLnbOpen(false)} />
                     <LNB isOpen={lnbOpen} />
-                    <main className="main-content">
+                    <main className="main">
                         {/* Page Header */}
                         <div className="page-header">
-                            <h1 className="page-title">결제주차권관리</h1>
+                            <div className="main__breadcrumb">
+                                판매관리 &gt; <span>주차관리</span>
+                            </div>
+                            <h1 className="page-title">주차관리</h1>
                             <p className="page-subtitle">관리 권한이 있는 주차장의 결제주차권 현황을 확인합니다.</p>
                         </div>
 
                         {/* Search Filter */}
                         <SearchFilter onSearch={handleSearch} />
 
-                        {/* Data Table */}
+                        {/* Data Table — ParkingTicketTable 공통 컴포넌트 사용 */}
                         <div className="table-card">
                             <div className="table-header">차량 목록</div>
-                            <table className="data-table">
-                                <thead>
-                                    <tr>
-                                        <th>차량번호</th>
-                                        <th>주차장</th>
-                                        <th>상품명</th>
-                                        <th>이용시작</th>
-                                        <th>이용종료</th>
-                                        <th>입차예상</th>
-                                        <th>입차일시</th>
-                                        <th>출차일시</th>
-                                        <th>이용상태</th>
-                                        <th>결제상태</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {paginatedVehicles.length === 0 ? (
-                                        <tr>
-                                            <td colSpan={10}>
-                                                <div className="empty-state">
-                                                    <p>검색 결과가 없습니다.</p>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ) : (
-                                        paginatedVehicles.map(v => {
-                                            const entryStatus = getEntryStatus(v);
-                                            return (
-                                                <tr key={v.id} onClick={() => setSelectedVehicle(v)}>
-                                                    <td>
-                                                        <div className="td-vehicle">
-                                                            <span className="vehicle-number">{v.vehicleNumber}</span>
-                                                            <span className={`product-type-tag ${getProductTypeClass(v.productType)}`}>
-                                                                {v.productType}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="td-parking">
-                                                        {v.parkingLotName}
-                                                        {v.isWebDiscount && <span className="parking-type-tag" style={{marginLeft: 6}}>웹할인</span>}
-                                                    </td>
-                                                    <td className="td-product">{v.productName}</td>
-                                                    <td className="td-datetime">
-                                                        {formatDateOnly(v.usagePeriodStart)}<br/>
-                                                        {formatTimeOnly(v.usagePeriodStart)}
-                                                    </td>
-                                                    <td className="td-datetime">
-                                                        {formatDateOnly(v.usagePeriodEnd)}<br/>
-                                                        {formatTimeOnly(v.usagePeriodEnd)}
-                                                    </td>
-                                                    <td className="td-datetime">
-                                                        {v.expectedEntryTime ? (
-                                                            <>{formatDateOnly(v.expectedEntryTime)}<br/>{formatTimeOnly(v.expectedEntryTime)}</>
-                                                        ) : <span className="no-data">-</span>}
-                                                    </td>
-                                                    <td className="td-datetime">
-                                                        {v.entryTime ? (
-                                                            <>{formatDateOnly(v.entryTime)}<br/>{formatTimeOnly(v.entryTime)}</>
-                                                        ) : <span className="no-data">-</span>}
-                                                    </td>
-                                                    <td className="td-datetime">
-                                                        {v.exitTime ? (
-                                                            <>{formatDateOnly(v.exitTime)}<br/>{formatTimeOnly(v.exitTime)}</>
-                                                        ) : <span className="no-data">-</span>}
-                                                    </td>
-                                                    <td>
-                                                        <span className={`entry-status ${getEntryStatusClass(entryStatus)}`}>
-                                                            {entryStatus}
-                                                        </span>
-                                                    </td>
-                                                    <td>
-                                                        <span className={`payment-status ${getPaymentStatusClass(v.paymentStatus)}`}>
-                                                            {v.paymentStatus}
-                                                        </span>
-                                                    </td>
-                                                </tr>
-                                            );
-                                        })
-                                    )}
-                                </tbody>
-                            </table>
+                            <ParkingTicketTable
+                                columns={vehicleColumns}
+                                data={paginatedVehicles}
+                                onRowClick={setSelectedVehicle}
+                                tableClassName="data-table"
+                                emptyMessage="검색 결과가 없습니다."
+                            />
                             <Pagination
                                 currentPage={currentPage}
                                 totalPages={totalPages}
