@@ -1586,7 +1586,11 @@ textarea.form-input[readonly] {
     function render() {
       updateBadges();
 
+      var statusOrder = { active: 0, scheduled: 1, ended: 2 };
       var sorted = schedules.slice().sort(function (a, b) {
+        var sa = statusOrder[getStatus(a.startDate, a.endDate)];
+        var sb = statusOrder[getStatus(b.startDate, b.endDate)];
+        if (sa !== sb) return sa - sb;
         return a.startDate.localeCompare(b.startDate);
       });
 

@@ -8,6 +8,8 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link rel="stylesheet" href="common.css">
+    <link rel="stylesheet" href="parking-detail-panel.css">
+    <script src="parking-detail-panel.js"></script>
     <script src="nav-menu.js"></script>
     <style>
 /* ============================================================
@@ -282,6 +284,8 @@
   border-bottom: 1px solid var(--color-border-light);
   vertical-align: middle;
 }
+.cal350-table tbody tr { cursor: pointer; transition: background var(--transition-fast); }
+.cal350-table tbody tr:hover { background: var(--color-bg-tertiary); }
 .cal350-table tbody tr:last-child td { border-bottom: none; }
 .cal350-table .td-left { text-align: left; padding-left: var(--space-4); }
 .cal350-table .td-datetime {
@@ -350,6 +354,8 @@
   font-size: var(--font-size-sm); cursor: pointer;
 }
 .cal350-link-dummy:hover { text-decoration: underline; }
+
+/* → parking-detail-panel.css (td-vehicle, vehicle-number, td-parking, td-product, no-data, badges, detail panel) */
 
 /* ============================================================
    Multi-Select Component (cal350-ms-)
@@ -877,6 +883,32 @@
             { id: 'PT-104', paymentId: '26013001', memberId: '10000104', vehicleNumber: '24라4444', parkingLotName: '투루파킹 케이 OPU407', productType: '일반권', productName: '연박권 2일', usageStart: '2026-01-30 14:00', usageEnd: '2026-02-01 00:00', usageStatus: '이용종료', paymentStatus: '결제완료' },
         ];
 
+        // ── 340 리스트/상세 호환 필드 보강 (Mock 전용) ──
+        const MOCK_BUYER_NAMES = ['김민수','이영희','박지훈','최수진','정해원','강도현','윤서연','임재혁','한소영','김태호','오세준','남궁현','배수정','조아라','서진우','유하늘','신민경','장현우','홍지영','권예린','문채원','송태양'];
+        const MOCK_VEHICLE_MODELS = ['카니발','쏘나타','아반떼','K5','그랜저','투싼','셀토스','스포티지','모닝','레이','코나','싼타페','팰리세이드','아이오닉5','EV6','테슬라 모델3','GV70','벤츠 E클래스','BMW 3시리즈','아우디 A4','볼보 XC60','제네시스 G80'];
+        const MOCK_FLIGHTS = ['KE873','OZ362','KE651','OZ201','KE631','KE853','OZ741','KE623','OZ101','KE301'];
+        MOCK_TICKETS.forEach((t, idx) => {
+            t.isWebDiscount = ['투루파킹 케이 OPU407'].includes(t.parkingLotName);
+            t.expectedEntryTime = t.usageStart;
+            if (t.usageStatus === '이용중' || t.usageStatus === '이용종료') {
+                t.entryTime = t.usageStart;
+            } else {
+                t.entryTime = '';
+            }
+            t.exitTime = (t.usageStatus === '이용종료') ? t.usageEnd : '';
+            // 상세 패널용 추가 필드
+            t.buyerName = MOCK_BUYER_NAMES[idx % MOCK_BUYER_NAMES.length];
+            t.buyerPhone = '010-' + String(1000 + idx).slice(-4) + '-' + String(5000 + idx * 7).slice(-4);
+            t.safeNumber = '050-' + String(1000 + idx).slice(-4) + '-' + String(5000 + idx * 7).slice(-4);
+            t.vehicleModel = MOCK_VEHICLE_MODELS[idx % MOCK_VEHICLE_MODELS.length];
+            t.saleAmount = [8000, 12000, 25000, 30000, 150000, 180000, 10000, 18000, 7000, 15000][idx % 10];
+            t.paymentChannel = '모두의주차장 앱';
+            t.departureFlight = MOCK_FLIGHTS[idx % MOCK_FLIGHTS.length];
+            t.arrivalFlight = MOCK_FLIGHTS[(idx + 3) % MOCK_FLIGHTS.length];
+            t.arrivalTerminal = idx % 2 === 0 ? 'T1' : 'T2';
+            t.managerId = ['MGR-001','MGR-002','MGR-003','MGR-004','MGR-005'][idx % 5];
+        });
+
         // ============================================================
         // 주차장 목록 (MOCK_TICKETS에서 파생)
         // ※ 실제 API 연동 시 서버에서 받은 id/name 목록으로 교체
@@ -890,12 +922,16 @@
         })();
 
         // ============================================================
-        // 내 관리 주차장 목록 (로그인 사용자가 관리하는 주차장)
-        // ※ 실제 API 연동 시 사용자별 관리 주차장 목록으로 교체
+        // 담당자 목록 (Mock)
+        // ※ 실제 API 연동 시 서버에서 받은 담당자 목록으로 교체
         // ============================================================
-        const MOCK_MY_PARKING_LOTS = MOCK_PARKING_LOTS.filter(lot =>
-            ['투루파킹 케이 OPU407', '역삼동 그램 주차빌딩'].includes(lot.name)
-        );
+        const MOCK_MANAGERS = [
+            { id: 'MGR-001', name: '김민수' },
+            { id: 'MGR-002', name: '이지영' },
+            { id: 'MGR-003', name: '박서준' },
+            { id: 'MGR-004', name: '최유진' },
+            { id: 'MGR-005', name: '정하늘' },
+        ];
 
         // ============================================================
         // 유틸 함수
@@ -969,9 +1005,40 @@
             return new Date(y, m - 1, 1).getDay();
         }
 
-        // ============================================================
-        // 헤더 + LNB: nav-menu.js 에서 자동 렌더링
-        // ============================================================
+
+        // 헬퍼 함수, 타입, 상수, 섹션 설정 → parking-detail-panel.js
+
+
+        function enrichForDetail(ticket) {
+            const enumType = KoreanToProductType[ticket.productType] || ProductType.GENERAL_TICKET;
+            const hasExtraInfo = shouldRenderSection([ticket.departureFlight, ticket.arrivalFlight, ticket.vehicleModel]);
+            return {
+                ...ticket,
+                _enumType: enumType,
+                usagePeriodStart: ticket.usageStart,
+                usagePeriodEnd: ticket.usageEnd,
+                userId: 'USR-' + ticket.memberId,
+                sectionName: null,
+                parkingLotId: ticket.parkingLotName,
+                paymentChannel: ticket.paymentChannel || '모두의주차장 앱',
+                additionalCustomerInfo: hasExtraInfo ? {
+                    departureFlight: ticket.departureFlight || null,
+                    arrivalFlight: ticket.arrivalFlight || null,
+                    vehicleModel: ticket.vehicleModel || null,
+                } : null,
+                ticketSummary: TICKET_BASED_TYPES.has(enumType) ? (TICKET_SUMMARY_BY_TYPE[ticket.productType] || null) : null,
+                processingHistory: ticket.entryTime ? [{
+                    id: 'PH-' + ticket.id,
+                    category: '입차',
+                    content: '입차 처리 완료 (' + formatTimeOnly(ticket.entryTime) + ')',
+                    processedAt: ticket.entryTime,
+                    handler: 'SYSTEM',
+                }] : [],
+            };
+        }
+
+
+        // SectionCard, Panel*, SECTION_COMPONENT_MAP → parking-detail-panel.js
 
         // ============================================================
         // Footer Component
@@ -1201,7 +1268,7 @@
 
         // ============================================================
         // FilterSection Component
-        // ── 점검: scopeType 전환 시 enable/disable/hide ──
+        // ── "내 관리 주차장(MY_LOTS)" 옵션 제거 (360 스타일 통일)
         // ============================================================
         // ============================================================
         // 상품유형 목록
@@ -1215,26 +1282,16 @@
             { value: '단기권', label: '단기권' },
         ];
 
-        function FilterSection({ scopeType, onScopeTypeChange, selectedParkingLotIds, onParkingLotChange, productType, onProductTypeChange }) {
+        function FilterSection({ scopeType, onScopeTypeChange, selectedParkingLotIds, onParkingLotChange, productType, onProductTypeChange, selectedManagerIds, onManagerChange }) {
             const scopeOptions = [
                 { value: 'PARKING_LOT', label: '특정 주차장' },
-                { value: 'MY_LOTS', label: '내 관리 주차장' },
                 { value: 'ALL', label: '전체 주차장' },
             ];
 
             const isAll = scopeType === 'ALL';
-            const isMyLots = scopeType === 'MY_LOTS';
-
-            const InfoIcon = () => (
-                <svg width="14" height="14" viewBox="0 0 16 16" fill="none" style={{ flexShrink: 0 }}>
-                    <circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/>
-                    <path d="M8 5v3M8 10v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-            );
 
             return (
                 <div className="cal350-filter-card">
-                    {/* scopeType 선택 */}
                     <div className="cal350-filter-row cal350-filter-row--scope">
                         <span className="cal350-filter-label">조회범위</span>
                         <div className="cal350-scope-segment">
@@ -1249,41 +1306,26 @@
                         </div>
                     </div>
 
-                    {/* 전체 주차장 선택 시 안내 문구 */}
-                    {isAll && (
-                        <div className="cal350-filter-info">
-                            <InfoIcon />
-                            "전체 주차장" 선택 시 모든 주차장·상품이 집계 대상에 포함됩니다. 별도 선택 없이 전체 데이터가 표시됩니다.
-                        </div>
-                    )}
+                    <div className="cal350-filter-row cal350-filter-row--select">
+                        <span className="cal350-filter-label" style={{ paddingTop: 8 }}>주차장</span>
+                        <MultiSelect
+                            items={MOCK_PARKING_LOTS}
+                            selectedIds={selectedParkingLotIds}
+                            onChange={onParkingLotChange}
+                            placeholder={isAll ? '전체 주차장' : '주차장을 선택하세요...'}
+                            singleSelect
+                            disabled={isAll}
+                        />
+                        <span className="cal350-filter-label" style={{ paddingTop: 8 }}>담당자</span>
+                        <MultiSelect
+                            items={MOCK_MANAGERS}
+                            selectedIds={selectedManagerIds}
+                            onChange={onManagerChange}
+                            placeholder="담당자를 검색하세요..."
+                            singleSelect
+                        />
+                    </div>
 
-                    {/* 내 관리 주차장 선택 */}
-                    {isMyLots && (
-                        <div className="cal350-filter-row cal350-filter-row--select">
-                            <span className="cal350-filter-label" style={{ paddingTop: 8 }}>주차장</span>
-                            <MultiSelect
-                                items={MOCK_MY_PARKING_LOTS}
-                                selectedIds={selectedParkingLotIds}
-                                onChange={onParkingLotChange}
-                                placeholder="주차장명 또는 번호로 검색..."
-                            />
-                        </div>
-                    )}
-
-                    {/* 특정 주차장 선택 */}
-                    {scopeType === 'PARKING_LOT' && (
-                        <div className="cal350-filter-row cal350-filter-row--select">
-                            <span className="cal350-filter-label" style={{ paddingTop: 8 }}>주차장</span>
-                            <MultiSelect
-                                items={MOCK_PARKING_LOTS}
-                                selectedIds={selectedParkingLotIds}
-                                onChange={onParkingLotChange}
-                                placeholder="주차장을 선택하세요..."
-                            />
-                        </div>
-                    )}
-
-                    {/* 상품유형 필터 */}
                     <div className="cal350-filter-row cal350-filter-row--select" style={{ marginTop: 'var(--space-3)' }}>
                         <span className="cal350-filter-label">상품유형</span>
                         <div className="cal350-scope-segment">
@@ -1359,40 +1401,85 @@
             );
         }
 
-        // ============================================================
+
+        // TicketDetailPanel → parking-detail-panel.js (window.DetailPanel)
+
         // Detail Table Component — ParkingTicketTable 공통 컴포넌트 사용
         // ============================================================
-        const calStatusClass = (s) => {
-            if (s === '이용대기') return 'cal350-status--before';
-            if (s === '이용가능') return 'cal350-status--parking';
-            if (s === '이용중') return 'cal350-status--inuse';
-            if (s === '이용종료') return 'cal350-status--done';
-            return '';
-        };
+        const PAGE_SIZE = 10;
 
         const DAY_DETAIL_COLUMNS = [
-            { key: 'paymentId', header: '결제번호', render: (t) => <span style={{ fontWeight: 600 }}>{t.paymentId}</span> },
-            { key: 'memberId', header: '회원번호' },
-            { key: 'vehicleNumber', header: '차량번호', render: (t) => <span style={{ fontWeight: 600 }}>{t.vehicleNumber}</span> },
-            { key: 'parkingLotName', header: '주차장명', className: 'td-left' },
-            { key: 'productName', header: '상품명', className: 'td-left' },
-            { key: 'usageStart', header: '이용시작일시', className: 'td-datetime' },
-            { key: 'usageEnd', header: '이용종료일시', className: 'td-datetime' },
+            {
+                key: 'vehicleNumber', header: '차량번호',
+                render: (v) => (
+                    <div className="td-vehicle">
+                        <span className="vehicle-number">{v.vehicleNumber}</span>
+                    </div>
+                )
+            },
+            {
+                key: 'productType', header: '상품유형',
+                render: (v) => (
+                    <span className={`product-type-tag ${getProductTypeClass(v.productType)}`}>
+                        {v.productType}
+                    </span>
+                )
+            },
+            {
+                key: 'parkingLotName', header: '주차장명', className: 'td-parking',
+                render: (v) => (
+                    <>
+                        {v.parkingLotName}
+                        {v.isWebDiscount && <span className="parking-type-tag" style={{marginLeft: 6}}>웹할인</span>}
+                    </>
+                )
+            },
+            { key: 'productName', header: '상품명', className: 'td-product' },
+            {
+                key: 'usageStart', header: '이용시작', className: 'td-datetime',
+                render: (v) => <>{formatDateOnly(v.usageStart)}<br/>{formatTimeOnly(v.usageStart)}</>
+            },
+            {
+                key: 'usageEnd', header: '이용종료', className: 'td-datetime',
+                render: (v) => <>{formatDateOnly(v.usageEnd)}<br/>{formatTimeOnly(v.usageEnd)}</>
+            },
+            {
+                key: 'expectedEntryTime', header: '입차예상', className: 'td-datetime',
+                render: (v) => v.expectedEntryTime
+                    ? <>{formatDateOnly(v.expectedEntryTime)}<br/>{formatTimeOnly(v.expectedEntryTime)}</>
+                    : <span className="no-data">-</span>
+            },
+            {
+                key: 'entryTime', header: '입차일시', className: 'td-datetime',
+                render: (v) => v.entryTime
+                    ? <>{formatDateOnly(v.entryTime)}<br/>{formatTimeOnly(v.entryTime)}</>
+                    : <span className="no-data">-</span>
+            },
+            {
+                key: 'exitTime', header: '출차일시', className: 'td-datetime',
+                render: (v) => v.exitTime
+                    ? <>{formatDateOnly(v.exitTime)}<br/>{formatTimeOnly(v.exitTime)}</>
+                    : <span className="no-data">-</span>
+            },
             {
                 key: 'usageStatus', header: '이용상태',
-                render: (t) => <span className={`cal350-status ${calStatusClass(t.usageStatus)}`}>{t.usageStatus}</span>
+                render: (v) => <span className={`entry-status ${getEntryStatusClass(v.usageStatus)}`}>{v.usageStatus}</span>
             },
             {
                 key: 'paymentStatus', header: '결제상태',
-                render: (t) => <span className="cal350-pay-badge cal350-pay-badge--completed">{t.paymentStatus}</span>
-            },
-            {
-                key: 'link', header: '',
-                render: () => <a className="cal350-link-dummy" onClick={(e) => e.preventDefault()} title="결제관리에서 확인 (추후 연결)">결제관리</a>
+                render: (v) => (
+                    <span className={`payment-status ${getPaymentStatusClass(v.paymentStatus)}`}>
+                        {v.paymentStatus}
+                    </span>
+                )
             },
         ];
 
         function DetailTable({ selectedDate, year, month, tickets }) {
+            const [currentPage, setCurrentPage] = useState(1);
+            const [selectedTicket, setSelectedTicket] = useState(null);
+            useEffect(() => { setCurrentPage(1); setSelectedTicket(null); }, [selectedDate]);
+
             if (!selectedDate) {
                 return (
                     <div className="cal350-detail-card">
@@ -1407,12 +1494,14 @@
             const dateStr = formatDate(year, month, selectedDate);
             const dayTickets = getTicketsForDate(tickets, dateStr);
             const displayDate = `${year}년 ${month}월 ${selectedDate}일`;
+            const totalPages = Math.ceil(dayTickets.length / PAGE_SIZE);
+            const paginatedTickets = dayTickets.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
             if (dayTickets.length === 0) {
                 return (
                     <div className="cal350-detail-card">
                         <div className="cal350-detail-header">
-                            <span className="cal350-detail-title">{displayDate} 결제주차권 목록</span>
+                            <span className="cal350-detail-title">{displayDate} 주차관리 목록</span>
                         </div>
                         <div className="cal350-empty">
                             <div className="cal350-empty-icon">🚗</div>
@@ -1423,24 +1512,37 @@
             }
 
             return (
-                <div className="cal350-detail-card">
-                    <div className="cal350-detail-header">
-                        <span className="cal350-detail-title">{displayDate} 결제주차권 목록</span>
-                        <span className="cal350-detail-count">총 {dayTickets.length}건</span>
-                    </div>
-                    <div style={{ overflowX: 'auto' }}>
-                        <ParkingTicketTable
-                            columns={DAY_DETAIL_COLUMNS}
-                            data={dayTickets}
-                            tableClassName="cal350-table"
-                            emptyMessage="해당 날짜에 이용 차량이 없습니다."
-                            emptyClassName="cal350-empty"
+                <>
+                    <div className="cal350-detail-card">
+                        <div className="cal350-detail-header">
+                            <span className="cal350-detail-title">{displayDate} 주차관리 목록</span>
+                            <span className="cal350-detail-count">총 {dayTickets.length}건</span>
+                        </div>
+                        <div style={{ overflowX: 'auto' }}>
+                            <ParkingTicketTable
+                                columns={DAY_DETAIL_COLUMNS}
+                                data={paginatedTickets}
+                                onRowClick={setSelectedTicket}
+                                tableClassName="cal350-table"
+                                emptyMessage="해당 날짜에 이용 차량이 없습니다."
+                                emptyClassName="cal350-empty"
+                            />
+                        </div>
+                        <Pagination
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
                         />
+                        <div className="cal350-note">
+                            * 취소완료/환불신청/환불완료 상태는 집계 및 목록에서 제외됩니다.
+                        </div>
                     </div>
-                    <div className="cal350-note">
-                        * 취소완료/환불신청/환불완료 상태는 집계 및 목록에서 제외됩니다. 추후 엣지케이스 추가 가능.
-                    </div>
-                </div>
+                    <DetailPanel
+                        item={selectedTicket}
+                        enrichFn={enrichForDetail}
+                        onClose={() => setSelectedTicket(null)}
+                    />
+                </>
             );
         }
 
@@ -1457,6 +1559,7 @@
             const [scopeType, setScopeType] = useState('ALL');
             const [selectedParkingLotIds, setSelectedParkingLotIds] = useState([]);
             const [productType, setProductType] = useState('');
+            const [selectedManagerIds, setSelectedManagerIds] = useState([]);
 
             // scopeType 전환 시 선택 초기화
             const handleScopeTypeChange = useCallback((newScope) => {
@@ -1477,20 +1580,6 @@
                             .filter(Boolean)
                     );
                     tickets = tickets.filter(t => lotNames.has(t.parkingLotName));
-                } else if (scopeType === 'MY_LOTS') {
-                    const myLotNames = new Set(MOCK_MY_PARKING_LOTS.map(l => l.name));
-                    if (selectedParkingLotIds.length > 0) {
-                        // 내 관리 주차장 중 선택된 것만
-                        const selectedNames = new Set(
-                            selectedParkingLotIds
-                                .map(id => MOCK_MY_PARKING_LOTS.find(l => l.id === id)?.name)
-                                .filter(Boolean)
-                        );
-                        tickets = tickets.filter(t => selectedNames.has(t.parkingLotName));
-                    } else {
-                        // 선택 없으면 내 관리 주차장 전체
-                        tickets = tickets.filter(t => myLotNames.has(t.parkingLotName));
-                    }
                 }
 
                 // 상품유형 필터
@@ -1498,8 +1587,14 @@
                     tickets = tickets.filter(t => t.productType === productType);
                 }
 
+                // 담당자 필터
+                if (selectedManagerIds.length > 0) {
+                    const mgrSet = new Set(selectedManagerIds);
+                    tickets = tickets.filter(t => mgrSet.has(t.managerId));
+                }
+
                 return tickets;
-            }, [scopeType, selectedParkingLotIds, productType]);
+            }, [scopeType, selectedParkingLotIds, productType, selectedManagerIds]);
 
             const daysInMonth = getDaysInMonth(year, month);
             const firstDow = getFirstDayOfWeek(year, month);
@@ -1583,6 +1678,8 @@
                             onParkingLotChange={setSelectedParkingLotIds}
                             productType={productType}
                             onProductTypeChange={setProductType}
+                            selectedManagerIds={selectedManagerIds}
+                            onManagerChange={setSelectedManagerIds}
                         />
 
                         {/* Month Navigation */}

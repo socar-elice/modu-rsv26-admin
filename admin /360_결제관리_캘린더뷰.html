@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결제관리 - 결제관리 캘린더(월간) | 모두의주차장 관리자</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="common.css">
+    <script src="nav-menu.js"></script>
+    <style>
+/* ============================================================
+   Page-specific: 360_결제관리_캘린더뷰
+   Namespace prefix: .paycal-
+
+   ── 자체 점검 기준 ──
+   [✓] 폭 고정: common.css .main margin-left/margin-top 적용 → DEFAULT/DATE_SELECTED 모두 동일 폭
+   [✓] 폭 고정: .paycal-calendar-card에 width:100% → 하단 테이블 유무와 무관하게 전체 폭
+   [✓] 톤다운: 뉴트럴(그레이) 기반 + 완료/취소 컬러만 포인트
+   [✓] 톤다운: 배지는 옅은 틴트 배경 + 좌측 보더 + 뮤트 텍스트 방식
+   [✓] 톤다운: 범례/배지닷/테이블 상태 배지 모두 동일 팔레트 적용
+   [✓] 접근성: 모든 텍스트-배경 조합 WCAG AA 4.5:1 이상 대비
+   ============================================================ */
+
+/* Page Header */
+.page-header { margin-bottom: var(--space-6); }
+.page-title {
+  font-size: 22px; font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary); margin-bottom: var(--space-1);
+}
+.page-subtitle {
+  font-size: var(--font-size-md); color: var(--color-text-secondary);
+}
+
+/* Filter Card */
+.paycal-filter-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-5);
+  position: relative;
+}
+.paycal-filter-row {
+  display: flex; align-items: center; gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.paycal-filter-label {
+  font-size: var(--font-size-md); font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary); min-width: 72px; flex-shrink: 0;
+}
+
+/* Month Navigation */
+.paycal-month-nav {
+  display: flex; align-items: center; gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.paycal-month-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface); color: var(--color-text-primary);
+  cursor: pointer; transition: all var(--transition-fast);
+  font-size: 16px;
+}
+.paycal-month-btn:hover {
+  border-color: var(--color-primary-main); color: var(--color-primary-main);
+  background: var(--color-primary-light);
+}
+.paycal-month-label {
+  font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary); min-width: 140px; text-align: center;
+}
+.paycal-month-input {
+  height: 36px; padding: 0 var(--space-3);
+  font-size: var(--font-size-md); border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm); background: var(--color-bg-surface);
+  color: var(--color-text-primary); outline: none; cursor: pointer;
+}
+.paycal-month-input:focus {
+  border-color: var(--color-primary-main);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+}
+
+/* Status Legend */
+.paycal-legend {
+  display: flex; align-items: center; gap: var(--space-4); margin-left: auto;
+  flex-shrink: 0;
+}
+.paycal-legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: var(--font-size-sm); color: var(--color-text-secondary);
+}
+.paycal-legend-dot {
+  width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
+}
+.paycal-legend-dot--completed { background: #22c55e; }
+.paycal-legend-dot--cancelled { background: #f87171; }
+
+/* Calendar Grid */
+.paycal-calendar-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-5);
+  width: 100%;
+}
+.paycal-calendar-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  border-top: 1px solid var(--color-border-light);
+}
+.paycal-calendar-dow {
+  padding: var(--space-3) var(--space-2);
+  text-align: center;
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-tertiary);
+  border-bottom: 1px solid var(--color-border-light);
+  border-right: 1px solid var(--color-border-light);
+}
+.paycal-calendar-dow:nth-child(7) { border-right: none; }
+.paycal-calendar-dow--sun { color: var(--color-status-error); }
+.paycal-calendar-dow--sat { color: var(--color-status-info); }
+
+.paycal-cell {
+  min-height: 116px; padding: var(--space-2);
+  border-bottom: 1px solid var(--color-border-light);
+  border-right: 1px solid var(--color-border-light);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  position: relative;
+}
+.paycal-cell:nth-child(7n) { border-right: none; }
+.paycal-cell:hover { background: var(--color-bg-secondary); }
+.paycal-cell--today {
+  background: rgba(59,130,246,0.04);
+}
+.paycal-cell--selected {
+  background: var(--color-primary-light) !important;
+  box-shadow: inset 0 0 0 2px var(--color-primary-main);
+}
+.paycal-cell--empty {
+  background: var(--color-bg-tertiary); cursor: default;
+  opacity: 0.4;
+}
+.paycal-cell--empty:hover { background: var(--color-bg-tertiary); }
+.paycal-cell-date {
+  font-size: 15px; font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-1);
+  color: var(--color-text-primary);
+}
+.paycal-cell--sun .paycal-cell-date { color: var(--color-status-error); }
+.paycal-cell--sat .paycal-cell-date { color: var(--color-status-info); }
+.paycal-cell-total {
+  font-size: 15px; color: var(--color-text-primary);
+  margin-bottom: 5px; font-weight: var(--font-weight-bold);
+}
+.paycal-cell-badges {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.paycal-badge {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 12px; font-weight: var(--font-weight-medium);
+  padding: 2px 6px 2px 8px; border-radius: 3px;
+  line-height: 1.4;
+  border-left: 2.5px solid transparent;
+}
+.paycal-badge--completed {
+  color: #15803d; background: #f0fdf4; border-left-color: #22c55e;
+}
+.paycal-badge--cancelled {
+  color: #b91c1c; background: #fef2f2; border-left-color: #f87171;
+}
+.paycal-badge-dot {
+  width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0;
+}
+.paycal-badge-dot--completed { background: #22c55e; }
+.paycal-badge-dot--cancelled { background: #f87171; }
+
+/* Loading overlay */
+.paycal-loading {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 5;
+  animation: paycalFadeIn 150ms ease;
+}
+@keyframes paycalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+.paycal-spinner {
+  width: 28px; height: 28px;
+  border: 3px solid var(--color-border-light);
+  border-top-color: var(--color-primary-main);
+  border-radius: 50%;
+  animation: paycalSpin 0.7s linear infinite;
+}
+@keyframes paycalSpin { to { transform: rotate(360deg); } }
+
+/* Detail Table Card */
+.paycal-detail-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  min-width: 0;
+}
+.paycal-detail-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--space-2);
+}
+.paycal-detail-title {
+  font-size: var(--font-size-lg); font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+.paycal-detail-count {
+  font-size: var(--font-size-sm); color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Data Table */
+.paycal-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.paycal-table th {
+  background: var(--color-bg-tertiary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: var(--space-3) var(--space-3);
+  text-align: center;
+  border-bottom: 2px solid var(--color-border-default);
+  white-space: nowrap;
+}
+.paycal-table td {
+  padding: var(--space-3) var(--space-3);
+  text-align: center;
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-light);
+  vertical-align: middle;
+}
+.paycal-table tbody tr:last-child td { border-bottom: none; }
+.paycal-table .td-left { text-align: left; padding-left: var(--space-4); }
+.paycal-table .td-datetime {
+  font-size: var(--font-size-sm); white-space: nowrap; color: var(--color-text-secondary);
+}
+
+/* Payment Status Badge */
+.paycal-status {
+  display: inline-flex; align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+.paycal-status--completed { color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0; }
+.paycal-status--cancelled { color: #b91c1c; background: #fef2f2; border: 1px solid #fecaca; }
+
+/* Empty / Guide */
+.paycal-empty {
+  text-align: center; padding: var(--space-10) var(--space-5);
+  color: var(--color-text-disabled);
+}
+.paycal-empty p { font-size: var(--font-size-md); margin-top: var(--space-2); }
+.paycal-empty-icon {
+  font-size: 36px; margin-bottom: var(--space-2);
+  opacity: 0.4;
+}
+
+/* Edge case note */
+.paycal-note {
+  font-size: 11px; color: var(--color-text-tertiary);
+  padding: var(--space-2) var(--space-5);
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* Link dummy */
+.paycal-link-dummy {
+  color: var(--color-primary); text-decoration: none; font-weight: 500;
+  font-size: var(--font-size-sm); cursor: pointer;
+}
+.paycal-link-dummy:hover { text-decoration: underline; }
+
+/* ── 테이블 공통 스타일 ── */
+.td-vehicle {
+  display: flex; align-items: center; gap: var(--space-2);
+  justify-content: flex-start; padding-left: var(--space-4) !important;
+}
+.vehicle-number { font-weight: var(--font-weight-semibold); white-space: nowrap; }
+.td-parking { text-align: left !important; padding-left: var(--space-4) !important; }
+.td-product { text-align: left !important; }
+.no-data { font-size: var(--font-size-sm); color: var(--color-text-disabled); }
+
+.product-type-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  border: 1px solid var(--color-text-tertiary);
+  color: var(--color-text-tertiary);
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.product-type-tag.pass { border-color: var(--color-status-info); color: var(--color-status-info); }
+.product-type-tag.share { border-color: var(--color-status-success); color: var(--color-status-success); }
+.product-type-tag.resident { border-color: #8B5CF6; color: #8B5CF6; }
+.product-type-tag.short { border-color: var(--color-status-warning); color: var(--color-status-warning); }
+
+.payment-status {
+  display: inline-flex; align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface);
+  white-space: nowrap;
+}
+.payment-status.completed { color: var(--color-status-success); border-color: var(--color-status-success); }
+.payment-status.cancelled { color: #b91c1c; border-color: #fca5a5; background: #fef2f2; }
+
+/* Pagination */
+.pagination-wrapper {
+  display: flex; justify-content: center; align-items: center;
+  gap: var(--space-1); padding: var(--space-5) 0;
+}
+.page-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 36px; height: 36px; padding: 0 var(--space-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface); color: var(--color-text-primary);
+  font-size: var(--font-size-md); cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.page-btn:hover:not(:disabled) { border-color: var(--color-primary-main); color: var(--color-primary-main); }
+.page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.page-btn.active { background: var(--color-primary-main); color: var(--color-white); border-color: var(--color-primary-main); }
+
+/* ============================================================
+   Multi-Select Component (paycal-ms-)
+   ============================================================ */
+.paycal-ms {
+  position: relative;
+  min-width: 240px;
+  flex: 1;
+  max-width: 400px;
+}
+.paycal-ms-trigger {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 4px 32px 4px 10px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface);
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  position: relative;
+  transition: border-color var(--transition-fast);
+  gap: 4px;
+  flex-wrap: wrap;
+}
+.paycal-ms-trigger:hover {
+  border-color: var(--color-gray-400);
+}
+.paycal-ms-trigger--open {
+  border-color: var(--color-primary-main);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+}
+.paycal-ms-trigger--disabled {
+  background: var(--color-bg-tertiary);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.paycal-ms-placeholder {
+  color: var(--color-text-tertiary);
+}
+.paycal-ms-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: var(--color-gray-200);
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  line-height: 1;
+  padding: 0;
+}
+.paycal-ms-clear:hover {
+  background: var(--color-gray-300);
+  color: var(--color-text-primary);
+}
+.paycal-ms-arrow {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top: 5px solid var(--color-gray-400);
+  pointer-events: none;
+}
+
+/* Chips */
+.paycal-ms-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  align-items: center;
+}
+.paycal-ms-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 1px 6px;
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-border-light);
+  border-radius: 3px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  max-width: 140px;
+}
+.paycal-ms-chip-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.paycal-ms-chip-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px; height: 14px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 10px;
+  color: var(--color-text-tertiary);
+  padding: 0;
+  flex-shrink: 0;
+  border-radius: 2px;
+}
+.paycal-ms-chip-remove:hover {
+  background: var(--color-gray-200);
+  color: var(--color-text-primary);
+}
+.paycal-ms-more {
+  font-size: 11px;
+  color: var(--color-text-tertiary);
+  white-space: nowrap;
+}
+
+/* Panel / Dropdown */
+.paycal-ms-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  min-width: 280px;
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: var(--z-dropdown);
+  display: flex;
+  flex-direction: column;
+  animation: paycalMsFadeIn 120ms ease;
+}
+@keyframes paycalMsFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.paycal-ms-search-wrap {
+  padding: 8px;
+  border-bottom: 1px solid var(--color-border-light);
+}
+.paycal-ms-search {
+  width: 100%;
+  height: 32px;
+  padding: 0 10px;
+  font-size: var(--font-size-sm);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  outline: none;
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+}
+.paycal-ms-search:focus {
+  border-color: var(--color-primary-main);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.1);
+}
+.paycal-ms-search::placeholder {
+  color: var(--color-text-disabled);
+}
+
+/* List */
+.paycal-ms-list {
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+.paycal-ms-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  transition: background var(--transition-fast);
+}
+.paycal-ms-item:hover {
+  background: var(--color-bg-secondary);
+}
+.paycal-ms-item--checked {
+  background: var(--color-primary-light);
+}
+.paycal-ms-item--checked:hover {
+  background: #e8f0fe;
+}
+.paycal-ms-checkbox {
+  width: 16px; height: 16px;
+  border: 1.5px solid var(--color-border-default);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--color-bg-surface);
+  transition: all var(--transition-fast);
+}
+.paycal-ms-item--checked .paycal-ms-checkbox {
+  background: var(--color-primary-main);
+  border-color: var(--color-primary-main);
+}
+.paycal-ms-checkmark {
+  display: none;
+}
+.paycal-ms-item--checked .paycal-ms-checkmark {
+  display: block;
+}
+.paycal-ms-item-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.paycal-ms-empty {
+  padding: 16px 12px;
+  text-align: center;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-disabled);
+}
+
+/* Actions bar */
+.paycal-ms-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--color-border-light);
+}
+.paycal-ms-btn {
+  padding: 5px 16px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid transparent;
+  font-family: inherit;
+  transition: all var(--transition-fast);
+}
+.paycal-ms-btn--cancel {
+  background: var(--color-bg-surface);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border-default);
+}
+.paycal-ms-btn--cancel:hover {
+  background: var(--color-bg-secondary);
+}
+.paycal-ms-btn--apply {
+  background: var(--color-primary-main);
+  color: var(--color-white);
+  border-color: var(--color-primary-main);
+}
+.paycal-ms-btn--apply:hover {
+  background: var(--color-primary-dark);
+}
+
+/* Filter Section — Scope Segment */
+.paycal-filter-row--scope {
+  margin-bottom: var(--space-3);
+}
+.paycal-filter-row--select {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+}
+.paycal-scope-segment {
+  display: inline-flex;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.paycal-scope-btn {
+  padding: 7px 18px;
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-surface);
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border-right: 1px solid var(--color-border-default);
+  font-family: inherit;
+}
+.paycal-scope-btn:last-child {
+  border-right: none;
+}
+.paycal-scope-btn:hover {
+  background: var(--color-bg-secondary);
+}
+.paycal-scope-btn--active {
+  background: var(--color-primary-main);
+  color: var(--color-white);
+  font-weight: var(--font-weight-semibold);
+}
+.paycal-scope-btn--active:hover {
+  background: var(--color-primary-dark);
+}
+.paycal-filter-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  color: #1e40af;
+  margin-top: var(--space-3);
+}
+.paycal-filter-info svg {
+  flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .paycal-cell { min-height: 80px; }
+  .paycal-badge { font-size: 10px; }
+  .paycal-legend { flex-wrap: wrap; }
+  .paycal-ms { min-width: 200px; }
+}
+@media (max-width: 768px) {
+  .paycal-cell { min-height: 60px; padding: 3px; }
+  .paycal-cell-date { font-size: var(--font-size-sm); }
+  .paycal-badge { font-size: 9px; padding: 0 2px; }
+  .paycal-badge-dot { width: 4px; height: 4px; }
+  .paycal-month-label { font-size: var(--font-size-lg); min-width: 100px; }
+  .paycal-table { font-size: var(--font-size-sm); }
+  .paycal-table th, .paycal-table td { padding: var(--space-2); }
+  .paycal-ms { min-width: 100%; max-width: 100%; }
+  .paycal-ms-panel { min-width: 100%; }
+}
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+    // ============================================================
+    // parking-ticket-table.js (인라인)
+    // 공통 결제 목록 테이블 컴포넌트
+    // ============================================================
+    (function () {
+        'use strict';
+
+        function ParkingTicketTable({
+            columns,
+            data,
+            onRowClick,
+            tableClassName = 'data-table',
+            emptyMessage = '검색 결과가 없습니다.',
+            emptyIcon,
+            emptyClassName = 'empty-state'
+        }) {
+            return (
+                <table className={tableClassName}>
+                    <thead>
+                        <tr>
+                            {columns.map((col, i) => (
+                                <th key={col.key || i} style={col.headerStyle}>{col.header}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {data.length === 0 ? (
+                            <tr>
+                                <td colSpan={columns.length}>
+                                    <div className={emptyClassName}>
+                                        {emptyIcon && <div className={`${emptyClassName}-icon`}>{emptyIcon}</div>}
+                                        <p>{emptyMessage}</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : (
+                            data.map((item, idx) => (
+                                <tr key={item.id || idx} onClick={onRowClick ? () => onRowClick(item) : undefined}>
+                                    {columns.map((col, colIdx) => (
+                                        <td key={col.key || colIdx} className={col.className}>
+                                            {col.render ? col.render(item) : item[col.key]}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))
+                        )}
+                    </tbody>
+                </table>
+            );
+        }
+
+        function Pagination({ currentPage, totalPages, onPageChange }) {
+            if (totalPages <= 1) return null;
+
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            const pages = [];
+            for (let i = startPage; i <= endPage; i++) pages.push(i);
+
+            return (
+                <div className="pagination-wrapper">
+                    <button className="page-btn" disabled={currentPage <= 1} onClick={() => onPageChange(1)}>«</button>
+                    <button className="page-btn" disabled={currentPage <= 1} onClick={() => onPageChange(currentPage - 1)}>‹</button>
+                    {pages.map(p => (
+                        <button key={p} className={`page-btn ${p === currentPage ? 'active' : ''}`}
+                            onClick={() => onPageChange(p)}>{p}</button>
+                    ))}
+                    <button className="page-btn" disabled={currentPage >= totalPages} onClick={() => onPageChange(currentPage + 1)}>›</button>
+                    <button className="page-btn" disabled={currentPage >= totalPages} onClick={() => onPageChange(totalPages)}>»</button>
+                </div>
+            );
+        }
+
+        window.ParkingTicketTable = ParkingTicketTable;
+        window.Pagination = Pagination;
+    })();
+    </script>
+    <script type="text/babel">
+        const { useState, useMemo, useEffect, useCallback, useRef } = React;
+
+        // ============================================================
+        // 결제 상태 정의
+        // ============================================================
+        const PAYMENT_STATUS = {
+            COMPLETED: '결제완료',
+            CANCELLED: '결제취소',
+        };
+
+        // ============================================================
+        // Mock Data (결제 중심)
+        // 조건: 월 내 여러 날짜 분산, 결제완료/결제취소 혼합, 다양한 주차장/상품유형
+        // ============================================================
+        const MOCK_PAYMENTS = [
+            // ── 2026-02 데이터 ──
+            { paymentId: 'PM-260201-01', paidAt: '2026-02-01 09:12', cancelAt: null, amount: 12000, paymentStatus: '결제완료', parkingLotName: '투루파킹 케이 OPU407', productType: '단기권', productName: '단기권 1일', memberId: '10000001', vehicleNumber: '11가1234', managerId: 'MGR-001' },
+            { paymentId: 'PM-260201-02', paidAt: '2026-02-01 13:40', cancelAt: null, amount: 8000, paymentStatus: '결제완료', parkingLotName: '역삼동 그램 주차빌딩', productType: '일반권', productName: '당일권', memberId: '10000002', vehicleNumber: '22나5678', managerId: 'MGR-002' },
+            { paymentId: 'PM-260202-01', paidAt: '2026-02-02 10:05', cancelAt: '2026-02-04 09:20', amount: 15000, paymentStatus: '결제취소', parkingLotName: '선릉역 스무스 지하주차장', productType: '일반권', productName: '연박권 2일', memberId: '10000003', vehicleNumber: '33다9012', managerId: 'MGR-003' },
+            { paymentId: 'PM-260203-01', paidAt: '2026-02-03 08:55', cancelAt: null, amount: 5000, paymentStatus: '결제완료', parkingLotName: '투루파킹 케이 OPU407', productType: '일반권', productName: '시간권 6시간', memberId: '10000004', vehicleNumber: '44라3456', managerId: 'MGR-001' },
+            { paymentId: 'PM-260205-01', paidAt: '2026-02-05 17:10', cancelAt: null, amount: 22000, paymentStatus: '결제완료', parkingLotName: '역삼동 그램 주차빌딩', productType: '정기권', productName: '정기권 1개월', memberId: '10000005', vehicleNumber: '55마7890', managerId: 'MGR-002' },
+            { paymentId: 'PM-260206-01', paidAt: '2026-02-06 11:00', cancelAt: '2026-02-06 15:40', amount: 9000, paymentStatus: '결제취소', parkingLotName: '선릉역 스무스 지하주차장', productType: '일반권', productName: '당일권', memberId: '10000006', vehicleNumber: '66바1234', managerId: 'MGR-003' },
+            { paymentId: 'PM-260207-01', paidAt: '2026-02-07 09:30', cancelAt: null, amount: 14000, paymentStatus: '결제완료', parkingLotName: '투루파킹 케이 OPU407', productType: '일반공유', productName: '연박권 2일', memberId: '10000007', vehicleNumber: '77사5678', managerId: 'MGR-004' },
+            { paymentId: 'PM-260210-01', paidAt: '2026-02-10 18:20', cancelAt: null, amount: 30000, paymentStatus: '결제완료', parkingLotName: '역삼동 그램 주차빌딩', productType: '정기권', productName: '정기권 1개월', memberId: '10000008', vehicleNumber: '88아9012', managerId: 'MGR-002' },
+            { paymentId: 'PM-260212-01', paidAt: '2026-02-12 14:05', cancelAt: null, amount: 7000, paymentStatus: '결제완료', parkingLotName: '선릉역 스무스 지하주차장', productType: '단기권', productName: '단기권 1일', memberId: '10000009', vehicleNumber: '99자3456', managerId: 'MGR-003' },
+            { paymentId: 'PM-260214-01', paidAt: '2026-02-14 20:10', cancelAt: '2026-02-18 09:10', amount: 16000, paymentStatus: '결제취소', parkingLotName: '투루파킹 케이 OPU407', productType: '거주자공유', productName: '당일권', memberId: '10000010', vehicleNumber: '10가7890', managerId: 'MGR-001' },
+            { paymentId: 'PM-260216-01', paidAt: '2026-02-16 07:45', cancelAt: null, amount: 11000, paymentStatus: '결제완료', parkingLotName: '역삼동 그램 주차빌딩', productType: '일반권', productName: '시간권 8시간', memberId: '10000011', vehicleNumber: '11나1234', managerId: 'MGR-005' },
+            { paymentId: 'PM-260220-01', paidAt: '2026-02-20 12:30', cancelAt: null, amount: 9500, paymentStatus: '결제완료', parkingLotName: '선릉역 스무스 지하주차장', productType: '일반공유', productName: '당일권', memberId: '10000012', vehicleNumber: '12다5678', managerId: 'MGR-003' },
+            { paymentId: 'PM-260222-01', paidAt: '2026-02-22 15:00', cancelAt: null, amount: 18000, paymentStatus: '결제완료', parkingLotName: '투루파킹 케이 OPU407', productType: '단기권', productName: '단기권 3일', memberId: '10000015', vehicleNumber: '15바7890', managerId: 'MGR-004' },
+            { paymentId: 'PM-260225-01', paidAt: '2026-02-25 16:15', cancelAt: '2026-02-26 09:00', amount: 21000, paymentStatus: '결제취소', parkingLotName: '역삼동 그램 주차빌딩', productType: '정기권', productName: '정기권 1개월', memberId: '10000013', vehicleNumber: '13라9012', managerId: 'MGR-005' },
+            { paymentId: 'PM-260228-01', paidAt: '2026-02-28 10:50', cancelAt: null, amount: 6000, paymentStatus: '결제완료', parkingLotName: '투루파킹 케이 OPU407', productType: '단기권', productName: '단기권 1일', memberId: '10000014', vehicleNumber: '14마3456', managerId: 'MGR-001' },
+
+            // ── 2026-01 데이터 (이전 달 테스트용) ──
+            { paymentId: 'PM-260115-01', paidAt: '2026-01-15 09:10', cancelAt: null, amount: 13000, paymentStatus: '결제완료', parkingLotName: '투루파킹 케이 OPU407', productType: '단기권', productName: '단기권 1일', memberId: '10000101', vehicleNumber: '21가1111', managerId: 'MGR-001' },
+            { paymentId: 'PM-260120-01', paidAt: '2026-01-20 11:40', cancelAt: null, amount: 8000, paymentStatus: '결제완료', parkingLotName: '역삼동 그램 주차빌딩', productType: '일반권', productName: '당일권', memberId: '10000102', vehicleNumber: '22나2222', managerId: 'MGR-002' },
+            { paymentId: 'PM-260125-01', paidAt: '2026-01-25 15:20', cancelAt: '2026-01-26 08:30', amount: 15000, paymentStatus: '결제취소', parkingLotName: '선릉역 스무스 지하주차장', productType: '거주자공유', productName: '당일권', memberId: '10000103', vehicleNumber: '23다3333', managerId: 'MGR-003' },
+            { paymentId: 'PM-260130-01', paidAt: '2026-01-30 18:05', cancelAt: null, amount: 9000, paymentStatus: '결제완료', parkingLotName: '투루파킹 케이 OPU407', productType: '일반권', productName: '시간권 6시간', memberId: '10000104', vehicleNumber: '24라4444', managerId: 'MGR-004' },
+        ];
+
+        // ============================================================
+        // 주차장 목록 (MOCK_PAYMENTS에서 파생)
+        // ============================================================
+        const MOCK_PARKING_LOTS = (() => {
+            const names = [...new Set(MOCK_PAYMENTS.map(p => p.parkingLotName))];
+            return names.map((name, i) => ({
+                id: `PL-${String(i + 1).padStart(3, '0')}`,
+                name,
+            }));
+        })();
+
+        // ============================================================
+        // 담당자 목록 (Mock)
+        // ※ 실제 API 연동 시 서버에서 받은 담당자 목록으로 교체
+        // ============================================================
+        const MOCK_MANAGERS = [
+            { id: 'MGR-001', name: '김민수' },
+            { id: 'MGR-002', name: '이지영' },
+            { id: 'MGR-003', name: '박서준' },
+            { id: 'MGR-004', name: '최유진' },
+            { id: 'MGR-005', name: '정하늘' },
+        ];
+
+        // ============================================================
+        // 유틸 함수
+        // ============================================================
+        function getDatePart(str) {
+            if (!str) return null;
+            return str.split(' ')[0];
+        }
+
+        function formatDate(y, m, d) {
+            return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        }
+
+        function getDaysInMonth(y, m) {
+            return new Date(y, m, 0).getDate();
+        }
+
+        function getFirstDayOfWeek(y, m) {
+            return new Date(y, m - 1, 1).getDay();
+        }
+
+        function formatAmount(value) {
+            return `${value.toLocaleString('ko-KR')}원`;
+        }
+
+        /**
+         * 결제완료 건: paidAt 날짜 기준
+         */
+        function getPaymentsForPaidDate(payments, dateStr) {
+            return payments.filter(p => p.paymentStatus === PAYMENT_STATUS.COMPLETED && getDatePart(p.paidAt) === dateStr);
+        }
+
+        /**
+         * 결제취소 건: cancelAt 날짜 기준
+         */
+        function getPaymentsForCancelDate(payments, dateStr) {
+            return payments.filter(p => p.paymentStatus === PAYMENT_STATUS.CANCELLED && p.cancelAt && getDatePart(p.cancelAt) === dateStr);
+        }
+
+        /**
+         * 날짜별 집계
+         * - totalAmount: paidAt 날짜 기준 결제완료 금액 합산
+         * - completedCount: paidAt 날짜 기준 결제완료 건수
+         * - cancelledCount: cancelAt 날짜 기준 결제취소 건수
+         */
+        function aggregateDay(payments, dateStr) {
+            const completedPayments = getPaymentsForPaidDate(payments, dateStr);
+            const cancelledPayments = getPaymentsForCancelDate(payments, dateStr);
+            const totalAmount = completedPayments.reduce((sum, p) => sum + p.amount, 0);
+            return {
+                totalAmount,
+                completedCount: completedPayments.length,
+                cancelledCount: cancelledPayments.length,
+            };
+        }
+
+        /**
+         * 특정 날짜의 전체 결제내역 (상세 테이블용)
+         * - 결제완료: paidAt 날짜 == dateStr
+         * - 결제취소: cancelAt 날짜 == dateStr
+         */
+        function getPaymentsForDate(payments, dateStr) {
+            const completed = getPaymentsForPaidDate(payments, dateStr);
+            const cancelled = getPaymentsForCancelDate(payments, dateStr);
+            return [...completed, ...cancelled];
+        }
+
+        function getProductTypeClass(type) {
+            switch (type) {
+                case '정기권': return 'pass';
+                case '일반공유': return 'share';
+                case '거주자공유': return 'resident';
+                case '단기권': return 'short';
+                default: return '';
+            }
+        }
+
+        // ============================================================
+        // 헤더 + LNB: nav-menu.js 에서 자동 렌더링
+        // ============================================================
+
+        // ============================================================
+        // Footer Component
+        // ============================================================
+        function Footer() {
+            const [footerText, setFooterText] = useState('');
+            useEffect(() => {
+                const lastMod = new Date(document.lastModified);
+                const yyyy = lastMod.getFullYear();
+                const MM = String(lastMod.getMonth() + 1).padStart(2, '0');
+                const dd = String(lastMod.getDate()).padStart(2, '0');
+                const hh = String(lastMod.getHours()).padStart(2, '0');
+                const mm = String(lastMod.getMinutes()).padStart(2, '0');
+                setFooterText(`\u00A9 2026. 주차권예매서비스. 최종업데이트 : ${yyyy}.${MM}.${dd} ${hh}:${mm}`);
+            }, []);
+            return <footer className="footer">{footerText}</footer>;
+        }
+
+        // ============================================================
+        // MultiSelect Component (단일 선택 모드 지원)
+        // ============================================================
+        function MultiSelect({ items, selectedIds, onChange, placeholder, disabled, singleSelect }) {
+            const [isOpen, setIsOpen] = useState(false);
+            const [draftSelectedIds, setDraftSelectedIds] = useState([]);
+            const [searchQuery, setSearchQuery] = useState('');
+            const panelRef = useRef(null);
+            const triggerRef = useRef(null);
+            const searchRef = useRef(null);
+
+            const handleOpen = useCallback(() => {
+                if (disabled) return;
+                setDraftSelectedIds([...selectedIds]);
+                setSearchQuery('');
+                setIsOpen(true);
+            }, [disabled, selectedIds]);
+
+            const handleCancel = useCallback(() => {
+                setDraftSelectedIds([...selectedIds]);
+                setSearchQuery('');
+                setIsOpen(false);
+            }, [selectedIds]);
+
+            const handleApply = useCallback(() => {
+                if (singleSelect && draftSelectedIds.length > 1) {
+                    onChange([draftSelectedIds[draftSelectedIds.length - 1]]);
+                } else {
+                    onChange([...draftSelectedIds]);
+                }
+                setSearchQuery('');
+                setIsOpen(false);
+            }, [draftSelectedIds, onChange, singleSelect]);
+
+            const filteredItems = useMemo(() => {
+                if (!searchQuery.trim()) return items;
+                const q = searchQuery.toLowerCase();
+                return items.filter(item => item.name.toLowerCase().includes(q));
+            }, [items, searchQuery]);
+
+            const toggleItem = useCallback((id) => {
+                setDraftSelectedIds(prev => {
+                    const isSelected = prev.includes(id);
+                    if (singleSelect) {
+                        return isSelected ? [] : [id];
+                    }
+                    return isSelected ? prev.filter(x => x !== id) : [...prev, id];
+                });
+            }, [singleSelect]);
+
+            const removeChip = useCallback((id, e) => {
+                e.stopPropagation();
+                onChange(selectedIds.filter(x => x !== id));
+            }, [selectedIds, onChange]);
+
+            const clearAll = useCallback((e) => {
+                e.stopPropagation();
+                onChange([]);
+            }, [onChange]);
+
+            useEffect(() => {
+                if (!isOpen) return;
+                const handleClickOutside = (e) => {
+                    if (panelRef.current && !panelRef.current.contains(e.target) &&
+                        triggerRef.current && !triggerRef.current.contains(e.target)) {
+                        handleCancel();
+                    }
+                };
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, [isOpen, handleCancel]);
+
+            useEffect(() => {
+                if (isOpen && searchRef.current) {
+                    setTimeout(() => searchRef.current.focus(), 50);
+                }
+            }, [isOpen]);
+
+            const MAX_CHIPS = 3;
+            const selectedItems = items.filter(i => selectedIds.includes(i.id));
+            const visibleChips = selectedItems.slice(0, MAX_CHIPS);
+            const moreCount = selectedItems.length - MAX_CHIPS;
+
+            return (
+                <div className="paycal-ms">
+                    <div
+                        ref={triggerRef}
+                        className={`paycal-ms-trigger${isOpen ? ' paycal-ms-trigger--open' : ''}${disabled ? ' paycal-ms-trigger--disabled' : ''}`}
+                        onClick={() => !isOpen && handleOpen()}
+                    >
+                        {selectedIds.length === 0 ? (
+                            <>
+                                <span className="paycal-ms-placeholder">{placeholder || 'Select...'}</span>
+                                {!disabled && <span className="paycal-ms-arrow" />}
+                            </>
+                        ) : (
+                            <>
+                                <div className="paycal-ms-chips">
+                                    {visibleChips.map(item => (
+                                        <span key={item.id} className="paycal-ms-chip">
+                                            <span className="paycal-ms-chip-text">{item.name}</span>
+                                            <button
+                                                className="paycal-ms-chip-remove"
+                                                onClick={(e) => removeChip(item.id, e)}
+                                                title="제거"
+                                            >&times;</button>
+                                        </span>
+                                    ))}
+                                    {moreCount > 0 && <span className="paycal-ms-more">+{moreCount}</span>}
+                                </div>
+                                <button className="paycal-ms-clear" onClick={clearAll} title="전체 해제">&times;</button>
+                            </>
+                        )}
+                    </div>
+
+                    {isOpen && (
+                        <div className="paycal-ms-panel" ref={panelRef}>
+                            <div className="paycal-ms-search-wrap">
+                                <input
+                                    ref={searchRef}
+                                    className="paycal-ms-search"
+                                    type="text"
+                                    placeholder="검색..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter') e.preventDefault();
+                                    }}
+                                />
+                            </div>
+
+                            <div className="paycal-ms-list">
+                                {filteredItems.length === 0 ? (
+                                    <div className="paycal-ms-empty">검색 결과 없음</div>
+                                ) : (
+                                    filteredItems.map(item => {
+                                        const checked = draftSelectedIds.includes(item.id);
+                                        return (
+                                            <div
+                                                key={item.id}
+                                                className={`paycal-ms-item${checked ? ' paycal-ms-item--checked' : ''}`}
+                                                onClick={() => toggleItem(item.id)}
+                                            >
+                                                <span className="paycal-ms-checkbox">
+                                                    <svg className="paycal-ms-checkmark" width="10" height="8" viewBox="0 0 10 8" fill="none">
+                                                        <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    </svg>
+                                                </span>
+                                                <span className="paycal-ms-item-label">{item.name}</span>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </div>
+
+                            <div className="paycal-ms-actions">
+                                <button className="paycal-ms-btn paycal-ms-btn--cancel" onClick={handleCancel} type="button">Cancel</button>
+                                <button className="paycal-ms-btn paycal-ms-btn--apply" onClick={handleApply} type="button">Apply</button>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // ============================================================
+        // 상품유형 목록
+        // ============================================================
+        const PRODUCT_TYPES = [
+            { value: '', label: '전체' },
+            { value: '일반권', label: '일반권' },
+            { value: '정기권', label: '정기권' },
+            { value: '일반공유', label: '일반공유' },
+            { value: '거주자공유', label: '거주자공유' },
+            { value: '단기권', label: '단기권' },
+        ];
+
+        // ============================================================
+        // FilterSection Component
+        // ── "내 관리 주차장(MY_LOTS)" 옵션 제거 (이번 요구사항에 없음)
+        // ── TODO: MY_LOTS 옵션 추가 여부 기획 확인 필요
+        // ============================================================
+        function FilterSection({ scopeType, onScopeTypeChange, selectedParkingLotIds, onParkingLotChange, productType, onProductTypeChange, selectedManagerIds, onManagerChange }) {
+            const scopeOptions = [
+                { value: 'PARKING_LOT', label: '특정 주차장' },
+                { value: 'ALL', label: '전체 주차장' },
+            ];
+
+            const isAll = scopeType === 'ALL';
+
+            return (
+                <div className="paycal-filter-card">
+                    <div className="paycal-filter-row paycal-filter-row--scope">
+                        <span className="paycal-filter-label">조회범위</span>
+                        <div className="paycal-scope-segment">
+                            {scopeOptions.map(opt => (
+                                <button
+                                    key={opt.value}
+                                    className={`paycal-scope-btn${scopeType === opt.value ? ' paycal-scope-btn--active' : ''}`}
+                                    onClick={() => onScopeTypeChange(opt.value)}
+                                    type="button"
+                                >{opt.label}</button>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="paycal-filter-row paycal-filter-row--select">
+                        <span className="paycal-filter-label" style={{ paddingTop: 8 }}>주차장</span>
+                        <MultiSelect
+                            items={MOCK_PARKING_LOTS}
+                            selectedIds={selectedParkingLotIds}
+                            onChange={onParkingLotChange}
+                            placeholder={isAll ? '전체 주차장' : '주차장을 선택하세요...'}
+                            singleSelect
+                            disabled={isAll}
+                        />
+                        <span className="paycal-filter-label" style={{ paddingTop: 8 }}>담당자</span>
+                        <MultiSelect
+                            items={MOCK_MANAGERS}
+                            selectedIds={selectedManagerIds}
+                            onChange={onManagerChange}
+                            placeholder="담당자를 검색하세요..."
+                            singleSelect
+                        />
+                    </div>
+
+                    <div className="paycal-filter-row paycal-filter-row--select" style={{ marginTop: 'var(--space-3)' }}>
+                        <span className="paycal-filter-label">상품유형</span>
+                        <div className="paycal-scope-segment">
+                            {PRODUCT_TYPES.map(opt => (
+                                <button
+                                    key={opt.value}
+                                    className={`paycal-scope-btn${productType === opt.value ? ' paycal-scope-btn--active' : ''}`}
+                                    onClick={() => onProductTypeChange(opt.value)}
+                                    type="button"
+                                >{opt.label}</button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Calendar Cell Component
+        // ============================================================
+        function CalendarCell({ day, year, month, isToday, isSelected, onClick, payments }) {
+            if (!day) {
+                return <div className="paycal-cell paycal-cell--empty" />;
+            }
+
+            const dateStr = formatDate(year, month, day);
+            const { totalAmount, completedCount, cancelledCount } = aggregateDay(payments, dateStr);
+            const hasAny = completedCount + cancelledCount > 0;
+            const dow = new Date(year, month - 1, day).getDay();
+
+            let cellClass = 'paycal-cell';
+            if (isToday) cellClass += ' paycal-cell--today';
+            if (isSelected) cellClass += ' paycal-cell--selected';
+            if (dow === 0) cellClass += ' paycal-cell--sun';
+            if (dow === 6) cellClass += ' paycal-cell--sat';
+
+            return (
+                <div className={cellClass} onClick={() => onClick(day)}>
+                    <div className="paycal-cell-date">{day}</div>
+                    {hasAny && (
+                        <>
+                            <div className="paycal-cell-total">{formatAmount(totalAmount)}</div>
+                            <div className="paycal-cell-badges">
+                                {completedCount > 0 && (
+                                    <div className="paycal-badge paycal-badge--completed">
+                                        <span className="paycal-badge-dot paycal-badge-dot--completed" />
+                                        결제완료 {completedCount}
+                                    </div>
+                                )}
+                                {cancelledCount > 0 && (
+                                    <div className="paycal-badge paycal-badge--cancelled">
+                                        <span className="paycal-badge-dot paycal-badge-dot--cancelled" />
+                                        결제취소 {cancelledCount}
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Detail Table (날짜 클릭 시 결제내역)
+        // A안: 한 테이블에 완료/취소 행 혼합, 상태 컬럼으로 구분
+        // ============================================================
+        const paymentStatusClass = (s) => {
+            if (s === PAYMENT_STATUS.COMPLETED) return 'paycal-status--completed';
+            if (s === PAYMENT_STATUS.CANCELLED) return 'paycal-status--cancelled';
+            return '';
+        };
+
+        const DAY_DETAIL_COLUMNS = [
+            { key: 'paymentId', header: '결제번호', render: (p) => <span style={{ fontWeight: 600 }}>{p.paymentId}</span> },
+            { key: 'paidAt', header: '결제일시', className: 'td-datetime' },
+            { key: 'cancelAt', header: '취소일시', className: 'td-datetime', render: (p) => p.cancelAt || '-' },
+            { key: 'amount', header: '결제금액', render: (p) => <span style={{ fontWeight: 600 }}>{formatAmount(p.amount)}</span> },
+            {
+                key: 'paymentStatus', header: '결제상태',
+                render: (p) => <span className={`paycal-status ${paymentStatusClass(p.paymentStatus)}`}>{p.paymentStatus}</span>
+            },
+            { key: 'parkingLotName', header: '주차장명', className: 'td-left' },
+            {
+                key: 'managerId', header: '담당자',
+                render: (p) => {
+                    const mgr = MOCK_MANAGERS.find(m => m.id === p.managerId);
+                    return mgr ? mgr.name : '-';
+                }
+            },
+            {
+                key: 'productType', header: '상품유형',
+                render: (p) => <span className={`product-type-tag ${getProductTypeClass(p.productType)}`}>{p.productType}</span>
+            },
+            { key: 'productName', header: '상품명', className: 'td-left' },
+            {
+                key: 'link', header: '',
+                render: () => <a className="paycal-link-dummy" onClick={(e) => e.preventDefault()} title="결제관리 상세(추후 연결)">상세</a>
+            },
+        ];
+
+        const PAGE_SIZE = 10;
+
+        function DetailTable({ selectedDate, year, month, payments }) {
+            const [currentPage, setCurrentPage] = useState(1);
+            useEffect(() => { setCurrentPage(1); }, [selectedDate]);
+
+            if (!selectedDate) {
+                return (
+                    <div className="paycal-detail-card">
+                        <div className="paycal-empty">
+                            <div className="paycal-empty-icon">📅</div>
+                            <p>날짜를 선택하면 결제내역이 표시됩니다.</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            const dateStr = formatDate(year, month, selectedDate);
+            const dayPayments = getPaymentsForDate(payments, dateStr);
+            const displayDate = `${year}년 ${month}월 ${selectedDate}일`;
+            const totalPages = Math.ceil(dayPayments.length / PAGE_SIZE);
+            const paginatedPayments = dayPayments.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
+            if (dayPayments.length === 0) {
+                return (
+                    <div className="paycal-detail-card">
+                        <div className="paycal-detail-header">
+                            <span className="paycal-detail-title">{displayDate} 결제내역</span>
+                        </div>
+                        <div className="paycal-empty">
+                            <div className="paycal-empty-icon">💳</div>
+                            <p>해당 날짜에 결제내역이 없습니다.</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="paycal-detail-card">
+                    <div className="paycal-detail-header">
+                        <span className="paycal-detail-title">{displayDate} 결제내역</span>
+                        <span className="paycal-detail-count">총 {dayPayments.length}건</span>
+                    </div>
+                    <div style={{ overflowX: 'auto' }}>
+                        <ParkingTicketTable
+                            columns={DAY_DETAIL_COLUMNS}
+                            data={paginatedPayments}
+                            tableClassName="paycal-table"
+                            emptyMessage="해당 날짜에 결제내역이 없습니다."
+                            emptyClassName="paycal-empty"
+                        />
+                    </div>
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    />
+                    <div className="paycal-note">
+                        * 결제취소 건수는 cancelAt 날짜 기준으로 집계합니다. 결제금액 합계는 paidAt 날짜 기준 결제완료만 합산됩니다. (TODO: 취소 금액 반영/결제일 기준 집계 정책 확인)
+                    </div>
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Main App
+        // ============================================================
+        function App() {
+            const today = new Date();
+            const [year, setYear] = useState(today.getFullYear());
+            const [month, setMonth] = useState(today.getMonth() + 1);
+            const [selectedDate, setSelectedDate] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [scopeType, setScopeType] = useState('ALL');
+            const [selectedParkingLotIds, setSelectedParkingLotIds] = useState([]);
+            const [productType, setProductType] = useState('');
+            const [selectedManagerIds, setSelectedManagerIds] = useState([]);
+
+            const handleScopeTypeChange = useCallback((newScope) => {
+                setScopeType(newScope);
+                setSelectedParkingLotIds([]);
+                setSelectedDate(null);
+            }, []);
+
+            const filteredPayments = useMemo(() => {
+                let payments = MOCK_PAYMENTS;
+
+                if (scopeType === 'PARKING_LOT' && selectedParkingLotIds.length > 0) {
+                    const lotNames = new Set(
+                        selectedParkingLotIds
+                            .map(id => MOCK_PARKING_LOTS.find(l => l.id === id)?.name)
+                            .filter(Boolean)
+                    );
+                    payments = payments.filter(p => lotNames.has(p.parkingLotName));
+                }
+
+                if (productType) {
+                    payments = payments.filter(p => p.productType === productType);
+                }
+
+                if (selectedManagerIds.length > 0) {
+                    const mgrSet = new Set(selectedManagerIds);
+                    payments = payments.filter(p => mgrSet.has(p.managerId));
+                }
+
+                return payments;
+            }, [scopeType, selectedParkingLotIds, productType, selectedManagerIds]);
+
+            const daysInMonth = getDaysInMonth(year, month);
+            const firstDow = getFirstDayOfWeek(year, month);
+
+            const todayDate = today.getDate();
+            const todayMonth = today.getMonth() + 1;
+            const todayYear = today.getFullYear();
+
+            const handlePrevMonth = useCallback(() => {
+                setLoading(true);
+                setSelectedDate(null);
+                setTimeout(() => {
+                    if (month === 1) { setYear(y => y - 1); setMonth(12); }
+                    else { setMonth(m => m - 1); }
+                    setLoading(false);
+                }, 300);
+            }, [month]);
+
+            const handleNextMonth = useCallback(() => {
+                setLoading(true);
+                setSelectedDate(null);
+                setTimeout(() => {
+                    if (month === 12) { setYear(y => y + 1); setMonth(1); }
+                    else { setMonth(m => m + 1); }
+                    setLoading(false);
+                }, 300);
+            }, [month]);
+
+            const handleMonthInput = useCallback((e) => {
+                const val = e.target.value;
+                if (!val) return;
+                const [y, m] = val.split('-').map(Number);
+                if (y && m) {
+                    setLoading(true);
+                    setSelectedDate(null);
+                    setTimeout(() => {
+                        setYear(y);
+                        setMonth(m);
+                        setLoading(false);
+                    }, 300);
+                }
+            }, []);
+
+            const handleCellClick = useCallback((day) => {
+                setSelectedDate(prev => prev === day ? null : day);
+            }, []);
+
+            const cells = useMemo(() => {
+                const arr = [];
+                for (let i = 0; i < firstDow; i++) arr.push(null);
+                for (let d = 1; d <= daysInMonth; d++) arr.push(d);
+                while (arr.length % 7 !== 0) arr.push(null);
+                return arr;
+            }, [firstDow, daysInMonth]);
+
+            const monthStr = `${year}-${String(month).padStart(2,'0')}`;
+            const monthDisplay = `${year}년 ${month}월`;
+
+            return (
+                <>
+                    <main className="main">
+                        <div className="page-header">
+                            <div className="main__breadcrumb">
+                                판매관리 &gt; <span>결제관리(캘린더)</span>
+                            </div>
+                            <h1 className="page-title">결제관리(캘린더)</h1>
+                            <p className="page-subtitle">조회 기준: 결제일(고정) · 날짜별 결제금액/완료/취소 건수를 월간 캘린더로 확인합니다.</p>
+                        </div>
+
+                        <FilterSection
+                            scopeType={scopeType}
+                            onScopeTypeChange={handleScopeTypeChange}
+                            selectedParkingLotIds={selectedParkingLotIds}
+                            onParkingLotChange={setSelectedParkingLotIds}
+                            productType={productType}
+                            onProductTypeChange={setProductType}
+                            selectedManagerIds={selectedManagerIds}
+                            onManagerChange={setSelectedManagerIds}
+                        />
+
+                        <div className="paycal-month-nav">
+                            <button className="paycal-month-btn" onClick={handlePrevMonth} title="이전달">◀</button>
+                            <span className="paycal-month-label">{monthDisplay}</span>
+                            <button className="paycal-month-btn" onClick={handleNextMonth} title="다음달">▶</button>
+                            <input
+                                type="month"
+                                className="paycal-month-input"
+                                value={monthStr}
+                                onChange={handleMonthInput}
+                            />
+                            <div className="paycal-legend">
+                                <div className="paycal-legend-item"><span className="paycal-legend-dot paycal-legend-dot--completed" /> 결제완료</div>
+                                <div className="paycal-legend-item"><span className="paycal-legend-dot paycal-legend-dot--cancelled" /> 결제취소</div>
+                            </div>
+                        </div>
+
+                        <div className="paycal-calendar-card" style={{ position: 'relative' }}>
+                            {loading && (
+                                <div className="paycal-loading">
+                                    <div className="paycal-spinner" />
+                                </div>
+                            )}
+                            <div className="paycal-calendar-grid">
+                                {['일','월','화','수','목','금','토'].map((d, i) => (
+                                    <div key={d} className={`paycal-calendar-dow ${i === 0 ? 'paycal-calendar-dow--sun' : ''} ${i === 6 ? 'paycal-calendar-dow--sat' : ''}`}>{d}</div>
+                                ))}
+                                {cells.map((day, idx) => (
+                                    <CalendarCell
+                                        key={idx}
+                                        day={day}
+                                        year={year}
+                                        month={month}
+                                        isToday={day && year === todayYear && month === todayMonth && day === todayDate}
+                                        isSelected={day && day === selectedDate}
+                                        onClick={handleCellClick}
+                                        payments={filteredPayments}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        <DetailTable
+                            selectedDate={selectedDate}
+                            year={year}
+                            month={month}
+                            payments={filteredPayments}
+                        />
+                    </main>
+
+                    <Footer />
+                </>
+            );
+        }
+
+        // ============================================================
+        // Render
+        // ============================================================
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+    </script>
+</body>
+</html>

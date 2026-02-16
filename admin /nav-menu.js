@@ -19,6 +19,7 @@
       children: [
         { label: '대쉬보드', href: '#' },
         { label: '결제현황 관리', href: '#' },
+        { label: '결제관리(캘린더)', href: '360_결제관리_캘린더뷰.html' , badge: '변경'},
         { label: '주차관리', href: '340_주차관리.html', badge: '변경' },
         { label: '주차관리(캘린더)', href: '350_주차관리_캘린더뷰.html', badge: '변경' },
         { label: '맵뷰', href: '#' },
@@ -60,8 +61,8 @@
       id: 'partner', label: '제휴 관리', badge: '변경',
       children: [
         { label: '제휴주차장 관리', href: '#' },
-        { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true },
-        { label: '제휴상품상세', href: '320_제휴상품상세.html', indent: true },
+        { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true, badge: '변경' },
+        { label: '제휴상품상세', href: '320_제휴상품상세.html', indent: true, badge: '변경' },
         { label: '월주차 현황', href: '#' },
         { label: '월주차 신청', href: '#' },
         { label: '거래처(BP)', href: '#' },
