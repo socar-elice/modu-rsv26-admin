@@ -1,0 +1,1351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>제휴주차권 생성 - 모두의주차장 관리자</title>
+<style>
+/* ============================================================
+   Reset & Base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --color-primary: #3b82f6;
+  --color-primary-hover: #2563eb;
+  --color-primary-light: #eff6ff;
+  --color-primary-border: #bfdbfe;
+  --color-danger: #ef4444;
+  --color-danger-light: #fef2f2;
+  --color-danger-border: #fecaca;
+  --color-warning: #f59e0b;
+  --color-warning-light: #fffbeb;
+  --color-warning-border: #fde68a;
+  --color-success: #22c55e;
+  --color-success-light: #f0fdf4;
+  --color-gray-50: #f9fafb;
+  --color-gray-100: #f3f4f6;
+  --color-gray-200: #e5e7eb;
+  --color-gray-300: #d1d5db;
+  --color-gray-400: #9ca3af;
+  --color-gray-500: #6b7280;
+  --color-gray-600: #4b5563;
+  --color-gray-700: #374151;
+  --color-gray-800: #1f2937;
+  --color-gray-900: #111827;
+  --color-white: #ffffff;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+  --transition: 150ms ease;
+  --header-h: 56px;
+  --lnb-w: 240px;
+}
+
+html { font-size: 14px; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans KR', sans-serif;
+  color: var(--color-gray-800);
+  background: var(--color-gray-100);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   Layout — Header
+   ============================================================ */
+.header {
+  position: fixed; top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: var(--color-gray-900);
+  border-bottom: 1px solid var(--color-gray-700);
+  display: flex; align-items: center;
+  padding: 0 24px;
+  z-index: 100;
+}
+.header__logo {
+  font-weight: 700; font-size: 15px;
+  color: var(--color-white);
+  display: flex; align-items: center; gap: 8px;
+}
+.header__logo svg { flex-shrink: 0; }
+.header__env {
+  background: var(--color-gray-600); color: var(--color-gray-300); font-size: 12px; font-weight: 500;
+  padding: 2px 8px; border-radius: 4px; margin-left: 4px;
+}
+.header__right {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 16px;
+}
+.header__user {
+  font-size: 13px; color: var(--color-gray-300);
+}
+.header__link {
+  font-size: 13px; color: var(--color-gray-400);
+  cursor: pointer; text-decoration: none;
+  padding: 6px 12px;
+  border: 1px solid var(--color-gray-600);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition), color var(--transition);
+}
+.header__link:hover {
+  background: var(--color-gray-700); color: var(--color-white);
+}
+.header__menu-toggle {
+  display: none; background: none; border: none;
+  cursor: pointer; padding: 4px; color: var(--color-white);
+}
+
+/* ============================================================
+   Layout — LNB (Left Navigation Bar)
+   ============================================================ */
+.lnb {
+  position: fixed; top: var(--header-h); left: 0; bottom: 0;
+  width: var(--lnb-w);
+  background: var(--color-gray-900);
+  border-right: 1px solid var(--color-gray-700);
+  padding: 8px 0;
+  overflow-y: auto;
+  z-index: 90;
+  transition: transform 0.25s ease;
+}
+.lnb__group-label {
+  padding: 12px 20px 4px;
+  font-size: 12px; font-weight: 600;
+  color: var(--color-gray-400);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  user-select: none;
+  transition: color var(--transition);
+}
+.lnb__group-label:hover { color: var(--color-gray-200); }
+.lnb__group-label .arrow {
+  font-size: 10px; transition: transform 0.2s; color: var(--color-gray-500);
+}
+.lnb__group-label.open .arrow { transform: rotate(180deg); }
+.lnb__group-children { overflow: hidden; max-height: 0; transition: max-height 0.3s ease; }
+.lnb__group-children.open { max-height: 600px; }
+.lnb__item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 20px 9px 32px;
+  font-size: 13px; color: var(--color-gray-400);
+  cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  text-decoration: none;
+  border-left: 3px solid transparent;
+}
+.lnb__item:hover { background: var(--color-gray-800); color: var(--color-gray-200); }
+.lnb__item--active {
+  background: rgba(59,130,246,0.15);
+  color: var(--color-primary);
+  font-weight: 600;
+  border-left-color: var(--color-primary);
+}
+.lnb__divider {
+  height: 1px; background: var(--color-gray-700);
+  margin: 8px 16px;
+}
+.lnb-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.3); z-index: 80;
+}
+.lnb-overlay.show { display: block; }
+
+/* ============================================================
+   Layout — Main Content
+   ============================================================ */
+.main {
+  margin-top: var(--header-h);
+  margin-left: var(--lnb-w);
+  padding: 28px 32px 80px;
+  min-height: calc(100vh - var(--header-h));
+}
+.main__breadcrumb {
+  font-size: 12px; color: var(--color-gray-400);
+  margin-bottom: 4px;
+}
+.main__breadcrumb span { color: var(--color-gray-600); font-weight: 500; }
+.main__title-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+}
+.main__title {
+  font-size: 22px; font-weight: 700; color: var(--color-gray-900);
+}
+
+/* ============================================================
+   Card / Section
+   ============================================================ */
+.card {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+.card__header {
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--color-gray-200);
+  display: flex; align-items: center; gap: 8px;
+}
+.card__header h3 {
+  font-size: 15px; font-weight: 700; color: var(--color-gray-900);
+}
+.card__body { padding: 24px; }
+
+/* ============================================================
+   Form Table (label-value)
+   ============================================================ */
+.form-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.form-table tr {
+  border-bottom: 1px solid var(--color-gray-100);
+}
+.form-table tr:last-child { border-bottom: none; }
+.form-table th {
+  width: 200px;
+  padding: 14px 0;
+  font-size: 13px; font-weight: 600; color: var(--color-gray-600);
+  text-align: left; vertical-align: middle;
+  white-space: nowrap;
+}
+.form-table td {
+  padding: 10px 0 10px 16px;
+  vertical-align: middle;
+}
+
+/* ============================================================
+   Form Elements
+   ============================================================ */
+.form-input,
+.form-select {
+  width: 100%; max-width: 400px;
+  padding: 9px 12px;
+  font-size: 13.5px;
+  color: var(--color-gray-800);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.form-input:focus,
+.form-select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+.form-input::placeholder { color: var(--color-gray-400); }
+.form-input[readonly] {
+  background: var(--color-gray-50); color: var(--color-gray-500); cursor: default;
+}
+.form-select { cursor: pointer; appearance: auto; }
+.form-input--sm { max-width: 120px; }
+.form-input--md { max-width: 250px; }
+.form-input--lg { max-width: 500px; }
+
+.link-blue {
+  color: var(--color-primary); text-decoration: none; font-weight: 600; font-size: 14px;
+}
+.link-blue:hover { text-decoration: underline; }
+
+/* Checkbox group */
+.checkbox-group {
+  display: flex; flex-wrap: wrap; gap: 18px; align-items: center;
+}
+.checkbox-group label {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13.5px; cursor: pointer; color: var(--color-gray-700);
+}
+.checkbox-group input[type="checkbox"] {
+  width: 16px; height: 16px; cursor: pointer;
+  accent-color: var(--color-primary);
+}
+
+/* Inline field */
+.inline-field {
+  display: flex; align-items: center; gap: 10px;
+}
+
+/* Helper / Error */
+.form-helper {
+  font-size: 12px; color: var(--color-gray-400);
+  margin-top: 5px; line-height: 1.4;
+}
+.form-error {
+  font-size: 12px; color: var(--color-danger); font-weight: 500;
+  margin-top: 5px; display: flex; align-items: center; gap: 4px;
+}
+
+/* D- prefix field */
+.d-prefix-field {
+  display: flex; align-items: center; gap: 0;
+}
+.d-prefix-field .prefix {
+  padding: 9px 10px;
+  font-size: 13.5px; font-weight: 600;
+  color: var(--color-gray-500);
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-300);
+  border-right: none;
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+  white-space: nowrap;
+}
+.d-prefix-field .form-input {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* ============================================================
+   Segment Control (Radio Toggle)
+   ============================================================ */
+.segment {
+  display: inline-flex;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+.segment__btn {
+  padding: 7px 22px;
+  font-size: 13px; font-weight: 500;
+  color: var(--color-gray-600);
+  background: var(--color-white);
+  border: none; cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  border-right: 1px solid var(--color-gray-300);
+  font-family: inherit;
+}
+.segment__btn:last-child { border-right: none; }
+.segment__btn:hover { background: var(--color-gray-50); }
+.segment__btn--active {
+  background: var(--color-primary);
+  color: var(--color-white);
+  font-weight: 600;
+}
+.segment__btn--active:hover { background: var(--color-primary-hover); }
+
+.unit-label {
+  font-size: 13.5px; color: var(--color-gray-500); white-space: nowrap;
+}
+
+/* ============================================================
+   Summary Box
+   ============================================================ */
+.summary-box {
+  margin-top: 12px;
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  display: flex; align-items: center; gap: 8px;
+  line-height: 1.45;
+}
+.summary-box--info {
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-primary-border);
+  color: var(--color-primary-hover);
+}
+.summary-box--warning {
+  background: var(--color-warning-light);
+  border: 1px solid var(--color-warning-border);
+  color: #92400e;
+}
+
+/* ============================================================
+   Collapsible Section
+   ============================================================ */
+.collapse-header {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 20px;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  font-size: 14px; font-weight: 600; color: var(--color-gray-800);
+  cursor: pointer; margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+  transition: background var(--transition);
+}
+.collapse-header:hover { background: var(--color-gray-50); }
+.collapse-header svg {
+  width: 16px; height: 16px; color: var(--color-gray-400);
+  transition: transform 0.2s;
+}
+.collapse-header.open svg { transform: rotate(180deg); }
+
+/* ============================================================
+   Pricing Section
+   ============================================================ */
+.pricing-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13.5px;
+}
+.pricing-table thead th {
+  background: var(--color-gray-50);
+  padding: 12px 16px;
+  font-size: 12px; font-weight: 600; color: var(--color-gray-500);
+  text-align: center; text-transform: uppercase; letter-spacing: 0.03em;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+.pricing-table thead th:first-child { text-align: left; }
+.pricing-table tbody td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-gray-100);
+  text-align: center;
+  vertical-align: middle;
+}
+.pricing-table tbody tr:last-child td { border-bottom: none; }
+.pricing-table tbody td:first-child {
+  text-align: left; font-weight: 600; color: var(--color-gray-700);
+}
+.price-input {
+  width: 100%; max-width: 130px;
+  height: 36px; padding: 6px 10px;
+  font-size: 13.5px;
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  text-align: right; outline: none;
+  transition: border-color var(--transition);
+  background: var(--color-white);
+  color: var(--color-gray-800);
+}
+.price-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
+}
+.price-input[readonly] {
+  background: var(--color-gray-50); color: var(--color-gray-400); cursor: default;
+}
+.price-input:disabled {
+  background: var(--color-gray-100); color: var(--color-gray-300); opacity: 0.7;
+}
+
+/* ============================================================
+   Toggle Switch
+   ============================================================ */
+.toggle-switch {
+  position: relative;
+  width: 44px; height: 24px;
+  display: inline-block;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-switch .slider {
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: var(--color-gray-300); border-radius: 24px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.toggle-switch .slider::before {
+  content: '';
+  position: absolute; top: 2px; left: 2px;
+  width: 20px; height: 20px;
+  background: #fff; border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+  transition: transform 0.2s;
+}
+.toggle-switch input:checked + .slider {
+  background: var(--color-primary);
+}
+.toggle-switch input:checked + .slider::before {
+  transform: translateX(20px);
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 28px;
+  font-size: 14px; font-weight: 600;
+  border: none; border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--transition), box-shadow var(--transition);
+  font-family: inherit;
+}
+.btn--primary {
+  background: var(--color-primary); color: #fff;
+}
+.btn--primary:hover { background: var(--color-primary-hover); }
+.btn--secondary {
+  background: var(--color-white); color: var(--color-gray-600);
+  border: 1px solid var(--color-gray-300);
+}
+.btn--secondary:hover { background: var(--color-gray-50); }
+.btn-group { display: flex; gap: 8px; }
+
+/* ============================================================
+   Actions Bar
+   ============================================================ */
+.actions-bar {
+  display: flex; justify-content: flex-end; gap: 10px;
+  padding: 20px 24px;
+  border-top: 1px solid var(--color-gray-200);
+}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+.toast-container {
+  position: fixed; top: 72px; right: 32px;
+  z-index: 9999;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  padding: 14px 22px;
+  border-radius: var(--radius-md);
+  font-size: 13.5px; font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  display: flex; align-items: center; gap: 10px;
+  animation: toastIn 300ms ease forwards;
+  max-width: 400px;
+}
+.toast--success { background: var(--color-success-light); color: #166534; border: 1px solid #bbf7d0; }
+.toast--error { background: var(--color-danger-light); color: var(--color-danger); border: 1px solid var(--color-danger-border); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.toast--out { animation: toastOut 250ms ease forwards; }
+@keyframes toastOut {
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.footer {
+  position: fixed; bottom: 0; left: var(--lnb-w); right: 0;
+  padding: 12px 32px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-gray-400);
+  border-top: 1px solid var(--color-gray-200);
+  background: var(--color-white);
+  z-index: 50;
+}
+
+/* ============================================================
+   Mode Selector
+   ============================================================ */
+.mode-selector {
+  display: inline-flex;
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.mode-selector__btn {
+  padding: 10px 24px;
+  font-size: 14px; font-weight: 600;
+  color: var(--color-gray-500);
+  background: var(--color-white);
+  border: none; cursor: pointer;
+  transition: background var(--transition), color var(--transition);
+  border-right: 1px solid var(--color-gray-200);
+  font-family: inherit;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.mode-selector__btn:last-child { border-right: none; }
+.mode-selector__btn:hover { background: var(--color-gray-50); }
+.mode-selector__btn--active {
+  background: var(--color-primary);
+  color: var(--color-white);
+}
+.mode-selector__btn--active:hover { background: var(--color-primary-hover); }
+
+/* number input spin button hide */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width: 1024px) {
+  .header__menu-toggle { display: block; }
+  .lnb { transform: translateX(-100%); }
+  .lnb.open { transform: translateX(0); }
+  .main { margin-left: 0; }
+  .footer { left: 0; }
+}
+@media (max-width: 768px) {
+  .main { padding: 20px 16px 40px; }
+  .main__title { font-size: 18px; }
+  .form-table, .form-table tbody, .form-table tr, .form-table th, .form-table td {
+    display: flex; flex-direction: column; width: 100%;
+  }
+  .form-table th { width: 100%; padding: 10px 0 2px; }
+  .form-table td { padding: 2px 0 10px; }
+  .form-input, .form-select { max-width: 100%; }
+  .card__body { padding: 16px; }
+  .card__header { padding: 14px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="header">
+  <button class="header__menu-toggle" id="menuToggle">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+  </button>
+  <div class="header__logo">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+      <rect x="2" y="2" width="28" height="28" rx="8" fill="#3b82f6"/>
+      <text x="16" y="22" text-anchor="middle" font-size="18" font-weight="700" fill="#fff" font-family="sans-serif">P</text>
+    </svg>
+    모두의주차장 관리자
+    <span class="header__env">dev</span>
+  </div>
+  <div class="header__right">
+    <span class="header__user">elice님</span>
+    <a href="javascript:void(0)" class="header__link">내정보</a>
+    <a href="javascript:void(0)" class="header__link">로그아웃</a>
+  </div>
+</header>
+
+<!-- ============================================================
+     LNB
+     ============================================================ -->
+<div class="lnb-overlay" id="lnbOverlay"></div>
+<nav class="lnb" id="lnb">
+  <!-- 판매관리 -->
+  <div class="lnb__group">
+    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
+      판매관리 <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children">
+      <a class="lnb__item" href="javascript:void(0)">대쉬보드</a>
+      <a class="lnb__item" href="javascript:void(0)">결제현황 관리</a>
+      <a class="lnb__item" href="javascript:void(0)">맵뷰</a>
+      <a class="lnb__item" href="javascript:void(0)">환불관리</a>
+    </div>
+  </div>
+
+  <!-- 정산 관리 -->
+  <div class="lnb__group">
+    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
+      정산 관리 <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children">
+      <a class="lnb__item" href="javascript:void(0)">계좌환불</a>
+      <a class="lnb__item" href="javascript:void(0)">마감처리</a>
+      <a class="lnb__item" href="javascript:void(0)">정산내역서</a>
+    </div>
+  </div>
+
+  <!-- ERP -->
+  <div class="lnb__group">
+    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
+      ERP <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children">
+      <a class="lnb__item" href="javascript:void(0)">매출내역 전송</a>
+      <a class="lnb__item" href="javascript:void(0)">정산내역서 전송</a>
+    </div>
+  </div>
+
+  <!-- 정보 관리 -->
+  <div class="lnb__group">
+    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
+      정보 관리 <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children">
+      <a class="lnb__item" href="javascript:void(0)">일반주차장 관리</a>
+      <a class="lnb__item" href="javascript:void(0)">수정요청</a>
+      <a class="lnb__item" href="javascript:void(0)">등록요청</a>
+    </div>
+  </div>
+
+  <!-- 공유 관리 -->
+  <div class="lnb__group">
+    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
+      공유 관리 <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children">
+      <a class="lnb__item" href="javascript:void(0)">공유주차장</a>
+      <a class="lnb__item" href="javascript:void(0)">IoT 관리</a>
+      <a class="lnb__item" href="javascript:void(0)">공유시간정책</a>
+    </div>
+  </div>
+
+  <!-- 제휴 관리 (active) -->
+  <div class="lnb__group">
+    <div class="lnb__group-label open" onclick="toggleLnbGroup(this)">
+      제휴 관리 <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children open">
+      <a class="lnb__item" href="javascript:void(0)">제휴주차장 관리</a>
+      <a class="lnb__item lnb__item--active" href="javascript:void(0)">제휴주차상품 관리</a>
+      <a class="lnb__item" href="javascript:void(0)">월주차 현황</a>
+      <a class="lnb__item" href="javascript:void(0)">월주차 신청</a>
+      <a class="lnb__item" href="javascript:void(0)">거래처(BP)</a>
+      <a class="lnb__item" href="javascript:void(0)">정산대상(STG)</a>
+      <a class="lnb__item" href="javascript:void(0)">제휴신청목록</a>
+      <a class="lnb__item" href="javascript:void(0)">제휴주차상품 예약관리</a>
+      <a class="lnb__item" href="javascript:void(0)">제휴계약관리</a>
+    </div>
+  </div>
+
+  <!-- 자동결제 관리 -->
+  <div class="lnb__group">
+    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
+      자동결제 관리 <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children">
+      <a class="lnb__item" href="javascript:void(0)">자동결제 관리</a>
+    </div>
+  </div>
+
+  <!-- 충전소 관리 -->
+  <div class="lnb__group">
+    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
+      충전소 관리 <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children">
+      <a class="lnb__item" href="javascript:void(0)">EV 충전소</a>
+    </div>
+  </div>
+
+  <!-- 포인트/쿠폰/상품권 관리 -->
+  <div class="lnb__group">
+    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
+      포인트/쿠폰/상품권 관리 <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children">
+      <a class="lnb__item" href="javascript:void(0)">포인트 관리</a>
+      <a class="lnb__item" href="javascript:void(0)">쿠폰 관리</a>
+      <a class="lnb__item" href="javascript:void(0)">상품권 관리</a>
+    </div>
+  </div>
+
+  <!-- 파트너 관리 -->
+  <div class="lnb__group">
+    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
+      파트너 관리 <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children">
+      <a class="lnb__item" href="javascript:void(0)">파트너 관리</a>
+    </div>
+  </div>
+
+  <!-- 서비스 관리 -->
+  <div class="lnb__group">
+    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
+      서비스 관리 <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children">
+      <a class="lnb__item" href="javascript:void(0)">메시지</a>
+      <a class="lnb__item" href="javascript:void(0)">공지사항</a>
+      <a class="lnb__item" href="javascript:void(0)">배너</a>
+      <a class="lnb__item" href="javascript:void(0)">회원관리</a>
+    </div>
+  </div>
+
+  <!-- 어드민 관리 -->
+  <div class="lnb__group">
+    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
+      어드민 관리 <span class="arrow">▼</span>
+    </div>
+    <div class="lnb__group-children">
+      <a class="lnb__item" href="javascript:void(0)">어드민관리</a>
+      <a class="lnb__item" href="javascript:void(0)">권한관리</a>
+      <a class="lnb__item" href="javascript:void(0)">패스워드변경</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     TOAST
+     ============================================================ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<main class="main">
+  <div class="main__breadcrumb">제휴 관리 &gt; 제휴주차상품 관리 &gt; <span>제휴주차권 생성</span></div>
+  <div class="main__title-bar">
+    <h1 class="main__title">제휴주차권 생성</h1>
+    <div class="btn-group">
+      <button type="button" class="btn btn--secondary" onclick="handleCancel()">취소</button>
+      <button type="button" class="btn btn--primary" onclick="handleSave()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.7 3.3l-6 6L4 6.7"/></svg>
+        생성하기
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── Section 1: 기본 정보 ─── -->
+  <div class="card" id="sectionBasic">
+    <div class="card__header">
+      <h3>기본 정보</h3>
+    </div>
+    <div class="card__body">
+      <table class="form-table">
+        <tbody>
+          <tr>
+            <th>제휴주차장 번호</th>
+            <td><a href="javascript:void(0)" class="link-blue" id="partnerParkingNo">9043</a></td>
+          </tr>
+          <tr>
+            <th>주차장 번호</th>
+            <td><a href="javascript:void(0)" class="link-blue" id="parkingNo">242556</a></td>
+          </tr>
+          <tr>
+            <th>주차장 담당자</th>
+            <td><input type="text" class="form-input" id="parkingManager" value="프레디(프레디)" readonly></td>
+          </tr>
+          <tr>
+            <th>주차장 이름</th>
+            <td><input type="text" class="form-input form-input--lg" id="parkingName" value="충주휴게소(마산방향)" readonly></td>
+          </tr>
+          <tr>
+            <th>주차권 유형</th>
+            <td>
+              <select class="form-select" id="ticketType" style="max-width:200px;">
+                <option value="short" selected>단기권</option>
+                <option value="monthly">월정기권</option>
+                <option value="multi_day">연박권</option>
+                <option value="free_pass">자유이용권</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <th>최소 이용일 수</th>
+            <td><input type="number" class="form-input form-input--lg" id="minDays" placeholder="단위를 입력하세요 (ex. 2일력 -> 최소이용 기간 2일)"></td>
+          </tr>
+          <tr>
+            <th>최대 이용가능일 수</th>
+            <td><input type="number" class="form-input form-input--lg" id="maxDays" placeholder="단위를 입력하세요 (ex. 14일력 -> 최대이용 기간 14일)"></td>
+          </tr>
+          <tr>
+            <th>주차권 이름</th>
+            <td><input type="text" class="form-input" id="ticketName" placeholder="주차권 이름를 입력하세요"></td>
+          </tr>
+          <tr>
+            <th>주차권 메모</th>
+            <td><input type="text" class="form-input form-input--lg" id="ticketMemo" placeholder="주차권 메모를 입력하세요"></td>
+          </tr>
+          <tr>
+            <th>판매 시작일</th>
+            <td><input type="date" class="form-input form-input--md" id="saleStartDate" placeholder="판매 시작일를 입력하세요"></td>
+          </tr>
+          <tr>
+            <th>판매 종료일</th>
+            <td><input type="date" class="form-input form-input--md" id="saleEndDate" value="2099-12-31"></td>
+          </tr>
+          <tr>
+            <th>상품 키워드</th>
+            <td>
+              <div class="checkbox-group">
+                <label><input type="checkbox" id="kwValet"> 발렛</label>
+                <label><input type="checkbox" id="kwIndoor"> 실내</label>
+                <label><input type="checkbox" id="kwOutdoor"> 실외</label>
+                <label><input type="checkbox" id="kwMechanical"> 기계식 전용</label>
+                <label><input type="checkbox" id="kwPickup"> 픽업/샌딩</label>
+                <label><input type="checkbox" id="kwCarwash"> 세차</label>
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th>이용일 시작일 기준<br>구매가능 시작일</th>
+            <td>
+              <div class="inline-field">
+                <div class="segment" id="startUnitSegment">
+                  <button type="button" class="segment__btn segment__btn--active" data-unit="hour">시간</button>
+                  <button type="button" class="segment__btn" data-unit="day">일</button>
+                </div>
+                <input type="text" inputmode="numeric" class="form-input form-input--sm" id="startDeadlineValue" value="0" placeholder="0" autocomplete="off">
+                <span class="unit-label" id="startUnitLabel">시간 전까지</span>
+              </div>
+              <div class="form-error" id="errStartDeadline" style="display:none">
+                <span id="errStartDeadlineMsg"></span>
+              </div>
+              <div class="form-helper">
+                0 이상의 정수를 입력하세요. 예) 0 = 이용시작 직전까지 예매 가능
+              </div>
+            </td>
+          </tr>
+          <tr>
+            <th>이용일 시작일 기준<br>구매가능 마감일</th>
+            <td>
+              <div class="inline-field">
+                <div class="segment" id="unitSegment">
+                  <button type="button" class="segment__btn segment__btn--active" data-unit="hour">시간</button>
+                  <button type="button" class="segment__btn" data-unit="day">일</button>
+                </div>
+                <input type="text" inputmode="numeric" class="form-input form-input--sm" id="deadlineValue" value="0" placeholder="0" autocomplete="off">
+                <span class="unit-label" id="unitLabel">시간 전까지</span>
+              </div>
+              <div class="form-error" id="errDeadline" style="display:none">
+                <span id="errDeadlineMsg"></span>
+              </div>
+              <div class="form-helper" id="deadlineHelper">
+                0 이상의 정수를 입력하세요. 예) 0 = 이용시작 직전까지 예매 가능
+              </div>
+              <div id="summaryArea"></div>
+            </td>
+          </tr>
+          <tr>
+            <th>(임시)공항선택</th>
+            <td>
+              <select class="form-select" id="airportSelect" style="max-width:200px;">
+                <option value="" selected>선택하세요</option>
+                <option value="ICN_T1">인천공항 T1</option>
+                <option value="ICN_T2">인천공항 T2</option>
+                <option value="GMP">김포공항</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ─── Section 2: 요금 설정 모드 선택 ─── -->
+  <div class="mode-selector" id="pricingModeSelector">
+    <button type="button" class="mode-selector__btn mode-selector__btn--active" data-mode="daily">요일별 설정</button>
+    <button type="button" class="mode-selector__btn" data-mode="bulk">일괄요금 설정</button>
+  </div>
+
+  <div id="pricingContent">
+
+    <!-- 주차장 정산비율 -->
+    <div class="card">
+      <div class="card__header"><h3>주차장 정산비율</h3></div>
+      <div class="card__body">
+        <input type="number" class="form-input form-input--sm" id="settlementRate" value="70">
+      </div>
+    </div>
+
+    <!-- 최소이용금액 -->
+    <div class="card">
+      <div class="card__header"><h3>최소이용금액</h3></div>
+      <div class="card__body">
+        <p style="font-size:13px; color:var(--color-gray-500); margin-bottom:16px;">
+          사용자가 선택한 날짜에 해당하는 요일별 기본 판매 요금의 합산을 비교하여 더 큰 금액을 상품금액으로 정합니다.
+        </p>
+        <table class="pricing-table">
+          <thead>
+            <tr>
+              <th style="width:100px;"></th>
+              <th style="width:70px;"></th>
+              <th>판매금액</th>
+              <th>주차장 정산금액</th>
+              <th>판매수량</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td></td>
+              <td></td>
+              <td><input type="number" class="price-input" id="minPrice" value="5000"></td>
+              <td><input type="number" class="price-input" id="minSettlement" value="3500" readonly></td>
+              <td></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 일괄요금 설정 모드 -->
+    <div id="bulkPricingSection" style="display:none;">
+      <div class="card">
+        <div class="card__header"><h3>기본 판매정책</h3></div>
+        <div class="card__body" style="padding:0;">
+          <table class="pricing-table">
+            <thead>
+              <tr>
+                <th>판매금액</th>
+                <th>주차장 정산금액</th>
+                <th>판매수량</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><input type="number" class="price-input" id="bulkPrice" value="5000"></td>
+                <td><input type="number" class="price-input" id="bulkSettlement" value="3500" readonly></td>
+                <td><input type="number" class="price-input" id="bulkStock" value="10"></td>
+              </tr>
+            </tbody>
+          </table>
+          <p style="font-size:12px; color:var(--color-gray-400); padding:12px 16px; margin:0;">
+            모든 요일(월~일)에 동일한 금액과 수량이 적용됩니다.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 요일별 설정 모드 -->
+    <div id="dailyPricingSection">
+      <div class="card">
+        <div class="card__header"><h3>기본 판매정책</h3></div>
+        <div class="card__body" style="padding:0;">
+          <table class="pricing-table" id="dailyPricingTable">
+            <thead>
+              <tr>
+                <th style="width:100px;"></th>
+                <th style="width:70px;"></th>
+                <th>판매금액</th>
+                <th>주차장 정산금액</th>
+                <th>판매수량</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr data-day="mon">
+                <td>월요일</td>
+                <td><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></td>
+                <td><input type="number" class="price-input day-price" value="5000" data-day="mon"></td>
+                <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
+                <td><input type="number" class="price-input day-stock" value="10"></td>
+              </tr>
+              <tr data-day="tue">
+                <td>화요일</td>
+                <td><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></td>
+                <td><input type="number" class="price-input day-price" value="5000" data-day="tue"></td>
+                <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
+                <td><input type="number" class="price-input day-stock" value="10"></td>
+              </tr>
+              <tr data-day="wed">
+                <td>수요일</td>
+                <td><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></td>
+                <td><input type="number" class="price-input day-price" value="5000" data-day="wed"></td>
+                <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
+                <td><input type="number" class="price-input day-stock" value="10"></td>
+              </tr>
+              <tr data-day="thu">
+                <td>목요일</td>
+                <td><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></td>
+                <td><input type="number" class="price-input day-price" value="5000" data-day="thu"></td>
+                <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
+                <td><input type="number" class="price-input day-stock" value="10"></td>
+              </tr>
+              <tr data-day="fri">
+                <td>금요일</td>
+                <td><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></td>
+                <td><input type="number" class="price-input day-price" value="5000" data-day="fri"></td>
+                <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
+                <td><input type="number" class="price-input day-stock" value="10"></td>
+              </tr>
+              <tr data-day="sat">
+                <td>토요일</td>
+                <td><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></td>
+                <td><input type="number" class="price-input day-price" value="7000" data-day="sat"></td>
+                <td><input type="number" class="price-input day-settlement" value="4900" readonly></td>
+                <td><input type="number" class="price-input day-stock" value="10"></td>
+              </tr>
+              <tr data-day="sun">
+                <td>일요일</td>
+                <td><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></td>
+                <td><input type="number" class="price-input day-price" value="7000" data-day="sun"></td>
+                <td><input type="number" class="price-input day-settlement" value="4900" readonly></td>
+                <td><input type="number" class="price-input day-stock" value="10"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 공휴일 판매정책 -->
+    <div class="card">
+      <div class="card__header"><h3>공휴일 판매정책</h3></div>
+      <div class="card__body" style="padding:0;">
+        <table class="pricing-table" id="holidayPricingTable">
+          <thead>
+            <tr>
+              <th style="width:100px;"></th>
+              <th style="width:70px;"></th>
+              <th>판매금액</th>
+              <th>주차장 정산금액</th>
+              <th>판매수량</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr data-day="holiday">
+              <td>공휴일</td>
+              <td><label class="toggle-switch"><input type="checkbox" checked><span class="slider"></span></label></td>
+              <td><input type="number" class="price-input day-price" value="10000" data-day="holiday"></td>
+              <td><input type="number" class="price-input day-settlement" value="7000" readonly></td>
+              <td><input type="number" class="price-input day-stock" value="10"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 옵션 가격정책 -->
+    <div class="card">
+      <div class="card__header"><h3>옵션 가격정책</h3></div>
+      <div class="card__body" style="padding:0;">
+        <table class="pricing-table" id="optionPricingTable">
+          <thead>
+            <tr>
+              <th style="width:130px;"></th>
+              <th style="width:70px;"></th>
+              <th>판매금액</th>
+              <th>주차장 정산금액</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>추가요금</td>
+              <td><label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label></td>
+              <td><input type="number" class="price-input" value="0"></td>
+              <td><input type="number" class="price-input" value="0"></td>
+            </tr>
+            <tr>
+              <td>발렛 픽업/전송</td>
+              <td><label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label></td>
+              <td><input type="number" class="price-input" value="0"></td>
+              <td><input type="number" class="price-input" value="0"></td>
+            </tr>
+            <tr>
+              <td>심야 입차</td>
+              <td><label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label></td>
+              <td><input type="number" class="price-input" value="0"></td>
+              <td><input type="number" class="price-input" value="0"></td>
+            </tr>
+            <tr>
+              <td>심야 출차</td>
+              <td><label class="toggle-switch"><input type="checkbox"><span class="slider"></span></label></td>
+              <td><input type="number" class="price-input" value="0"></td>
+              <td><input type="number" class="price-input" value="0"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div><!-- /pricingContent -->
+
+  <!-- ─── Actions ─── -->
+  <div class="card">
+    <div class="actions-bar">
+      <button type="button" class="btn btn--secondary" onclick="handleCancel()">취소</button>
+      <button type="button" class="btn btn--primary" id="btnSave" onclick="handleSave()">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12.7 3.3l-6 6L4 6.7"/></svg>
+        생성하기
+      </button>
+    </div>
+  </div>
+
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer" id="appFooter"></footer>
+
+<!-- ============================================================
+     JavaScript
+     ============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ─── Footer: file last modified date ─── */
+  (function initFooter() {
+    var footer = document.getElementById('appFooter');
+    var lastMod = new Date(document.lastModified);
+    var yyyy = lastMod.getFullYear();
+    var MM = String(lastMod.getMonth() + 1).padStart(2, '0');
+    var dd = String(lastMod.getDate()).padStart(2, '0');
+    var hh = String(lastMod.getHours()).padStart(2, '0');
+    var mm = String(lastMod.getMinutes()).padStart(2, '0');
+    footer.textContent = '© 2026. 주차권예매서비스. 최종업데이트 : ' + yyyy + '.' + MM + '.' + dd + ' ' + hh + ':' + mm;
+  })();
+
+  /* ─── LNB: collapsible menu toggle ─── */
+  window.toggleLnbGroup = function (label) {
+    label.classList.toggle('open');
+    var children = label.nextElementSibling;
+    if (children) {
+      children.classList.toggle('open');
+    }
+  };
+
+  /* ─── LNB: mobile toggle ─── */
+  var menuToggle = document.getElementById('menuToggle');
+  var lnb = document.getElementById('lnb');
+  var lnbOverlay = document.getElementById('lnbOverlay');
+
+  if (menuToggle) {
+    menuToggle.addEventListener('click', function () {
+      lnb.classList.toggle('open');
+      lnbOverlay.classList.toggle('show');
+    });
+  }
+  if (lnbOverlay) {
+    lnbOverlay.addEventListener('click', function () {
+      lnb.classList.remove('open');
+      lnbOverlay.classList.remove('show');
+    });
+  }
+
+  /* ─── State ─── */
+  var state = {
+    deadlineUnit: 'hour',
+    deadlineValue: '0',
+    settlementRate: 70
+  };
+
+  /* ─── DOM refs ─── */
+  var $toastContainer = document.getElementById('toastContainer');
+  var $settlementRate = document.getElementById('settlementRate');
+
+  /* ─── DOM refs (deadline) ─── */
+  var $unitSegment    = document.getElementById('unitSegment');
+  var $deadlineValue  = document.getElementById('deadlineValue');
+  var $unitLabel      = document.getElementById('unitLabel');
+  var $errDeadline    = document.getElementById('errDeadline');
+  var $errDeadlineMsg = document.getElementById('errDeadlineMsg');
+  var $deadlineHelper = document.getElementById('deadlineHelper');
+  var $summaryArea    = document.getElementById('summaryArea');
+
+  var UNIT_KR = { hour: '시간', day: '일' };
+
+  /* ─── Unit Segment (시간/일 토글) ─── */
+  $unitSegment.addEventListener('click', function (e) {
+    var btn = e.target.closest('.segment__btn');
+    if (!btn) return;
+    var newUnit = btn.getAttribute('data-unit');
+    if (newUnit === state.deadlineUnit) return;
+    state.deadlineUnit = newUnit;
+    $unitSegment.querySelectorAll('.segment__btn').forEach(function (b) {
+      b.classList.remove('segment__btn--active');
+    });
+    btn.classList.add('segment__btn--active');
+    $unitLabel.textContent = UNIT_KR[newUnit] + ' 전까지';
+  });
+
+  /* ─── Unit Segment: 구매가능 시작일 (시간/일 토글) ─── */
+  var $startUnitSegment = document.getElementById('startUnitSegment');
+  var $startDeadlineValue = document.getElementById('startDeadlineValue');
+  var $startUnitLabel = document.getElementById('startUnitLabel');
+  var startDeadlineUnit = 'hour';
+
+  $startUnitSegment.addEventListener('click', function (e) {
+    var btn = e.target.closest('.segment__btn');
+    if (!btn) return;
+    var newUnit = btn.getAttribute('data-unit');
+    if (newUnit === startDeadlineUnit) return;
+    startDeadlineUnit = newUnit;
+    $startUnitSegment.querySelectorAll('.segment__btn').forEach(function (b) {
+      b.classList.remove('segment__btn--active');
+    });
+    btn.classList.add('segment__btn--active');
+    $startUnitLabel.textContent = UNIT_KR[newUnit] + ' 전까지';
+  });
+
+  /* ─── Pricing mode toggle ─── */
+  var $modeSelector = document.getElementById('pricingModeSelector');
+  var $dailySection = document.getElementById('dailyPricingSection');
+  var $bulkSection  = document.getElementById('bulkPricingSection');
+  var $bulkPrice    = document.getElementById('bulkPrice');
+  var $bulkSettle   = document.getElementById('bulkSettlement');
+  var $bulkStock    = document.getElementById('bulkStock');
+
+  $modeSelector.addEventListener('click', function (e) {
+    var btn = e.target.closest('.mode-selector__btn');
+    if (!btn) return;
+    var mode = btn.getAttribute('data-mode');
+
+    $modeSelector.querySelectorAll('.mode-selector__btn').forEach(function (b) {
+      b.classList.remove('mode-selector__btn--active');
+    });
+    btn.classList.add('mode-selector__btn--active');
+
+    if (mode === 'bulk') {
+      $dailySection.style.display = 'none';
+      $bulkSection.style.display = '';
+    } else {
+      $dailySection.style.display = '';
+      $bulkSection.style.display = 'none';
+    }
+  });
+
+  $bulkPrice.addEventListener('input', function () {
+    $bulkSettle.value = calcSettlement(parseFloat($bulkPrice.value) || 0);
+  });
+
+  /* ─── Settlement calculation ─── */
+  function calcSettlement(price) {
+    var rate = parseFloat($settlementRate.value) || 0;
+    return Math.round(price * rate / 100);
+  }
+
+  document.querySelectorAll('.day-price').forEach(function (input) {
+    input.addEventListener('input', function () {
+      var row = input.closest('tr');
+      var s = row.querySelector('.day-settlement');
+      if (s) s.value = calcSettlement(parseFloat(input.value) || 0);
+    });
+  });
+
+  $settlementRate.addEventListener('input', function () {
+    document.querySelectorAll('.day-price').forEach(function (p) {
+      var row = p.closest('tr');
+      var s = row.querySelector('.day-settlement');
+      if (s) s.value = calcSettlement(parseFloat(p.value) || 0);
+    });
+    var mp = document.getElementById('minPrice');
+    var ms = document.getElementById('minSettlement');
+    if (mp && ms) ms.value = calcSettlement(parseFloat(mp.value) || 0);
+    $bulkSettle.value = calcSettlement(parseFloat($bulkPrice.value) || 0);
+  });
+
+  document.getElementById('minPrice').addEventListener('input', function () {
+    document.getElementById('minSettlement').value = calcSettlement(parseFloat(this.value) || 0);
+  });
+
+  /* ─── Toggle switch ─── */
+  document.querySelectorAll('.toggle-switch input').forEach(function (toggle) {
+    toggle.addEventListener('change', function () {
+      var row = toggle.closest('tr');
+      if (!row) return;
+      row.querySelectorAll('.price-input').forEach(function (inp) {
+        inp.disabled = !toggle.checked;
+      });
+    });
+  });
+
+  /* ─── Toast ─── */
+  function showToast(message, type) {
+    var toast = document.createElement('div');
+    toast.className = 'toast toast--' + (type || 'success');
+    toast.innerHTML = '<span>' + message + '</span>';
+    $toastContainer.appendChild(toast);
+    setTimeout(function () {
+      toast.classList.add('toast--out');
+      setTimeout(function () { toast.remove(); }, 260);
+    }, 3000);
+  }
+
+  /* ─── Save ─── */
+  window.handleSave = function () {
+    showToast('저장되었습니다.', 'success');
+    console.log('[Mock 저장] 완료');
+  };
+
+  /* ─── Cancel ─── */
+  window.handleCancel = function () {
+    if (confirm('작성 중인 내용이 사라집니다. 취소하시겠습니까?')) {
+      location.reload();
+    }
+  };
+
+})();
+</script>
+</body>
+</html>
