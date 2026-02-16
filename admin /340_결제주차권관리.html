@@ -8,15 +8,11 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link rel="stylesheet" href="common.css">
-        <style>
+    <script src="nav-menu.js"></script>
+    <style>
 /* ============================================================
    Page-specific: 340_주차관리
    ============================================================ */
-
-/* App Layout */
-.app-layout { display: flex; min-height: 100vh; padding-top: var(--header-h); }
-/* [폭 고정] flex:1로 main이 항상 남은 공간 전체를 차지하도록 보장 */
-.app-layout > .main { flex: 1; min-width: 0; overflow-x: hidden; margin-top: 0; }
 
 /* Page Header */
 .page-header { margin-bottom: var(--space-6); }
@@ -261,55 +257,156 @@
 }
 .page-btn:disabled { opacity: 0.35; cursor: default; }
 
-/* Detail Panel (Right Push) */
+/* ── Detail Panel (Right Push) — Improved ── */
 .detail-overlay {
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.35);
   z-index: 999; opacity: 0; pointer-events: none;
   transition: opacity var(--transition-base);
 }
 .detail-overlay.open { opacity: 1; pointer-events: auto; }
+
 .detail-panel {
   position: fixed; top: 0; right: 0; bottom: 0;
-  width: 480px; max-width: 90%;
-  background: var(--color-bg-surface);
-  box-shadow: var(--shadow-lg);
+  width: 540px; max-width: 92vw;
+  background: var(--color-bg-page);
+  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
   z-index: 1000;
   transform: translateX(100%);
   transition: transform var(--transition-base);
-  overflow-y: auto;
+  display: flex; flex-direction: column;
 }
 .detail-panel.open { transform: translateX(0); }
+
+/* Sticky Header */
 .detail-panel-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: var(--space-5) var(--space-6);
+  padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--color-border-light);
-  position: sticky; top: 0; background: var(--color-bg-surface); z-index: 1;
+  background: var(--color-bg-surface);
+  flex-shrink: 0; z-index: 2;
 }
 .detail-panel-title {
   font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
 }
 .detail-panel-close {
   width: 36px; height: 36px; border: none; background: none;
-  font-size: 24px; color: var(--color-text-tertiary);
-  cursor: pointer; border-radius: 50%;
+  font-size: 22px; color: var(--color-text-tertiary);
+  cursor: pointer; border-radius: var(--radius-sm);
   display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast);
 }
 .detail-panel-close:hover { background: var(--color-bg-secondary); color: var(--color-text-primary); }
-.detail-panel-body { padding: var(--space-6); }
-.detail-section { margin-bottom: var(--space-6); }
-.detail-section-title {
-  font-size: var(--font-size-base); font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--space-4);
-  padding-bottom: var(--space-2);
-  border-bottom: 2px solid var(--color-border-light);
+
+/* Scrollable Body */
+.detail-panel-body {
+  flex: 1; overflow-y: auto; padding: var(--space-5) var(--space-5) var(--space-8);
 }
+
+/* ── Quick Summary Block ── */
+.quick-summary {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5);
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--space-3) var(--space-5);
+}
+.quick-summary__item {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.quick-summary__item--full { grid-column: 1 / -1; }
+.quick-summary__label {
+  font-size: 10px; color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase; letter-spacing: 0.03em;
+}
+.quick-summary__value {
+  font-size: var(--font-size-base); color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.quick-summary__period {
+  font-size: var(--font-size-sm); color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  display: flex; align-items: center; gap: 4px;
+}
+.quick-summary__period .arrow-icon {
+  color: var(--color-text-disabled); font-size: 11px;
+}
+
+/* ── Section Card ── */
+.section-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  overflow: hidden;
+  transition: box-shadow var(--transition-fast);
+}
+.section-card:last-child { margin-bottom: 0; }
+
+.section-card__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-surface);
+  border-bottom: 1px solid var(--color-border-light);
+  min-height: 44px;
+}
+.section-card__header-left {
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.section-card__title {
+  font-size: var(--font-size-base); font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary); margin: 0;
+}
+.section-card__subtitle {
+  font-size: var(--font-size-xs); color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-normal);
+}
+.section-card__header-right {
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.section-card__body {
+  padding: var(--space-4);
+}
+
+/* Accordion toggle */
+.section-card--collapsible .section-card__header {
+  cursor: pointer; user-select: none;
+  transition: background var(--transition-fast);
+}
+.section-card--collapsible .section-card__header:hover {
+  background: var(--color-bg-secondary);
+}
+.section-card__toggle {
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-text-tertiary);
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+.section-card__toggle.collapsed { transform: rotate(-90deg); }
+.section-card__collapse {
+  overflow: hidden;
+  transition: max-height 0.25s ease, opacity 0.2s ease;
+  max-height: 800px; opacity: 1;
+}
+.section-card__collapse.collapsed {
+  max-height: 0; opacity: 0;
+}
+.section-card--collapsed .section-card__header {
+  border-bottom-color: transparent;
+}
+
+/* ── Detail Grid (key-value) ── */
 .detail-grid {
   display: grid; grid-template-columns: 1fr 1fr;
   gap: var(--space-4);
 }
-.detail-item { display: flex; flex-direction: column; gap: 2px; }
+.detail-item { display: flex; flex-direction: column; gap: 3px; }
 .detail-item.full { grid-column: 1 / -1; }
 .detail-label {
   font-size: var(--font-size-xs); color: var(--color-text-tertiary);
@@ -317,7 +414,7 @@
 }
 .detail-value {
   font-size: var(--font-size-base); color: var(--color-text-primary);
-  font-weight: var(--font-weight-medium);
+  font-weight: var(--font-weight-medium); line-height: 1.4;
 }
 .detail-actions {
   display: flex; gap: var(--space-2); margin-top: var(--space-4);
@@ -334,14 +431,121 @@
 }
 .detail-edit-input:focus { border-color: var(--color-primary-main); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
 
-/* Empty State */
+/* Link Button (in panel) */
+.link-action {
+  background: none; border: none; padding: 0;
+  color: var(--color-primary-main); font-size: inherit;
+  font-weight: var(--font-weight-semibold); cursor: pointer;
+  text-decoration: none; font-family: inherit;
+  transition: color var(--transition-fast);
+  border-bottom: 1px solid transparent;
+}
+.link-action:hover { color: var(--color-primary-dark); border-bottom-color: var(--color-primary-dark); }
+
+/* ── Entry Processing Form ── */
+.entry-form {
+  display: flex; align-items: flex-end; gap: var(--space-3); flex-wrap: wrap;
+  padding: var(--space-4);
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+}
+.entry-form__group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 120px; }
+.entry-form__label {
+  font-size: var(--font-size-xs); color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+.entry-form__input {
+  height: 34px; padding: 0 var(--space-3); font-size: var(--font-size-sm);
+  border: 1px solid var(--color-border-default); border-radius: var(--radius-sm);
+  background: var(--color-bg-surface); color: var(--color-text-primary); outline: none;
+  transition: border-color var(--transition-fast);
+}
+.entry-form__input:focus {
+  border-color: var(--color-primary-main);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+}
+.entry-form__btn {
+  flex-shrink: 0;
+}
+.entry-form__divider {
+  width: 100%; height: 0;
+  border: none; border-top: 1px dashed var(--color-border-light);
+  margin: var(--space-2) 0 0;
+}
+
+/* Processing History sub-header */
+.history-sub-header {
+  font-size: var(--font-size-xs); font-weight: var(--font-weight-bold);
+  color: var(--color-text-secondary);
+  padding: var(--space-3) 0 var(--space-2);
+  margin-top: var(--space-3);
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* History Table (in panel) */
+.history-table { width: 100%; border-collapse: collapse; }
+.history-table th {
+  background: var(--color-bg-tertiary); font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-xs); color: var(--color-text-secondary);
+  padding: var(--space-2) var(--space-2); text-align: center;
+  border-bottom: 1px solid var(--color-border-default);
+}
+.history-table td {
+  padding: var(--space-2) var(--space-2); text-align: center; font-size: var(--font-size-xs);
+  color: var(--color-text-primary); border-bottom: 1px solid var(--color-border-light);
+}
+.history-table tbody tr:last-child td { border-bottom: none; }
+
+/* Summary List (in panel) */
+.summary-list { list-style: none; padding: 0; margin: 0; }
+.summary-list li {
+  padding: var(--space-2) 0; border-bottom: 1px solid var(--color-border-light);
+  display: flex; gap: var(--space-3);
+}
+.summary-list li:last-child { border-bottom: none; }
+.summary-list__label {
+  min-width: 110px; flex-shrink: 0; font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary); font-weight: var(--font-weight-medium);
+}
+.summary-list__value {
+  font-size: var(--font-size-sm); color: var(--color-text-primary);
+  line-height: 1.5; white-space: pre-wrap;
+}
+
+/* ── Empty State (improved) ── */
 .empty-state {
   text-align: center; padding: var(--space-10) var(--space-5);
   color: var(--color-text-disabled);
 }
 .empty-state p { font-size: var(--font-size-md); margin-top: var(--space-2); }
+.empty-state--compact {
+  text-align: center; padding: var(--space-6) var(--space-4);
+}
+.empty-state--compact .empty-state__icon {
+  font-size: 28px; margin-bottom: var(--space-2); opacity: 0.4;
+}
+.empty-state--compact .empty-state__title {
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
+  color: var(--color-text-tertiary); margin-bottom: 2px;
+}
+.empty-state--compact .empty-state__desc {
+  font-size: var(--font-size-xs); color: var(--color-text-disabled);
+}
 
-/* 340-specific responsive */
+/* ── Inline Toast (for panel) ── */
+.inline-toast {
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  display: flex; align-items: center; gap: var(--space-2);
+  margin-top: var(--space-3);
+  animation: toastIn 300ms ease forwards;
+}
+.inline-toast.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+.inline-toast.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+/* ── 340-specific responsive ── */
 @media (max-width: 1024px) {
   .filter-row { flex-wrap: wrap; }
   .filter-label { min-width: 64px; }
@@ -355,6 +559,12 @@
   .filter-select, .filter-input, .filter-date { min-width: 0; flex: 1; }
   .quick-btn { padding: 0 var(--space-2); font-size: var(--font-size-xs); }
   .btn-search { padding: 0 var(--space-8); }
+  .detail-panel { width: 100%; max-width: 100vw; }
+  .detail-grid { grid-template-columns: 1fr; }
+  .quick-summary { grid-template-columns: 1fr; }
+  .entry-form { flex-direction: column; align-items: stretch; }
+  .summary-list li { flex-direction: column; gap: 2px; }
+  .summary-list__label { min-width: auto; }
 }
 
         </style>
@@ -962,6 +1172,206 @@
         }
 
         // ============================================================
+        // Types (maps to types.ts)
+        // ============================================================
+        const ProductType = Object.freeze({
+            GENERAL_TICKET:      'GENERAL_TICKET',
+            GENERAL_SHARE:       'GENERAL_SHARE',
+            RESIDENT_SHARE:      'RESIDENT_SHARE',
+            SUBSCRIPTION_TICKET: 'SUBSCRIPTION_TICKET',
+            SHORT_TERM_TICKET:   'SHORT_TERM_TICKET',
+        });
+
+        const ProductTypeLabel = Object.freeze({
+            [ProductType.GENERAL_TICKET]:      '일반권',
+            [ProductType.GENERAL_SHARE]:       '일반공유',
+            [ProductType.RESIDENT_SHARE]:      '거주자공유',
+            [ProductType.SUBSCRIPTION_TICKET]: '정기권',
+            [ProductType.SHORT_TERM_TICKET]:   '단기권',
+        });
+
+        /** 한국어 라벨 → enum 매핑 */
+        const KoreanToProductType = Object.freeze({
+            '일반권':     ProductType.GENERAL_TICKET,
+            '일반공유':   ProductType.GENERAL_SHARE,
+            '거주자공유': ProductType.RESIDENT_SHARE,
+            '정기권':     ProductType.SUBSCRIPTION_TICKET,
+            '단기권':     ProductType.SHORT_TERM_TICKET,
+        });
+
+        /** 주차권 기반 상품 유형 */
+        const TICKET_BASED_TYPES = new Set([
+            ProductType.GENERAL_TICKET,
+            ProductType.SUBSCRIPTION_TICKET,
+            ProductType.SHORT_TERM_TICKET,
+        ]);
+
+        /** Section ID enum */
+        const SectionId = Object.freeze({
+            BASIC_INFO:          'basicInfo',
+            USAGE_INFO:          'usageInfo',
+            ENTRY_PROCESSING:    'entryProcessing',
+            CUSTOMER_EXTRA_INFO: 'customerExtraInfo',
+            TICKET_SUMMARY:      'ticketSummary',
+        });
+
+        // ============================================================
+        // Formatters / Utils (maps to formatters.ts)
+        // ============================================================
+        function formatNullable(value, fallback) {
+            if (value === null || value === undefined || value === '') return fallback || '-';
+            return value;
+        }
+
+        function shouldRenderField(value) {
+            return value !== null && value !== undefined && value !== '';
+        }
+
+        function shouldRenderSection(fields) {
+            return fields.some(f => shouldRenderField(f));
+        }
+
+        // ============================================================
+        // Routing (maps to routing.ts)
+        // ============================================================
+        function goToPayment(paymentId) {
+            console.log('[Navigate] 결제상세 →', paymentId);
+            window.location.hash = '#/payment/' + paymentId;
+        }
+
+        function goToParkinglot(parkinglotId) {
+            console.log('[Navigate] 주차장상세 →', parkinglotId);
+            window.location.hash = '#/parkinglot/' + parkinglotId;
+        }
+
+        function goToUser(userId) {
+            console.log('[Navigate] 회원상세 →', userId);
+            window.location.hash = '#/user/' + userId;
+        }
+
+        // ============================================================
+        // Section Config (maps to sectionConfig.ts)
+        // ============================================================
+        const sectionConfigByProductType = Object.freeze({
+            [ProductType.GENERAL_TICKET]: [
+                { id: SectionId.BASIC_INFO },
+                { id: SectionId.USAGE_INFO },
+                { id: SectionId.ENTRY_PROCESSING },
+                { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
+                { id: SectionId.TICKET_SUMMARY },
+            ],
+            [ProductType.GENERAL_SHARE]: [
+                { id: SectionId.BASIC_INFO },
+                { id: SectionId.USAGE_INFO },
+                // ENTRY_PROCESSING: 공유 상품 기본 숨김 (확장 가능하도록 구조 유지)
+                // { id: SectionId.ENTRY_PROCESSING, hidden: true },
+                { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
+                // TICKET_SUMMARY: 공유 상품은 절대 미노출
+            ],
+            [ProductType.RESIDENT_SHARE]: [
+                { id: SectionId.BASIC_INFO },
+                { id: SectionId.USAGE_INFO },
+                // ENTRY_PROCESSING: 공유 상품 기본 숨김
+                // { id: SectionId.ENTRY_PROCESSING, hidden: true },
+                { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
+                // TICKET_SUMMARY: 공유 상품은 절대 미노출
+            ],
+            [ProductType.SUBSCRIPTION_TICKET]: [
+                { id: SectionId.BASIC_INFO },
+                { id: SectionId.USAGE_INFO },
+                { id: SectionId.ENTRY_PROCESSING },
+                { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
+                { id: SectionId.TICKET_SUMMARY },
+            ],
+            [ProductType.SHORT_TERM_TICKET]: [
+                { id: SectionId.BASIC_INFO },
+                { id: SectionId.USAGE_INFO },
+                { id: SectionId.ENTRY_PROCESSING },
+                { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
+                { id: SectionId.TICKET_SUMMARY },
+            ],
+        });
+
+        /** 조건 평가: 섹션이 실제로 렌더될지 결정 */
+        function evaluateSectionCondition(config, detail) {
+            if (!config.condition) return true;
+            if (config.condition === 'hasAdditionalInfo') {
+                return detail.additionalCustomerInfo != null;
+            }
+            return true;
+        }
+
+        /** 주차권 요약 mock (상품유형별) */
+        const TICKET_SUMMARY_BY_TYPE = {
+            '일반권': {
+                ticketName: '일반 주차권',
+                maxUsageCount: 1,
+                exposureTime: '00:00 ~ 23:59',
+                usageTime: '구매 시간 기준',
+                availableDays: '월, 화, 수, 목, 금, 토, 일',
+                notice: '해당 주차장의 운영시간 내에서만 이용 가능합니다.',
+                preNotice: '주차장 만차 시 이용이 불가능할 수 있습니다.',
+                postNotice: '출차 시 주차권 QR코드를 제시해 주세요.',
+            },
+            '정기권': {
+                ticketName: '월정기 주차권',
+                maxUsageCount: null,
+                exposureTime: '00:00 ~ 23:59',
+                usageTime: '00:00 ~ 23:59',
+                availableDays: '월, 화, 수, 목, 금, 토, 일',
+                notice: '월 정기권은 해당 월 내 무제한 입출차가 가능합니다.\n지정 주차장에서만 사용 가능합니다.',
+                preNotice: '정기권 구매 후 취소 시 이용일수에 따라 환불 금액이 달라질 수 있습니다.',
+                postNotice: '차량번호 자동 인식으로 입출차됩니다.',
+            },
+            '단기권': {
+                ticketName: '단기 주차권',
+                maxUsageCount: 1,
+                exposureTime: '00:00 ~ 23:59',
+                usageTime: '구매 시간 기준',
+                availableDays: '월, 화, 수, 목, 금, 토, 일',
+                notice: '단기 주차권은 지정된 시간 내에서만 이용 가능합니다.',
+                preNotice: '항공편 변경 시 최소 24시간 전 알려주세요.',
+                postNotice: '차량 수령 시 외관 상태를 반드시 확인해 주세요.',
+            },
+        };
+
+        /** 기존 vehicle 데이터 → 상세 뷰용 enriched 데이터로 변환 */
+        function enrichForDetail(vehicle) {
+            const enumType = KoreanToProductType[vehicle.productType] || ProductType.GENERAL_TICKET;
+            const hasExtraInfo = shouldRenderSection([
+                vehicle.departureFlight, vehicle.arrivalFlight, vehicle.vehicleModel
+            ]);
+            return {
+                ...vehicle,
+                _enumType: enumType,
+                paymentId: String(10000000 + parseInt(vehicle.id.replace('VH-', ''), 10)),
+                paymentChannel: '모두의주차장 앱',
+                userId: 'USR-' + vehicle.id.replace('VH-', ''),
+                sectionName: null,
+                usageStatus: getEntryStatus(vehicle),
+                additionalCustomerInfo: hasExtraInfo ? {
+                    departureFlight: vehicle.departureFlight || null,
+                    arrivalFlight: vehicle.arrivalFlight || null,
+                    vehicleModel: vehicle.vehicleModel || null,
+                } : null,
+                ticketSummary: TICKET_BASED_TYPES.has(enumType)
+                    ? (TICKET_SUMMARY_BY_TYPE[vehicle.productType] || null)
+                    : null,
+                processingHistory: vehicle.entryTime ? [
+                    {
+                        id: 'PH-' + vehicle.id,
+                        category: '입차',
+                        content: '입차 처리 완료 (' + formatTimeOnly(vehicle.entryTime) + ')',
+                        processedAt: vehicle.entryTime,
+                        handler: 'SYSTEM',
+                    },
+                ] : [],
+                raw: null,
+                meta: {},
+            };
+        }
+
+        // ============================================================
         // SearchableDropdown Component
         // ============================================================
         function SearchableDropdown({ options, value, onChange, placeholder }) {
@@ -1017,297 +1427,469 @@
         // Pagination → parking-ticket-table.js (window.Pagination)
 
         // ============================================================
-        // VehicleDetailPanel Component
+        // Collapsible Section Card wrapper
         // ============================================================
-        function VehicleDetailPanel({ vehicle, onClose, onSave }) {
-            const [isEditing, setIsEditing] = useState(false);
-            const [editForm, setEditForm] = useState({});
+        function SectionCard({ title, subtitle, collapsible, defaultCollapsed, headerRight, children }) {
+            const [collapsed, setCollapsed] = useState(defaultCollapsed || false);
+            const cardClass = [
+                'section-card',
+                collapsible ? 'section-card--collapsible' : '',
+                collapsed ? 'section-card--collapsed' : '',
+            ].filter(Boolean).join(' ');
+
+            const ChevronIcon = () => (
+                <span className={`section-card__toggle ${collapsed ? 'collapsed' : ''}`}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+            );
+
+            return (
+                <div className={cardClass}>
+                    <div
+                        className="section-card__header"
+                        onClick={collapsible ? () => setCollapsed(p => !p) : undefined}
+                    >
+                        <div className="section-card__header-left">
+                            <h3 className="section-card__title">{title}</h3>
+                            {subtitle && <span className="section-card__subtitle">{subtitle}</span>}
+                        </div>
+                        <div className="section-card__header-right">
+                            {!collapsed && headerRight}
+                            {collapsible && <ChevronIcon />}
+                        </div>
+                    </div>
+                    <div className={`section-card__collapse ${collapsed ? 'collapsed' : ''}`}>
+                        <div className="section-card__body">
+                            {children}
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Quick Summary Component
+        // ============================================================
+        function QuickSummary({ data }) {
+            return (
+                <div className="quick-summary">
+                    <div className="quick-summary__item">
+                        <span className="quick-summary__label">결제번호</span>
+                        <span className="quick-summary__value">
+                            <button className="link-action" onClick={() => goToPayment(data.paymentId)}>{data.paymentId}</button>
+                        </span>
+                    </div>
+                    <div className="quick-summary__item">
+                        <span className="quick-summary__label">서비스유형</span>
+                        <span className="quick-summary__value">
+                            <span className={`product-type-tag ${getProductTypeClass(data.productType)}`}>{data.productType}</span>
+                            {data.serviceName && <span style={{fontSize: 'var(--font-size-sm)'}}>{data.serviceName}</span>}
+                        </span>
+                    </div>
+                    <div className="quick-summary__item">
+                        <span className="quick-summary__label">이용상태</span>
+                        <span className="quick-summary__value">
+                            <span className={`entry-status ${getEntryStatusClass(data.usageStatus)}`}>{data.usageStatus}</span>
+                        </span>
+                    </div>
+                    <div className="quick-summary__item">
+                        <span className="quick-summary__label">주차기간</span>
+                        <span className="quick-summary__period">
+                            <span>{formatNullable(data.usagePeriodStart)}</span>
+                            <span className="arrow-icon">&rarr;</span>
+                            <span>{formatNullable(data.usagePeriodEnd)}</span>
+                        </span>
+                    </div>
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Panel Sub-Sections (카드 기반 컴포넌트)
+        // ============================================================
+
+        // ── 2-1. 기본 정보 섹션 ──
+        function PanelBasicInfo({ data }) {
+            const parkinglotDisplay = data.sectionName
+                ? `${data.parkingLotName} / ${data.sectionName}`
+                : data.parkingLotName;
+
+            return (
+                <SectionCard title="기본 정보">
+                    <div className="detail-grid">
+                        <div className="detail-item">
+                            <span className="detail-label">결제번호</span>
+                            <span className="detail-value">
+                                <button className="link-action" onClick={() => goToPayment(data.paymentId)}>{data.paymentId}</button>
+                            </span>
+                        </div>
+                        <div className="detail-item">
+                            <span className="detail-label">이용 서비스</span>
+                            <span className="detail-value" style={{display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap'}}>
+                                <span className={`product-type-tag ${getProductTypeClass(data.productType)}`}>{data.productType}</span>
+                                {data.serviceName && <span>{data.serviceName}</span>}
+                                {data.isWebDiscount && <span className="parking-type-tag">웹할인</span>}
+                            </span>
+                        </div>
+                        <div className="detail-item">
+                            <span className="detail-label">주차시작일시</span>
+                            <span className="detail-value">{formatNullable(data.usagePeriodStart)}</span>
+                        </div>
+                        <div className="detail-item">
+                            <span className="detail-label">주차종료일시</span>
+                            <span className="detail-value">{formatNullable(data.usagePeriodEnd)}</span>
+                        </div>
+                        <div className="detail-item full">
+                            <span className="detail-label">주차장 / 구획</span>
+                            <span className="detail-value">
+                                <button className="link-action" onClick={() => goToParkinglot(data.parkingLotId)}>{parkinglotDisplay}</button>
+                            </span>
+                        </div>
+                        <div className="detail-item">
+                            <span className="detail-label">결제채널</span>
+                            <span className="detail-value">{formatNullable(data.paymentChannel)}</span>
+                        </div>
+                        <div className="detail-item">
+                            <span className="detail-label">이용상태</span>
+                            <span className="detail-value">
+                                <span className={`entry-status ${getEntryStatusClass(data.usageStatus)}`}>{data.usageStatus}</span>
+                            </span>
+                        </div>
+                    </div>
+                </SectionCard>
+            );
+        }
+
+        // ── 2-2. 이용정보 섹션 ──
+        function PanelUsageInfo({ data }) {
+            return (
+                <SectionCard title="이용정보">
+                    <div className="detail-grid">
+                        <div className="detail-item">
+                            <span className="detail-label">회원번호</span>
+                            <span className="detail-value">
+                                <button className="link-action" onClick={() => goToUser(data.userId)}>{data.userId}</button>
+                            </span>
+                        </div>
+                        <div className="detail-item">
+                            <span className="detail-label">회원명</span>
+                            <span className="detail-value">{formatNullable(data.buyerName)}</span>
+                        </div>
+                        <div className="detail-item">
+                            <span className="detail-label">차량번호</span>
+                            <span className="detail-value" style={{fontWeight: 'var(--font-weight-bold)', letterSpacing: '0.5px'}}>{data.vehicleNumber}</span>
+                        </div>
+                    </div>
+                </SectionCard>
+            );
+        }
+
+        // ── 3-A. 입차 처리 + 처리 이력 섹션 ──
+        function PanelEntryProcessing({ data, onToast }) {
+            const [entryDate, setEntryDate] = useState(data.entryTime ? formatDateOnly(data.entryTime) : '');
+            const [entryTime, setEntryTime] = useState(data.entryTime ? formatTimeOnly(data.entryTime) : '');
+            const [inlineMsg, setInlineMsg] = useState(null);
 
             useEffect(() => {
-                if (vehicle) {
-                    setIsEditing(false);
-                    setEditForm({
-                        buyerName: vehicle.buyerName || '',
-                        buyerPhone: vehicle.buyerPhone || '',
-                        safeNumber: vehicle.safeNumber || '',
-                        vehicleModel: vehicle.vehicleModel || '',
-                        departureFlight: vehicle.departureFlight || '',
-                        arrivalFlight: vehicle.arrivalFlight || '',
-                        arrivalTerminal: vehicle.arrivalTerminal || '',
-                    });
+                setEntryDate(data.entryTime ? formatDateOnly(data.entryTime) : '');
+                setEntryTime(data.entryTime ? formatTimeOnly(data.entryTime) : '');
+                setInlineMsg(null);
+            }, [data.id]);
+
+            useEffect(() => {
+                if (!inlineMsg) return;
+                const t = setTimeout(() => setInlineMsg(null), 3000);
+                return () => clearTimeout(t);
+            }, [inlineMsg]);
+
+            const isFormValid = entryDate && entryTime;
+
+            const handleRegisterEntry = () => {
+                if (!isFormValid) {
+                    setInlineMsg({ type: 'error', message: '입차 날짜와 시간을 모두 입력해 주세요.' });
+                    return;
                 }
-            }, [vehicle]);
+                console.log('[입차 처리]', { entryDate, entryTime });
+                setInlineMsg({ type: 'success', message: `입차 처리 완료: ${entryDate} ${entryTime}` });
+            };
 
-            if (!vehicle) return null;
+            const history = data.processingHistory || [];
 
-            const entryStatus = getEntryStatus(vehicle);
+            return (
+                <SectionCard title="입차 처리">
+                    <div className="entry-form">
+                        <div className="entry-form__group">
+                            <span className="entry-form__label">입차 날짜</span>
+                            <input type="date" className="entry-form__input" value={entryDate} onChange={e => setEntryDate(e.target.value)} />
+                        </div>
+                        <div className="entry-form__group">
+                            <span className="entry-form__label">입차 시간</span>
+                            <input type="time" className="entry-form__input" value={entryTime} onChange={e => setEntryTime(e.target.value)} />
+                        </div>
+                        <button
+                            className="btn btn-primary entry-form__btn"
+                            style={{height: 34, fontSize: '12px', padding: '0 14px'}}
+                            onClick={handleRegisterEntry}
+                            disabled={!isFormValid}
+                        >
+                            입차 등록
+                        </button>
+                    </div>
+                    {inlineMsg && (
+                        <div className={`inline-toast ${inlineMsg.type}`}>
+                            {inlineMsg.type === 'success' ? '✓' : '!'} {inlineMsg.message}
+                        </div>
+                    )}
 
-            const handleEditChange = (field, value) => {
+                    <div className="history-sub-header">처리 이력</div>
+                    {history.length > 0 ? (
+                        <table className="history-table">
+                            <thead>
+                                <tr>
+                                    <th>처리번호</th>
+                                    <th>구분</th>
+                                    <th>처리내용</th>
+                                    <th>처리일시</th>
+                                    <th>담당자</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {history.map(h => (
+                                    <tr key={h.id}>
+                                        <td>{h.id}</td>
+                                        <td>{h.category}</td>
+                                        <td style={{textAlign: 'left'}}>{h.content}</td>
+                                        <td style={{whiteSpace: 'nowrap'}}>{formatNullable(h.processedAt)}</td>
+                                        <td>{h.handler}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <div className="empty-state--compact">
+                            <div className="empty-state__icon">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{opacity: 0.35}}>
+                                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
+                                    <rect x="9" y="3" width="6" height="4" rx="1"/>
+                                    <line x1="9" y1="12" x2="15" y2="12"/>
+                                    <line x1="9" y1="16" x2="13" y2="16"/>
+                                </svg>
+                            </div>
+                            <div className="empty-state__title">처리 이력 없음</div>
+                            <div className="empty-state__desc">아직 등록된 처리 이력이 없습니다.</div>
+                        </div>
+                    )}
+                </SectionCard>
+            );
+        }
+
+        // ── 3-B. 고객 입력 부가정보 섹션 ──
+        function PanelCustomerExtraInfo({ data, vehicle, onSave, onToast }) {
+            const info = data.additionalCustomerInfo;
+            const [isEditing, setIsEditing] = useState(false);
+            const [editForm, setEditForm] = useState({
+                departureFlight: info?.departureFlight || '',
+                arrivalFlight: info?.arrivalFlight || '',
+                vehicleModel: info?.vehicleModel || '',
+            });
+
+            useEffect(() => {
+                if (info) {
+                    setEditForm({
+                        departureFlight: info.departureFlight || '',
+                        arrivalFlight: info.arrivalFlight || '',
+                        vehicleModel: info.vehicleModel || '',
+                    });
+                    setIsEditing(false);
+                }
+            }, [data.id]);
+
+            const handleChange = (field, value) => {
                 setEditForm(prev => ({ ...prev, [field]: value }));
             };
 
             const handleSave = () => {
-                onSave(vehicle.id, editForm);
+                console.log('[부가정보 저장]', editForm);
+                if (onSave) onSave(vehicle.id, editForm);
+                if (onToast) onToast({ type: 'success', message: '고객 부가정보가 수정되었습니다.' });
                 setIsEditing(false);
             };
 
             const handleCancel = () => {
                 setEditForm({
-                    buyerName: vehicle.buyerName || '',
-                    buyerPhone: vehicle.buyerPhone || '',
-                    safeNumber: vehicle.safeNumber || '',
-                    vehicleModel: vehicle.vehicleModel || '',
-                    departureFlight: vehicle.departureFlight || '',
-                    arrivalFlight: vehicle.arrivalFlight || '',
-                    arrivalTerminal: vehicle.arrivalTerminal || '',
+                    departureFlight: info?.departureFlight || '',
+                    arrivalFlight: info?.arrivalFlight || '',
+                    vehicleModel: info?.vehicleModel || '',
                 });
                 setIsEditing(false);
             };
+
+            const editBtn = !isEditing ? (
+                <button
+                    className="btn btn-outline"
+                    style={{padding: '3px 10px', fontSize: '11px'}}
+                    onClick={e => { e.stopPropagation(); setIsEditing(true); }}
+                >
+                    수정
+                </button>
+            ) : null;
+
+            return (
+                <SectionCard
+                    title="고객 입력 부가정보"
+                    collapsible={true}
+                    defaultCollapsed={true}
+                    headerRight={editBtn}
+                >
+                    <div className="detail-grid">
+                        <div className="detail-item">
+                            <span className="detail-label">출국항공편</span>
+                            {isEditing ? (
+                                <input className="detail-edit-input" value={editForm.departureFlight} onChange={e => handleChange('departureFlight', e.target.value)} placeholder="KE000" />
+                            ) : (
+                                <span className="detail-value">{formatNullable(info?.departureFlight)}</span>
+                            )}
+                        </div>
+                        <div className="detail-item">
+                            <span className="detail-label">입국항공편</span>
+                            {isEditing ? (
+                                <input className="detail-edit-input" value={editForm.arrivalFlight} onChange={e => handleChange('arrivalFlight', e.target.value)} placeholder="KE000" />
+                            ) : (
+                                <span className="detail-value">{formatNullable(info?.arrivalFlight)}</span>
+                            )}
+                        </div>
+                        <div className="detail-item">
+                            <span className="detail-label">차종</span>
+                            {isEditing ? (
+                                <input className="detail-edit-input" value={editForm.vehicleModel} onChange={e => handleChange('vehicleModel', e.target.value)} placeholder="차종 입력" />
+                            ) : (
+                                <span className="detail-value">{formatNullable(info?.vehicleModel)}</span>
+                            )}
+                        </div>
+                    </div>
+                    {isEditing && (
+                        <div className="detail-actions" style={{marginTop: 16}}>
+                            <button className="btn btn-success" style={{padding: '6px 20px', fontSize: '13px'}} onClick={handleSave}>저장</button>
+                            <button className="btn btn-outline" style={{padding: '6px 20px', fontSize: '13px'}} onClick={handleCancel}>취소</button>
+                        </div>
+                    )}
+                </SectionCard>
+            );
+        }
+
+        // ── 4-A. 주차권 요약정보 섹션 ──
+        function PanelTicketSummary({ data }) {
+            const summary = data.ticketSummary;
+            if (!summary) return null;
+
+            const items = [
+                { label: '주차권 이름', value: summary.ticketName },
+                { label: '최대 이용 가능 수량', value: summary.maxUsageCount != null ? `${summary.maxUsageCount}회` : '무제한' },
+                { label: '노출시간', value: summary.exposureTime },
+                { label: '사용시간', value: summary.usageTime },
+                { label: '사용가능요일', value: summary.availableDays },
+                { label: '안내사항', value: summary.notice },
+                { label: '구매 전 유의사항', value: summary.preNotice },
+                { label: '구매 후 유의사항', value: summary.postNotice },
+            ];
+
+            return (
+                <SectionCard title="주차권 요약정보" collapsible={true} defaultCollapsed={true}>
+                    <ul className="summary-list">
+                        {items.map(item => (
+                            <li key={item.label}>
+                                <span className="summary-list__label">{item.label}</span>
+                                <span className="summary-list__value">{formatNullable(item.value)}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </SectionCard>
+            );
+        }
+
+        // ── Section ID → 컴포넌트 매핑 ──
+        const SECTION_COMPONENT_MAP = {
+            [SectionId.BASIC_INFO]:          PanelBasicInfo,
+            [SectionId.USAGE_INFO]:          PanelUsageInfo,
+            [SectionId.ENTRY_PROCESSING]:    PanelEntryProcessing,
+            [SectionId.CUSTOMER_EXTRA_INFO]: PanelCustomerExtraInfo,
+            [SectionId.TICKET_SUMMARY]:      PanelTicketSummary,
+        };
+
+        // ============================================================
+        // VehicleDetailPanel Component (카드 기반 렌더링)
+        // ============================================================
+        function VehicleDetailPanel({ vehicle, onClose, onSave }) {
+            const [panelToast, setPanelToast] = useState(null);
+
+            useEffect(() => {
+                if (!panelToast) return;
+                const t = setTimeout(() => setPanelToast(null), 3000);
+                return () => clearTimeout(t);
+            }, [panelToast]);
+
+            if (!vehicle) return null;
+
+            const detail = enrichForDetail(vehicle);
+            const enumType = detail._enumType;
+            const sections = sectionConfigByProductType[enumType] || [];
 
             return (
                 <>
                     <div className={`detail-overlay ${vehicle ? 'open' : ''}`} onClick={onClose} />
                     <div className={`detail-panel ${vehicle ? 'open' : ''}`}>
                         <div className="detail-panel-header">
-                            <span className="detail-panel-title">차량 상세정보</span>
-                            <button className="detail-panel-close" onClick={onClose}>×</button>
+                            <span className="detail-panel-title">결제주차권 상세</span>
+                            <button className="detail-panel-close" onClick={onClose} title="닫기">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            </button>
                         </div>
                         <div className="detail-panel-body">
-                            <div className="detail-section">
-                                <div className="detail-section-title">차량 정보</div>
-                                <div className="detail-grid">
-                                    <div className="detail-item">
-                                        <span className="detail-label">차량번호</span>
-                                        <span className="detail-value">{vehicle.vehicleNumber}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">이용상태</span>
-                                        <span className="detail-value">{entryStatus}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">상품유형</span>
-                                        <span className="detail-value">
-                                            <span className={`product-type-tag ${getProductTypeClass(vehicle.productType)}`}>
-                                                {vehicle.productType}
-                                            </span>
-                                            {vehicle.isWebDiscount && <span className="parking-type-tag" style={{marginLeft: 4}}>웹할인</span>}
-                                        </span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">결제상태</span>
-                                        <span className="detail-value">
-                                            <span className={`payment-status ${getPaymentStatusClass(vehicle.paymentStatus)}`}>
-                                                {vehicle.paymentStatus}
-                                            </span>
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                            {/* Quick Summary */}
+                            <QuickSummary data={detail} />
 
-                            <div className="detail-section">
-                                <div className="detail-section-title">주차 정보</div>
-                                <div className="detail-grid">
-                                    <div className="detail-item full">
-                                        <span className="detail-label">주차장</span>
-                                        <span className="detail-value">{vehicle.parkingLotName}</span>
-                                    </div>
-                                    <div className="detail-item full">
-                                        <span className="detail-label">상품명</span>
-                                        <span className="detail-value">{vehicle.productName}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">이용시작</span>
-                                        <span className="detail-value">{vehicle.usagePeriodStart || '-'}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">이용종료</span>
-                                        <span className="detail-value">{vehicle.usagePeriodEnd || '-'}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">입차예상</span>
-                                        <span className="detail-value">{vehicle.expectedEntryTime || '-'}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">입차일시</span>
-                                        <span className="detail-value">{vehicle.entryTime || '-'}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">출차일시</span>
-                                        <span className="detail-value">{vehicle.exitTime || '-'}</span>
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">결제금액</span>
-                                        <span className="detail-value">{formatAmount(vehicle.saleAmount)}</span>
-                                    </div>
-                                </div>
-                            </div>
+                            {/* Sections */}
+                            {sections.map(config => {
+                                if (!evaluateSectionCondition(config, detail)) return null;
 
-                            <div className="detail-section">
-                                <div className="detail-section-title" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-                                    <span>구매자 정보</span>
-                                    {!isEditing && (
-                                        <button className="btn btn-outline" style={{padding: '4px 12px', fontSize: '12px'}} onClick={() => setIsEditing(true)}>
-                                            수정
-                                        </button>
-                                    )}
-                                </div>
-                                <div className="detail-grid">
-                                    <div className="detail-item">
-                                        <span className="detail-label">구매자명</span>
-                                        {isEditing ? (
-                                            <input className="detail-edit-input" value={editForm.buyerName} onChange={e => handleEditChange('buyerName', e.target.value)} />
-                                        ) : (
-                                            <span className="detail-value">{vehicle.buyerName}</span>
-                                        )}
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">연락처</span>
-                                        {isEditing ? (
-                                            <input className="detail-edit-input" value={editForm.buyerPhone} onChange={e => handleEditChange('buyerPhone', e.target.value)} placeholder="010-0000-0000" />
-                                        ) : (
-                                            <span className="detail-value">{vehicle.buyerPhone}</span>
-                                        )}
-                                    </div>
-                                    <div className="detail-item full">
-                                        <span className="detail-label">안심번호</span>
-                                        {isEditing ? (
-                                            <input className="detail-edit-input" value={editForm.safeNumber} onChange={e => handleEditChange('safeNumber', e.target.value)} placeholder="050-0000-0000" />
-                                        ) : (
-                                            <span className="detail-value">{vehicle.safeNumber || '-'}</span>
-                                        )}
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">차량모델</span>
-                                        {isEditing ? (
-                                            <input className="detail-edit-input" value={editForm.vehicleModel} onChange={e => handleEditChange('vehicleModel', e.target.value)} />
-                                        ) : (
-                                            <span className="detail-value">{vehicle.vehicleModel || '-'}</span>
-                                        )}
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">출국 항공편</span>
-                                        {isEditing ? (
-                                            <input className="detail-edit-input" value={editForm.departureFlight} onChange={e => handleEditChange('departureFlight', e.target.value)} placeholder="KE000" />
-                                        ) : (
-                                            <span className="detail-value">{vehicle.departureFlight || '-'}</span>
-                                        )}
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">입국 항공편</span>
-                                        {isEditing ? (
-                                            <input className="detail-edit-input" value={editForm.arrivalFlight} onChange={e => handleEditChange('arrivalFlight', e.target.value)} placeholder="KE000" />
-                                        ) : (
-                                            <span className="detail-value">{vehicle.arrivalFlight || '-'}</span>
-                                        )}
-                                    </div>
-                                    <div className="detail-item">
-                                        <span className="detail-label">입국 터미널</span>
-                                        {isEditing ? (
-                                            <input className="detail-edit-input" value={editForm.arrivalTerminal} onChange={e => handleEditChange('arrivalTerminal', e.target.value)} placeholder="T1" />
-                                        ) : (
-                                            <span className="detail-value">{vehicle.arrivalTerminal || '-'}</span>
-                                        )}
-                                    </div>
-                                </div>
-                                {isEditing && (
-                                    <div className="detail-actions" style={{marginTop: 16}}>
-                                        <button className="btn btn-success" onClick={handleSave}>저장</button>
-                                        <button className="btn btn-outline" onClick={handleCancel}>취소</button>
-                                    </div>
-                                )}
-                            </div>
+                                const Component = SECTION_COMPONENT_MAP[config.id];
+                                if (!Component) return null;
+
+                                return (
+                                    <Component
+                                        key={config.id}
+                                        data={detail}
+                                        vehicle={vehicle}
+                                        onSave={onSave}
+                                        onToast={setPanelToast}
+                                    />
+                                );
+                            })}
                         </div>
+
+                        {/* Panel Toast (sticky bottom) */}
+                        {panelToast && (
+                            <div style={{
+                                flexShrink: 0,
+                                padding: '10px 20px',
+                                background: panelToast.type === 'success' ? '#f0fdf4' : '#fef2f2',
+                                borderTop: '1px solid',
+                                borderColor: panelToast.type === 'success' ? '#bbf7d0' : '#fecaca',
+                                textAlign: 'center', fontSize: '13px', fontWeight: 500,
+                                color: panelToast.type === 'success' ? '#166534' : '#991b1b',
+                                animation: 'toastIn 300ms ease'
+                            }}>
+                                {panelToast.type === 'success' ? '✓ ' : '! '}{panelToast.message}
+                            </div>
+                        )}
                     </div>
                 </>
             );
         }
 
         // ============================================================
-        // LNB Menu Data
+        // 헤더 + LNB: nav-menu.js 에서 자동 렌더링
         // ============================================================
-        const LNB_MENUS = [
-            { id: 'sales', label: '판매관리', children: [
-                { label: '대쉬보드', href: '#' },
-                { label: '결제현황 관리', href: '#' },
-                { label: '주차관리', href: '340_결제주차권관리.html', active: true },
-                { label: '주차관리(캘린더)', href: '350_결제주차권관리_캘린더(월간수요).html' },
-                { label: '맵뷰', href: '#' },
-                { label: '환불관리', href: '#' },
-            ]},
-            { id: 'settle', label: '정산 관리', children: [{ label: '계좌환불', href: '#' }, { label: '마감처리', href: '#' }, { label: '정산내역서', href: '#' }] },
-            { id: 'erp', label: 'ERP', children: [{ label: '매출내역 전송', href: '#' }, { label: '정산내역서 전송', href: '#' }] },
-            { id: 'info', label: '정보 관리', children: [{ label: '일반주차장 관리', href: '#' }, { label: '수정요청', href: '#' }, { label: '등록요청', href: '#' }] },
-            { id: 'share', label: '공유 관리', children: [{ label: '공유주차장', href: '#' }, { label: 'IoT 관리', href: '#' }, { label: '공유시간정책', href: '#' }] },
-            { id: 'partner', label: '제휴 관리', children: [{ label: '제휴주차장 관리', href: '#' }, { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true }, { label: '제휴상품상세', href: '320_제휴상품상세.html', indent: true }, { label: '월주차 현황', href: '#' }, { label: '월주차 신청', href: '#' }, { label: '거래처(BP)', href: '#' }, { label: '정산대상(STG)', href: '#' }, { label: '제휴신청목록', href: '#' }, { label: '제휴주차상품 예약관리', href: '#' }, { label: '제휴계약관리', href: '#' }] },
-            { id: 'autopay', label: '자동결제 관리', children: [{ label: '자동결제 관리', href: '#' }] },
-            { id: 'charger', label: '충전소 관리', children: [{ label: 'EV 충전소', href: '#' }] },
-            { id: 'coupon', label: '포인트/쿠폰/상품권 관리', children: [{ label: '포인트 관리', href: '#' }, { label: '쿠폰 관리', href: '#' }, { label: '상품권 관리', href: '#' }] },
-            { id: 'partners', label: '파트너 관리', children: [{ label: '파트너 관리', href: '#' }, { label: '파트너 주차장 변경요청', href: 'I050-parking-change-request.html' }, { label: '입출차 확인', href: 'P120-parking-log.html' }] },
-            { id: 'service', label: '서비스 관리', children: [{ label: '메시지', href: '#' }, { label: '공지사항', href: '#' }, { label: '배너', href: '#' }, { label: '회원관리', href: '#' }] },
-            { id: 'admin', label: '어드민 관리', children: [{ label: '어드민관리', href: '#' }, { label: '권한관리', href: '#' }, { label: '패스워드변경', href: '#' }] },
-        ];
-
-        // ============================================================
-        // Header Component
-        // ============================================================
-        function Header({ onMenuToggle }) {
-            return (
-                <header className="header">
-                    <button className="header__menu-toggle" onClick={onMenuToggle}>
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-                    </button>
-                    <div className="header__logo">
-                        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                            <rect x="2" y="2" width="28" height="28" rx="8" fill="#00A8FF"/>
-                            <text x="16" y="22" textAnchor="middle" fontSize="18" fontWeight="700" fill="#fff" fontFamily="sans-serif">P</text>
-                        </svg>
-                        모두의주차장 관리자
-                        <span className="header__env">dev</span>
-                    </div>
-                    <div className="header__right">
-                        <span className="header__user">elice님</span>
-                        <a href="javascript:void(0)" className="header__link">내정보</a>
-                        <a href="javascript:void(0)" className="header__link">로그아웃</a>
-                    </div>
-                </header>
-            );
-        }
-
-        // ============================================================
-        // LNB (Left Navigation Bar) Component
-        // ============================================================
-        function LNB({ isOpen }) {
-            const [openGroups, setOpenGroups] = useState({ sales: true });
-
-            const toggleGroup = (groupId) => {
-                setOpenGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
-            };
-
-            return (
-                <nav className={`lnb ${isOpen ? 'open' : ''}`}>
-                    {LNB_MENUS.map(menu => (
-                        <div key={menu.id}>
-                            <div
-                                className={`lnb-group-label ${openGroups[menu.id] ? 'open' : ''}`}
-                                onClick={() => toggleGroup(menu.id)}
-                            >
-                                {menu.label} <span className="arrow">▼</span>
-                            </div>
-                            <div className={`lnb-group-children ${openGroups[menu.id] ? 'open' : ''}`}>
-                                {menu.children.map(child => (
-                                    <a
-                                        key={child.label}
-                                        className={`lnb-item ${child.active ? 'active' : ''}`}
-                                        href={child.href || '#'}
-                                        style={child.indent ? {paddingLeft:'48px'} : undefined}
-                                    >{child.label}</a>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </nav>
-            );
-        }
 
         // ============================================================
         // Footer Component
@@ -1534,8 +2116,6 @@
             const [selectedVehicle, setSelectedVehicle] = useState(null);
             const [toast, setToast] = useState(null);
             const [currentPage, setCurrentPage] = useState(1);
-            const [lnbOpen, setLnbOpen] = useState(false);
-
             // Search handler
             const handleSearch = useCallback((params) => {
                 setSearchParams(params);
@@ -1677,10 +2257,7 @@
             ], []);
 
             return (
-                <div className="app-layout">
-                    <Header onMenuToggle={() => setLnbOpen(prev => !prev)} />
-                    <div className={`lnb-overlay ${lnbOpen ? 'show' : ''}`} onClick={() => setLnbOpen(false)} />
-                    <LNB isOpen={lnbOpen} />
+                <>
                     <main className="main">
                         {/* Page Header */}
                         <div className="page-header">
@@ -1724,7 +2301,7 @@
 
                     {/* Toast */}
                     <Toast toast={toast} onDone={() => setToast(null)} />
-                </div>
+                </>
             );
         }
 
