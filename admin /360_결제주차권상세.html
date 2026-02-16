@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주차관리 - 결제주차권 상세 | 모두의주차장 관리자</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="common.css">
+        <style>
+/* ============================================================
+   Page-specific: 360_결제주차권상세
+   ============================================================ */
+
+/* App Layout */
+.app-layout { display: flex; min-height: 100vh; padding-top: var(--header-h); }
+.app-layout > .main { flex: 1; min-width: 0; overflow-x: hidden; margin-top: 0; }
+
+/* Page Header */
+.page-header { margin-bottom: var(--space-6); }
+.page-title {
+  font-size: 22px; font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary); margin-bottom: var(--space-1);
+}
+.page-subtitle {
+  font-size: var(--font-size-md); color: var(--color-text-secondary);
+}
+
+/* Badges (340 동일) */
+.product-type-tag {
+  display: inline-block; padding: 2px 6px;
+  font-size: 10px; font-weight: var(--font-weight-medium);
+  border: 1px solid var(--color-text-tertiary); color: var(--color-text-tertiary);
+  border-radius: 2px; white-space: nowrap;
+}
+.product-type-tag.pass { border-color: var(--color-status-info); color: var(--color-status-info); }
+.product-type-tag.share { border-color: var(--color-status-success); color: var(--color-status-success); }
+.product-type-tag.resident { border-color: #8B5CF6; color: #8B5CF6; }
+.product-type-tag.short { border-color: var(--color-status-warning); color: var(--color-status-warning); }
+.parking-type-tag {
+  display: inline-block; padding: 2px 6px;
+  font-size: 10px; font-weight: var(--font-weight-medium);
+  background: var(--color-bg-secondary); color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default); border-radius: 2px;
+}
+
+/* Payment Status */
+.payment-status {
+  display: inline-flex; align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  border: 1px solid var(--color-border-default); border-radius: var(--radius-sm);
+  background: var(--color-bg-surface); white-space: nowrap;
+}
+.payment-status.completed { color: var(--color-status-success); border-color: var(--color-status-success); }
+.payment-status.cancelled { color: #b91c1c; border-color: #fca5a5; background: #fef2f2; }
+
+/* Entry Status */
+.entry-status {
+  display: inline-flex; align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm); white-space: nowrap;
+}
+.entry-status.waiting { color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; }
+.entry-status.available { color: #4d7060; background: #f7faf8; border: 1px solid #d5e5da; }
+.entry-status.active { color: #2563eb; background: #f0f4ff; border: 1px solid #dbeafe; }
+.entry-status.done { color: #6b7280; background: #f9fafb; border: 1px solid #e5e7eb; }
+
+/* Detail Sections */
+.detail-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-5);
+  overflow: hidden;
+}
+.detail-card__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-bg-tertiary);
+}
+.detail-card__header h3 {
+  font-size: var(--font-size-base); font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary); margin: 0;
+}
+.detail-card__body {
+  padding: var(--space-5) var(--space-6);
+}
+
+/* Detail Grid (key-value) */
+.detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+.detail-item { display: flex; flex-direction: column; gap: 2px; }
+.detail-item.full { grid-column: 1 / -1; }
+.detail-label {
+  font-size: var(--font-size-xs); color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+.detail-value {
+  font-size: var(--font-size-base); color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Link Button */
+.link-action {
+  background: none; border: none; padding: 0;
+  color: var(--color-primary-main); font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold); cursor: pointer;
+  text-decoration: underline; font-family: inherit;
+}
+.link-action:hover { color: var(--color-primary-dark); }
+
+/* Demo Switcher */
+.demo-switcher {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-6);
+  margin-bottom: var(--space-5);
+  display: flex; align-items: center; gap: var(--space-4); flex-wrap: wrap;
+}
+.demo-switcher__label {
+  font-size: var(--font-size-md); font-weight: var(--font-weight-semibold);
+  color: #92400e; white-space: nowrap;
+}
+.demo-switcher__buttons {
+  display: flex; gap: 4px; flex-wrap: wrap;
+}
+.demo-switcher__btn {
+  height: 36px; padding: 0 var(--space-4);
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--color-border-default); border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary); background: var(--color-bg-surface);
+  cursor: pointer; transition: all var(--transition-fast); white-space: nowrap;
+}
+.demo-switcher__btn:hover { background: var(--color-bg-secondary); border-color: var(--color-border-medium); }
+.demo-switcher__btn.active {
+  background: var(--color-primary-main); color: var(--color-text-inverse);
+  border-color: var(--color-primary-main);
+}
+
+/* Entry Processing Form */
+.entry-form {
+  display: flex; align-items: flex-end; gap: var(--space-3); flex-wrap: wrap;
+  margin-bottom: var(--space-5);
+  padding: var(--space-4);
+  background: var(--color-bg-secondary);
+  border-radius: var(--radius-sm);
+}
+.entry-form__group {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.entry-form__label {
+  font-size: var(--font-size-xs); color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+.entry-form__input {
+  height: 36px; padding: 0 var(--space-3);
+  font-size: var(--font-size-md); border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm); background: var(--color-bg-surface);
+  color: var(--color-text-primary); outline: none;
+  transition: border-color var(--transition-fast);
+}
+.entry-form__input:focus {
+  border-color: var(--color-primary-main);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+}
+
+/* Processing History Table */
+.history-table {
+  width: 100%; border-collapse: collapse;
+}
+.history-table th {
+  background: var(--color-bg-tertiary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm); color: var(--color-text-secondary);
+  padding: var(--space-3); text-align: center;
+  border-bottom: 2px solid var(--color-border-default);
+}
+.history-table td {
+  padding: var(--space-3); text-align: center;
+  font-size: var(--font-size-md); color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-light);
+}
+.history-table tbody tr:last-child td { border-bottom: none; }
+
+/* Edit Input */
+.detail-edit-input {
+  width: 100%; padding: 6px 10px;
+  font-size: var(--font-size-md); color: var(--color-text-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm); background: var(--color-bg-surface);
+  outline: none; transition: border-color var(--transition-fast);
+  font-family: inherit;
+}
+.detail-edit-input:focus { border-color: var(--color-primary-main); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+
+/* Detail Actions */
+.detail-actions {
+  display: flex; gap: var(--space-2); margin-top: var(--space-4);
+}
+
+/* Summary List */
+.summary-list {
+  list-style: none; padding: 0; margin: 0;
+}
+.summary-list li {
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex; gap: var(--space-4);
+}
+.summary-list li:last-child { border-bottom: none; }
+.summary-list__label {
+  min-width: 140px; flex-shrink: 0;
+  font-size: var(--font-size-sm); color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+.summary-list__value {
+  font-size: var(--font-size-md); color: var(--color-text-primary);
+  line-height: 1.5; white-space: pre-wrap;
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center; padding: var(--space-10) var(--space-5);
+  color: var(--color-text-disabled);
+}
+.empty-state p { font-size: var(--font-size-md); margin-top: var(--space-2); }
+
+.no-data { font-size: var(--font-size-sm); color: var(--color-text-disabled); }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .detail-grid { grid-template-columns: 1fr; }
+  .demo-switcher { flex-direction: column; align-items: flex-start; }
+  .entry-form { flex-direction: column; align-items: stretch; }
+  .summary-list li { flex-direction: column; gap: var(--space-1); }
+  .summary-list__label { min-width: auto; }
+}
+
+        </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect, useCallback, useRef } = React;
+
+        // ═══════════════════════════════════════════════════════════
+        // SECTION: types (maps to types.ts)
+        // ═══════════════════════════════════════════════════════════
+
+        /** ProductType enum */
+        const ProductType = Object.freeze({
+            GENERAL_TICKET:      'GENERAL_TICKET',
+            GENERAL_SHARE:       'GENERAL_SHARE',
+            RESIDENT_SHARE:      'RESIDENT_SHARE',
+            SUBSCRIPTION_TICKET: 'SUBSCRIPTION_TICKET',
+            SHORT_TERM_TICKET:   'SHORT_TERM_TICKET',
+        });
+
+        /** ProductType → 한국어 라벨 */
+        const ProductTypeLabel = Object.freeze({
+            [ProductType.GENERAL_TICKET]:      '일반권',
+            [ProductType.GENERAL_SHARE]:       '일반공유',
+            [ProductType.RESIDENT_SHARE]:      '거주자공유',
+            [ProductType.SUBSCRIPTION_TICKET]: '정기권',
+            [ProductType.SHORT_TERM_TICKET]:   '단기권',
+        });
+
+        /** ProductType → CSS 클래스 */
+        const ProductTypeClass = Object.freeze({
+            [ProductType.GENERAL_TICKET]:      '',
+            [ProductType.GENERAL_SHARE]:       'share',
+            [ProductType.RESIDENT_SHARE]:      'resident',
+            [ProductType.SUBSCRIPTION_TICKET]: 'pass',
+            [ProductType.SHORT_TERM_TICKET]:   'short',
+        });
+
+        /** 주차권 기반 상품 유형 */
+        const TICKET_BASED_TYPES = new Set([
+            ProductType.GENERAL_TICKET,
+            ProductType.SUBSCRIPTION_TICKET,
+            ProductType.SHORT_TERM_TICKET,
+        ]);
+
+        /** 공유 기반 상품 유형 */
+        const SHARE_BASED_TYPES = new Set([
+            ProductType.GENERAL_SHARE,
+            ProductType.RESIDENT_SHARE,
+        ]);
+
+        /** Section ID enum */
+        const SectionId = Object.freeze({
+            BASIC_INFO:          'basicInfo',
+            USAGE_INFO:          'usageInfo',
+            ENTRY_PROCESSING:    'entryProcessing',
+            CUSTOMER_EXTRA_INFO: 'customerExtraInfo',
+            TICKET_SUMMARY:      'ticketSummary',
+        });
+
+        /**
+         * @typedef {Object} PaymentDetail
+         * @property {string} id
+         * @property {string} productType       - ProductType enum
+         * @property {string} serviceName       - 이용 서비스 (예: "심야권", "일반공유")
+         * @property {string} paymentId         - 결제번호
+         * @property {string} paymentChannel    - 결제채널
+         * @property {string} parkingStartAt    - 주차시작일시
+         * @property {string} parkingEndAt      - 주차종료일시
+         * @property {string} parkinglotId      - 주차장 ID
+         * @property {string} parkinglotName    - 주차장명
+         * @property {string|null} sectionName  - 구획 이름
+         * @property {string} usageStatus       - 이용상태
+         * @property {string} userId            - 회원번호
+         * @property {string} userName          - 회원명
+         * @property {string} vehicleNumber     - 차량번호
+         * @property {Object|null} additionalCustomerInfo - 고객 입력 부가정보
+         * @property {Object|null} ticketSummary  - 주차권 요약정보
+         * @property {Object|null} entryProcessing - 입차 처리 정보
+         * @property {Array|null} processingHistory - 처리 이력
+         * @property {unknown} [raw]            - 확장용
+         * @property {Record<string, unknown>} [meta] - 확장용
+         */
+
+        // ═══════════════════════════════════════════════════════════
+        // SECTION: formatters (maps to formatters.ts)
+        // ═══════════════════════════════════════════════════════════
+
+        /**
+         * null/undefined/빈문자열이면 fallback 반환, 아니면 formatter 적용
+         */
+        function formatNullable(value, fallback, formatter) {
+            if (value === null || value === undefined || value === '') {
+                return fallback !== undefined ? fallback : '-';
+            }
+            return formatter ? formatter(value) : value;
+        }
+
+        /** 값이 유효한지 (렌더 가능 여부) */
+        function shouldRenderField(value) {
+            return value !== null && value !== undefined && value !== '';
+        }
+
+        /** 필드 배열 중 하나라도 유효하면 true */
+        function shouldRenderSection(fields) {
+            return fields.some(f => shouldRenderField(f));
+        }
+
+        /** 날짜/시간 포맷 (향후 변경 가능하도록 유틸 분리) */
+        function formatDateTime(dt) {
+            if (!dt) return '-';
+            return dt;
+        }
+
+        /** 날짜만 */
+        function formatDateOnly(dt) {
+            if (!dt) return '-';
+            return dt.split(' ')[0] || '-';
+        }
+
+        /** 시간만 */
+        function formatTimeOnly(dt) {
+            if (!dt) return '';
+            return dt.split(' ')[1] || '';
+        }
+
+        /** 금액 포맷 */
+        function formatAmount(n) {
+            if (!n && n !== 0) return '-';
+            return n.toLocaleString() + '원';
+        }
+
+        /** 이용상태 → CSS 클래스 */
+        function getUsageStatusClass(status) {
+            switch (status) {
+                case '이용대기': return 'waiting';
+                case '이용가능': return 'available';
+                case '이용중':   return 'active';
+                case '이용종료': return 'done';
+                default: return '';
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // SECTION: routing (maps to routing.ts)
+        // ═══════════════════════════════════════════════════════════
+
+        function goToPayment(paymentId) {
+            console.log('[Navigate] 결제상세 →', paymentId);
+            window.location.hash = '#/payment/' + paymentId;
+        }
+
+        function goToParkinglot(parkinglotId) {
+            console.log('[Navigate] 주차장상세 →', parkinglotId);
+            window.location.hash = '#/parkinglot/' + parkinglotId;
+        }
+
+        function goToUser(userId) {
+            console.log('[Navigate] 회원상세 →', userId);
+            window.location.hash = '#/user/' + userId;
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // SECTION: sectionConfig (maps to sectionConfig.ts)
+        // ═══════════════════════════════════════════════════════════
+
+        /**
+         * sectionConfigByProductType
+         * 각 상품유형이 표시할 섹션 목록과 순서.
+         * 렌더 시 이 배열을 map하여 섹션을 순서대로 출력한다.
+         */
+        const sectionConfigByProductType = Object.freeze({
+            [ProductType.GENERAL_TICKET]: [
+                { id: SectionId.BASIC_INFO },
+                { id: SectionId.USAGE_INFO },
+                { id: SectionId.ENTRY_PROCESSING },
+                { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
+                { id: SectionId.TICKET_SUMMARY },
+            ],
+            [ProductType.GENERAL_SHARE]: [
+                { id: SectionId.BASIC_INFO },
+                { id: SectionId.USAGE_INFO },
+                // ENTRY_PROCESSING: 공유 상품은 기본 숨김 (확장 가능하도록 주석으로 남김)
+                // { id: SectionId.ENTRY_PROCESSING, hidden: true },
+                { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
+                // TICKET_SUMMARY: 공유 상품은 절대 미노출
+            ],
+            [ProductType.RESIDENT_SHARE]: [
+                { id: SectionId.BASIC_INFO },
+                { id: SectionId.USAGE_INFO },
+                // ENTRY_PROCESSING: 공유 상품은 기본 숨김
+                // { id: SectionId.ENTRY_PROCESSING, hidden: true },
+                { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
+                // TICKET_SUMMARY: 공유 상품은 절대 미노출
+            ],
+            [ProductType.SUBSCRIPTION_TICKET]: [
+                { id: SectionId.BASIC_INFO },
+                { id: SectionId.USAGE_INFO },
+                { id: SectionId.ENTRY_PROCESSING },
+                { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
+                { id: SectionId.TICKET_SUMMARY },
+            ],
+            [ProductType.SHORT_TERM_TICKET]: [
+                { id: SectionId.BASIC_INFO },
+                { id: SectionId.USAGE_INFO },
+                { id: SectionId.ENTRY_PROCESSING },
+                { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
+                { id: SectionId.TICKET_SUMMARY },
+            ],
+        });
+
+        /** 조건 평가: 섹션이 실제로 렌더될지 결정 */
+        function evaluateSectionCondition(config, data) {
+            if (!config.condition) return true;
+            switch (config.condition) {
+                case 'hasAdditionalInfo':
+                    return data.additionalCustomerInfo != null;
+                default:
+                    return true;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // SECTION: mocks (maps to mocks.ts)
+        // ═══════════════════════════════════════════════════════════
+
+        const MOCK_PAYMENT_DETAILS = Object.freeze({
+            [ProductType.GENERAL_TICKET]: {
+                id: 'DTL-001',
+                productType: ProductType.GENERAL_TICKET,
+                serviceName: '심야권',
+                paymentId: '20260101',
+                paymentChannel: '모두의주차장 앱',
+                parkingStartAt: '2026-01-19 22:00',
+                parkingEndAt: '2026-01-20 06:00',
+                parkinglotId: 'pl-001',
+                parkinglotName: '투루파킹 케이 OPU407 주차장',
+                sectionName: 'A구역 12번',
+                usageStatus: '이용중',
+                userId: 'USR-10001',
+                userName: '김민수',
+                vehicleNumber: '123가4567',
+                additionalCustomerInfo: {
+                    departureFlight: 'KE653',
+                    arrivalFlight: 'KE654',
+                    vehicleModel: '쏘나타',
+                },
+                ticketSummary: {
+                    ticketName: '강남역 심야 주차권',
+                    maxUsageCount: 1,
+                    exposureTime: '18:00 ~ 익일 06:00',
+                    usageTime: '22:00 ~ 익일 06:00',
+                    availableDays: '월, 화, 수, 목, 금',
+                    notice: '심야 시간대(22시~06시)에만 입출차 가능합니다.\n시간 초과 시 추가 요금이 발생할 수 있습니다.',
+                    preNotice: '주차장 만차 시 이용이 불가능할 수 있습니다.',
+                    postNotice: '출차 시 주차권 QR코드를 제시해 주세요.',
+                },
+                entryProcessing: {
+                    entryDate: '2026-01-19',
+                    entryTime: '22:05',
+                },
+                processingHistory: [
+                    { id: 'PH-001', category: '입차', content: '입차 처리 완료 (22:05)', processedAt: '2026-01-19 22:05', handler: 'elice' },
+                    { id: 'PH-002', category: '결제', content: '결제 완료 (신용카드)', processedAt: '2026-01-19 21:50', handler: 'SYSTEM' },
+                ],
+                raw: null,
+                meta: {},
+            },
+            [ProductType.GENERAL_SHARE]: {
+                id: 'DTL-002',
+                productType: ProductType.GENERAL_SHARE,
+                serviceName: '일반공유',
+                paymentId: '20260102',
+                paymentChannel: '모두의주차장 앱',
+                parkingStartAt: '2026-01-19 10:00',
+                parkingEndAt: '2026-01-19 14:00',
+                parkinglotId: 'pl-003',
+                parkinglotName: '선릉역 스무스 지하주차장',
+                sectionName: 'B2-045',
+                usageStatus: '이용종료',
+                userId: 'USR-10002',
+                userName: '박지훈',
+                vehicleNumber: '567다7890',
+                additionalCustomerInfo: null,
+                ticketSummary: null,
+                entryProcessing: null,
+                processingHistory: null,
+                raw: null,
+                meta: {},
+            },
+            [ProductType.RESIDENT_SHARE]: {
+                id: 'DTL-003',
+                productType: ProductType.RESIDENT_SHARE,
+                serviceName: '거주자공유',
+                paymentId: '20260103',
+                paymentChannel: '모두의주차장 웹',
+                parkingStartAt: '2026-01-19 13:00',
+                parkingEndAt: '2026-01-19 19:00',
+                parkinglotId: 'pl-002',
+                parkinglotName: '역삼동 그램 주차빌딩',
+                sectionName: 'A1-012 (102동 앞)',
+                usageStatus: '이용대기',
+                userId: 'USR-10003',
+                userName: '임재혁',
+                vehicleNumber: '456나7890',
+                additionalCustomerInfo: {
+                    departureFlight: null,
+                    arrivalFlight: null,
+                    vehicleModel: '스포티지',
+                },
+                ticketSummary: null,
+                entryProcessing: null,
+                processingHistory: null,
+                raw: null,
+                meta: {},
+            },
+            [ProductType.SUBSCRIPTION_TICKET]: {
+                id: 'DTL-004',
+                productType: ProductType.SUBSCRIPTION_TICKET,
+                serviceName: '월정기권',
+                paymentId: '20260104',
+                paymentChannel: '모두의주차장 앱',
+                parkingStartAt: '2026-01-01 00:00',
+                parkingEndAt: '2026-01-31 23:59',
+                parkinglotId: 'pl-001',
+                parkinglotName: '투루파킹 케이 OPU407 주차장',
+                sectionName: null,
+                usageStatus: '이용가능',
+                userId: 'USR-10001',
+                userName: '김민수',
+                vehicleNumber: '901자1234',
+                additionalCustomerInfo: null,
+                ticketSummary: {
+                    ticketName: '강남역 월정기 주차권',
+                    maxUsageCount: null,
+                    exposureTime: '00:00 ~ 23:59',
+                    usageTime: '00:00 ~ 23:59',
+                    availableDays: '월, 화, 수, 목, 금, 토, 일',
+                    notice: '월 정기권은 해당 월 내 무제한 입출차가 가능합니다.\n지정 주차장에서만 사용 가능합니다.',
+                    preNotice: '정기권 구매 후 취소 시 이용일수에 따라 환불 금액이 달라질 수 있습니다.',
+                    postNotice: '차량번호 자동 인식으로 입출차됩니다. 차량번호 변경 시 고객센터로 문의해 주세요.',
+                },
+                entryProcessing: null,
+                processingHistory: [
+                    { id: 'PH-010', category: '결제', content: '정기권 결제 완료 (신용카드/현대)', processedAt: '2025-12-28 14:00', handler: 'SYSTEM' },
+                ],
+                raw: null,
+                meta: {},
+            },
+            [ProductType.SHORT_TERM_TICKET]: {
+                id: 'DTL-005',
+                productType: ProductType.SHORT_TERM_TICKET,
+                serviceName: '공항 주차대행',
+                paymentId: '20260105',
+                paymentChannel: '모두의주차장 앱',
+                parkingStartAt: '2026-01-20 06:00',
+                parkingEndAt: '2026-01-25 22:00',
+                parkinglotId: 'pl-004',
+                parkinglotName: '인천공항 스카이파킹',
+                sectionName: '발렛 전용구역',
+                usageStatus: '이용대기',
+                userId: 'USR-10005',
+                userName: '장현우',
+                vehicleNumber: '223나5566',
+                additionalCustomerInfo: {
+                    departureFlight: 'KE631',
+                    arrivalFlight: 'KE632',
+                    vehicleModel: '코나',
+                },
+                ticketSummary: {
+                    ticketName: '인천공항 5일 주차대행(발렛)',
+                    maxUsageCount: 1,
+                    exposureTime: '00:00 ~ 23:59',
+                    usageTime: '출국일 차량 인도 ~ 입국일 차량 수령',
+                    availableDays: '월, 화, 수, 목, 금, 토, 일',
+                    notice: '출국 당일 지정 장소에서 차량을 인도해 주세요.\n입국 시 도착 게이트 앞에서 차량을 수령하실 수 있습니다.',
+                    preNotice: '항공편 변경 시 최소 24시간 전 알려주세요.\n차량 내 귀중품은 반드시 소지해 주세요.',
+                    postNotice: '차량 수령 시 외관 상태를 반드시 확인해 주세요.\n문제 발생 시 현장에서 바로 접수해 주세요.',
+                },
+                entryProcessing: null,
+                processingHistory: [
+                    { id: 'PH-020', category: '결제', content: '단기권 결제 완료 (카카오페이)', processedAt: '2026-01-19 15:30', handler: 'SYSTEM' },
+                    { id: 'PH-021', category: '배정', content: '발렛 기사 배정 완료 (박발렛)', processedAt: '2026-01-19 16:00', handler: 'elice' },
+                ],
+                raw: null,
+                meta: {},
+            },
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // SECTION: Components (maps to PaymentDetailView.tsx)
+        // ═══════════════════════════════════════════════════════════
+
+        // ── 2-1. 기본 정보 섹션 ──
+        function BasicInfoSection({ data }) {
+            const parkinglotDisplay = data.sectionName
+                ? `${data.parkinglotName} / ${data.sectionName}`
+                : data.parkinglotName;
+
+            return (
+                <div className="detail-card">
+                    <div className="detail-card__header">
+                        <h3>기본 정보</h3>
+                    </div>
+                    <div className="detail-card__body">
+                        <div className="detail-grid">
+                            <div className="detail-item">
+                                <span className="detail-label">결제번호</span>
+                                <span className="detail-value">
+                                    <button className="link-action" onClick={() => goToPayment(data.paymentId)}>
+                                        {data.paymentId}
+                                    </button>
+                                </span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">이용 서비스</span>
+                                <span className="detail-value">
+                                    <span className={`product-type-tag ${ProductTypeClass[data.productType]}`}>
+                                        {ProductTypeLabel[data.productType]}
+                                    </span>
+                                    <span style={{marginLeft: 8}}>{data.serviceName}</span>
+                                </span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">주차시작일시</span>
+                                <span className="detail-value">{formatDateTime(data.parkingStartAt)}</span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">주차종료일시</span>
+                                <span className="detail-value">{formatDateTime(data.parkingEndAt)}</span>
+                            </div>
+                            <div className="detail-item full">
+                                <span className="detail-label">주차장 / 구획</span>
+                                <span className="detail-value">
+                                    <button className="link-action" onClick={() => goToParkinglot(data.parkinglotId)}>
+                                        {parkinglotDisplay}
+                                    </button>
+                                </span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">결제채널</span>
+                                <span className="detail-value">{formatNullable(data.paymentChannel)}</span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">이용상태</span>
+                                <span className="detail-value">
+                                    <span className={`entry-status ${getUsageStatusClass(data.usageStatus)}`}>
+                                        {data.usageStatus}
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ── 2-2. 이용정보 섹션 ──
+        function UsageInfoSection({ data }) {
+            return (
+                <div className="detail-card">
+                    <div className="detail-card__header">
+                        <h3>이용정보</h3>
+                    </div>
+                    <div className="detail-card__body">
+                        <div className="detail-grid">
+                            <div className="detail-item">
+                                <span className="detail-label">회원번호</span>
+                                <span className="detail-value">
+                                    <button className="link-action" onClick={() => goToUser(data.userId)}>
+                                        {data.userId}
+                                    </button>
+                                </span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">회원명</span>
+                                <span className="detail-value">{formatNullable(data.userName)}</span>
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">차량번호</span>
+                                <span className="detail-value" style={{fontWeight: 'var(--font-weight-bold)'}}>
+                                    {data.vehicleNumber}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // ── 3-A. 입차 처리 + 처리 이력 섹션 ──
+        function EntryProcessingSection({ data, onToast }) {
+            const [entryDate, setEntryDate] = useState(data.entryProcessing?.entryDate || '');
+            const [entryTime, setEntryTime] = useState(data.entryProcessing?.entryTime || '');
+
+            const handleRegisterEntry = () => {
+                if (!entryDate || !entryTime) {
+                    onToast({ type: 'error', message: '입차 날짜와 시간을 모두 입력해 주세요.' });
+                    return;
+                }
+                console.log('[입차 처리]', { entryDate, entryTime });
+                onToast({ type: 'success', message: `입차 처리 완료: ${entryDate} ${entryTime}` });
+            };
+
+            const history = data.processingHistory || [];
+
+            return (
+                <div className="detail-card">
+                    <div className="detail-card__header">
+                        <h3>입차 처리</h3>
+                    </div>
+                    <div className="detail-card__body">
+                        <div className="entry-form">
+                            <div className="entry-form__group">
+                                <span className="entry-form__label">입차 날짜</span>
+                                <input
+                                    type="date"
+                                    className="entry-form__input"
+                                    value={entryDate}
+                                    onChange={e => setEntryDate(e.target.value)}
+                                />
+                            </div>
+                            <div className="entry-form__group">
+                                <span className="entry-form__label">입차 시간</span>
+                                <input
+                                    type="time"
+                                    className="entry-form__input"
+                                    value={entryTime}
+                                    onChange={e => setEntryTime(e.target.value)}
+                                />
+                            </div>
+                            <button className="btn btn-primary" style={{height: 36}} onClick={handleRegisterEntry}>
+                                입차 날짜/시간 등록
+                            </button>
+                        </div>
+
+                        {history.length > 0 && (
+                            <>
+                                <h4 style={{fontSize: 'var(--font-size-sm)', fontWeight: 'var(--font-weight-bold)', color: 'var(--color-text-secondary)', marginBottom: 'var(--space-3)'}}>
+                                    처리 이력
+                                </h4>
+                                <table className="history-table">
+                                    <thead>
+                                        <tr>
+                                            <th>처리번호</th>
+                                            <th>구분</th>
+                                            <th>처리내용</th>
+                                            <th>처리일시</th>
+                                            <th>담당자</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {history.map(h => (
+                                            <tr key={h.id}>
+                                                <td>{h.id}</td>
+                                                <td>{h.category}</td>
+                                                <td style={{textAlign: 'left'}}>{h.content}</td>
+                                                <td>{formatDateTime(h.processedAt)}</td>
+                                                <td>{h.handler}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </>
+                        )}
+                        {history.length === 0 && (
+                            <p className="no-data" style={{textAlign: 'center', padding: 'var(--space-4) 0'}}>처리 이력이 없습니다.</p>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // ── 3-B. 고객 입력 부가정보 섹션 ──
+        function CustomerExtraInfoSection({ data, onToast }) {
+            const info = data.additionalCustomerInfo;
+            const [isEditing, setIsEditing] = useState(false);
+            const [editForm, setEditForm] = useState({
+                departureFlight: info?.departureFlight || '',
+                arrivalFlight: info?.arrivalFlight || '',
+                vehicleModel: info?.vehicleModel || '',
+            });
+
+            useEffect(() => {
+                if (info) {
+                    setEditForm({
+                        departureFlight: info.departureFlight || '',
+                        arrivalFlight: info.arrivalFlight || '',
+                        vehicleModel: info.vehicleModel || '',
+                    });
+                    setIsEditing(false);
+                }
+            }, [data.id]);
+
+            const handleChange = (field, value) => {
+                setEditForm(prev => ({ ...prev, [field]: value }));
+            };
+
+            const handleSave = () => {
+                console.log('[부가정보 저장]', editForm);
+                onToast({ type: 'success', message: '고객 부가정보가 수정되었습니다.' });
+                setIsEditing(false);
+            };
+
+            const handleCancel = () => {
+                setEditForm({
+                    departureFlight: info?.departureFlight || '',
+                    arrivalFlight: info?.arrivalFlight || '',
+                    vehicleModel: info?.vehicleModel || '',
+                });
+                setIsEditing(false);
+            };
+
+            return (
+                <div className="detail-card">
+                    <div className="detail-card__header">
+                        <h3>고객 입력 부가정보</h3>
+                        {!isEditing && (
+                            <button className="btn btn-outline" style={{padding: '4px 12px', fontSize: '12px'}} onClick={() => setIsEditing(true)}>
+                                수정
+                            </button>
+                        )}
+                    </div>
+                    <div className="detail-card__body">
+                        <div className="detail-grid">
+                            <div className="detail-item">
+                                <span className="detail-label">출국항공편</span>
+                                {isEditing ? (
+                                    <input className="detail-edit-input" value={editForm.departureFlight} onChange={e => handleChange('departureFlight', e.target.value)} placeholder="KE000" />
+                                ) : (
+                                    <span className="detail-value">{formatNullable(info?.departureFlight)}</span>
+                                )}
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">입국항공편</span>
+                                {isEditing ? (
+                                    <input className="detail-edit-input" value={editForm.arrivalFlight} onChange={e => handleChange('arrivalFlight', e.target.value)} placeholder="KE000" />
+                                ) : (
+                                    <span className="detail-value">{formatNullable(info?.arrivalFlight)}</span>
+                                )}
+                            </div>
+                            <div className="detail-item">
+                                <span className="detail-label">차종</span>
+                                {isEditing ? (
+                                    <input className="detail-edit-input" value={editForm.vehicleModel} onChange={e => handleChange('vehicleModel', e.target.value)} placeholder="차종 입력" />
+                                ) : (
+                                    <span className="detail-value">{formatNullable(info?.vehicleModel)}</span>
+                                )}
+                            </div>
+                        </div>
+                        {isEditing && (
+                            <div className="detail-actions">
+                                <button className="btn btn-success" onClick={handleSave}>저장</button>
+                                <button className="btn btn-outline" onClick={handleCancel}>취소</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        }
+
+        // ── 4-A. 주차권 요약정보 섹션 ──
+        function TicketSummarySection({ data }) {
+            const summary = data.ticketSummary;
+            if (!summary) return null;
+
+            const items = [
+                { label: '주차권 이름', value: summary.ticketName },
+                { label: '최대 이용 가능 수량', value: summary.maxUsageCount != null ? `${summary.maxUsageCount}회` : '무제한' },
+                { label: '노출시간', value: summary.exposureTime },
+                { label: '사용시간', value: summary.usageTime },
+                { label: '사용가능요일', value: summary.availableDays },
+                { label: '안내사항', value: summary.notice },
+                { label: '구매 전 유의사항', value: summary.preNotice },
+                { label: '구매 후 유의사항', value: summary.postNotice },
+            ];
+
+            return (
+                <div className="detail-card">
+                    <div className="detail-card__header">
+                        <h3>주차권 요약정보</h3>
+                    </div>
+                    <div className="detail-card__body">
+                        <ul className="summary-list">
+                            {items.map(item => (
+                                <li key={item.label}>
+                                    <span className="summary-list__label">{item.label}</span>
+                                    <span className="summary-list__value">{formatNullable(item.value)}</span>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+            );
+        }
+
+        // ── Section ID → 컴포넌트 매핑 ──
+        const SECTION_COMPONENT_MAP = {
+            [SectionId.BASIC_INFO]:          BasicInfoSection,
+            [SectionId.USAGE_INFO]:          UsageInfoSection,
+            [SectionId.ENTRY_PROCESSING]:    EntryProcessingSection,
+            [SectionId.CUSTOMER_EXTRA_INFO]: CustomerExtraInfoSection,
+            [SectionId.TICKET_SUMMARY]:      TicketSummarySection,
+        };
+
+        // ── 메인 상세 뷰 ──
+        function PaymentDetailView({ data, onToast }) {
+            if (!data) {
+                return (
+                    <div className="empty-state">
+                        <p>결제 주차권을 선택해 주세요.</p>
+                    </div>
+                );
+            }
+
+            const sections = sectionConfigByProductType[data.productType] || [];
+
+            return (
+                <div className="payment-detail-view">
+                    {sections.map(config => {
+                        // 조건 평가
+                        if (!evaluateSectionCondition(config, data)) return null;
+
+                        const Component = SECTION_COMPONENT_MAP[config.id];
+                        if (!Component) return null;
+
+                        return <Component key={config.id} data={data} onToast={onToast} />;
+                    })}
+                </div>
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // SECTION: DemoPage (maps to DemoPage.tsx)
+        // ═══════════════════════════════════════════════════════════
+
+        // ── LNB Menu Data ──
+        const LNB_MENUS = [
+            { id: 'sales', label: '판매관리', children: [
+                { label: '대쉬보드', href: '#' },
+                { label: '결제현황 관리', href: '#' },
+                { label: '주차관리', href: '340_결제주차권관리.html' },
+                { label: '주차관리(캘린더)', href: '350_결제주차권관리_캘린더(월간수요).html' },
+                { label: '결제주차권 상세', href: '360_결제주차권상세.html', active: true },
+                { label: '맵뷰', href: '#' },
+                { label: '환불관리', href: '#' },
+            ]},
+            { id: 'settle', label: '정산 관리', children: [{ label: '계좌환불', href: '#' }, { label: '마감처리', href: '#' }, { label: '정산내역서', href: '#' }] },
+            { id: 'erp', label: 'ERP', children: [{ label: '매출내역 전송', href: '#' }, { label: '정산내역서 전송', href: '#' }] },
+            { id: 'info', label: '정보 관리', children: [{ label: '일반주차장 관리', href: '#' }, { label: '수정요청', href: '#' }, { label: '등록요청', href: '#' }] },
+            { id: 'share', label: '공유 관리', children: [{ label: '공유주차장', href: '#' }, { label: 'IoT 관리', href: '#' }, { label: '공유시간정책', href: '#' }] },
+            { id: 'partner', label: '제휴 관리', children: [{ label: '제휴주차장 관리', href: '#' }, { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true }, { label: '제휴상품상세', href: '320_제휴상품상세.html', indent: true }, { label: '월주차 현황', href: '#' }, { label: '월주차 신청', href: '#' }, { label: '거래처(BP)', href: '#' }, { label: '정산대상(STG)', href: '#' }, { label: '제휴신청목록', href: '#' }, { label: '제휴주차상품 예약관리', href: '#' }, { label: '제휴계약관리', href: '#' }] },
+            { id: 'autopay', label: '자동결제 관리', children: [{ label: '자동결제 관리', href: '#' }] },
+            { id: 'charger', label: '충전소 관리', children: [{ label: 'EV 충전소', href: '#' }] },
+            { id: 'coupon', label: '포인트/쿠폰/상품권 관리', children: [{ label: '포인트 관리', href: '#' }, { label: '쿠폰 관리', href: '#' }, { label: '상품권 관리', href: '#' }] },
+            { id: 'partners', label: '파트너 관리', children: [{ label: '파트너 관리', href: '#' }, { label: '파트너 주차장 변경요청', href: 'I050-parking-change-request.html' }, { label: '입출차 확인', href: 'P120-parking-log.html' }] },
+            { id: 'service', label: '서비스 관리', children: [{ label: '메시지', href: '#' }, { label: '공지사항', href: '#' }, { label: '배너', href: '#' }, { label: '회원관리', href: '#' }] },
+            { id: 'admin', label: '어드민 관리', children: [{ label: '어드민관리', href: '#' }, { label: '권한관리', href: '#' }, { label: '패스워드변경', href: '#' }] },
+        ];
+
+        // ── Header ──
+        function Header({ onMenuToggle }) {
+            return (
+                <header className="header">
+                    <button className="header__menu-toggle" onClick={onMenuToggle}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <div className="header__logo">
+                        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                            <rect x="2" y="2" width="28" height="28" rx="8" fill="#00A8FF"/>
+                            <text x="16" y="22" textAnchor="middle" fontSize="18" fontWeight="700" fill="#fff" fontFamily="sans-serif">P</text>
+                        </svg>
+                        모두의주차장 관리자
+                        <span className="header__env">dev</span>
+                    </div>
+                    <div className="header__right">
+                        <span className="header__user">elice님</span>
+                        <a href="javascript:void(0)" className="header__link">내정보</a>
+                        <a href="javascript:void(0)" className="header__link">로그아웃</a>
+                    </div>
+                </header>
+            );
+        }
+
+        // ── LNB ──
+        function LNB({ isOpen }) {
+            const [openGroups, setOpenGroups] = useState({ sales: true });
+            const toggleGroup = (groupId) => {
+                setOpenGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
+            };
+            return (
+                <nav className={`lnb ${isOpen ? 'open' : ''}`}>
+                    {LNB_MENUS.map(menu => (
+                        <div key={menu.id}>
+                            <div
+                                className={`lnb-group-label ${openGroups[menu.id] ? 'open' : ''}`}
+                                onClick={() => toggleGroup(menu.id)}
+                            >
+                                {menu.label} <span className="arrow">▼</span>
+                            </div>
+                            <div className={`lnb-group-children ${openGroups[menu.id] ? 'open' : ''}`}>
+                                {menu.children.map(child => (
+                                    <a
+                                        key={child.label}
+                                        className={`lnb-item ${child.active ? 'active' : ''}`}
+                                        href={child.href || '#'}
+                                        style={child.indent ? {paddingLeft:'48px'} : undefined}
+                                    >{child.label}</a>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </nav>
+            );
+        }
+
+        // ── Footer ──
+        function Footer() {
+            const [footerText, setFooterText] = useState('');
+            useEffect(() => {
+                const lastMod = new Date(document.lastModified);
+                const yyyy = lastMod.getFullYear();
+                const MM = String(lastMod.getMonth() + 1).padStart(2, '0');
+                const dd = String(lastMod.getDate()).padStart(2, '0');
+                const hh = String(lastMod.getHours()).padStart(2, '0');
+                const mm = String(lastMod.getMinutes()).padStart(2, '0');
+                setFooterText(`\u00A9 2026. 주차권예매서비스. 최종업데이트 : ${yyyy}.${MM}.${dd} ${hh}:${mm}`);
+            }, []);
+            return <footer className="footer">{footerText}</footer>;
+        }
+
+        // ── Toast ──
+        function Toast({ toast, onDone }) {
+            useEffect(() => {
+                if (!toast) return;
+                const t = setTimeout(() => onDone(), 3000);
+                return () => clearTimeout(t);
+            }, [toast]);
+
+            if (!toast) return null;
+            return (
+                <div className="toast-container">
+                    <div className={`toast ${toast.type}`}>{toast.message}</div>
+                </div>
+            );
+        }
+
+        // ── ProductType Switcher (데모용) ──
+        function ProductTypeSwitcher({ selectedType, onChange }) {
+            return (
+                <div className="demo-switcher">
+                    <span className="demo-switcher__label">DEMO: 상품유형 선택</span>
+                    <div className="demo-switcher__buttons">
+                        {Object.entries(ProductTypeLabel).map(([key, label]) => (
+                            <button
+                                key={key}
+                                className={`demo-switcher__btn ${selectedType === key ? 'active' : ''}`}
+                                onClick={() => onChange(key)}
+                            >
+                                {label}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        // ── DemoPage (Root) ──
+        function DemoPage() {
+            const [selectedType, setSelectedType] = useState(ProductType.GENERAL_TICKET);
+            const [toast, setToast] = useState(null);
+            const [lnbOpen, setLnbOpen] = useState(false);
+
+            const currentData = MOCK_PAYMENT_DETAILS[selectedType];
+
+            return (
+                <div className="app-layout">
+                    <Header onMenuToggle={() => setLnbOpen(prev => !prev)} />
+                    <div className={`lnb-overlay ${lnbOpen ? 'show' : ''}`} onClick={() => setLnbOpen(false)} />
+                    <LNB isOpen={lnbOpen} />
+                    <main className="main">
+                        <div className="page-header">
+                            <div className="main__breadcrumb">
+                                판매관리 &gt; 주차관리 &gt; <span>결제주차권 상세</span>
+                            </div>
+                            <h1 className="page-title">결제주차권 상세</h1>
+                            <p className="page-subtitle">결제된 주차권의 상세 정보를 확인합니다.</p>
+                        </div>
+
+                        <ProductTypeSwitcher
+                            selectedType={selectedType}
+                            onChange={setSelectedType}
+                        />
+
+                        <PaymentDetailView
+                            data={currentData}
+                            onToast={setToast}
+                        />
+                    </main>
+
+                    <Footer />
+                    <Toast toast={toast} onDone={() => setToast(null)} />
+                </div>
+            );
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // Render
+        // ═══════════════════════════════════════════════════════════
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<DemoPage />);
+    </script>
+</body>
+</html>

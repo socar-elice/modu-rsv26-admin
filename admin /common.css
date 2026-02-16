@@ -234,6 +234,21 @@ body {
   border-left-color: var(--color-primary);
 }
 
+/* Nav badge */
+.lnb__badge {
+  display: inline-block;
+  padding: 1px 6px;
+  margin-left: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 16px;
+  color: #fff;
+  background: #ef4444;
+  border-radius: 3px;
+  vertical-align: middle;
+  letter-spacing: 0.02em;
+}
+
 /* Nav item — Flat (alias) */
 .lnb-item {
   display: flex; align-items: center; gap: 10px;

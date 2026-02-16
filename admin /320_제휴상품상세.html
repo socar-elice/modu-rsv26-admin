@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>제휴상품상세 - 모두의주차장 관리자</title>
 <link rel="stylesheet" href="common.css">
+<script src="nav-menu.js"></script>
 <style>
 /* ============================================================
    Page-specific: 320_제휴상품상세
@@ -116,187 +117,140 @@ textarea.form-input[readonly] {
   cursor: default;
   border-color: var(--color-gray-200);
 }
+
+/* ─── Event Schedule Accordion ─── */
+.es-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px; cursor: pointer; user-select: none;
+  transition: background var(--transition);
+}
+.es-header:hover { background: var(--color-gray-50); }
+.es-header__left {
+  display: flex; align-items: center; gap: 10px; min-width: 0;
+}
+.es-header__chevron {
+  width: 20px; height: 20px; flex-shrink: 0;
+  color: var(--color-gray-400); transition: transform 0.25s ease;
+}
+.es-section.open .es-header__chevron { transform: rotate(180deg); }
+.es-header__title {
+  font-size: 15px; font-weight: 700; color: var(--color-gray-900); white-space: nowrap;
+}
+.es-header__badges {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+}
+.es-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; line-height: 1.4;
+}
+.es-badge--active { background: #dcfce7; color: #16a34a; }
+.es-badge--scheduled { background: var(--color-primary-light); color: var(--color-primary); }
+.es-badge--total { background: var(--color-gray-100); color: var(--color-gray-500); }
+.es-header__right {
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.es-header__help {
+  font-size: 12px; color: var(--color-gray-400); max-width: 240px; text-align: right;
+  line-height: 1.35;
+}
+.es-body {
+  overflow: hidden; max-height: 0; transition: max-height 0.35s ease;
+  border-top: 0 solid var(--color-gray-200);
+}
+.es-section.open .es-body {
+  max-height: 2000px; border-top-width: 1px;
+}
+
+/* Event Table */
+.event-table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+.event-table thead th {
+  background: var(--color-gray-50); padding: 10px 12px;
+  font-size: 12px; font-weight: 600; color: var(--color-gray-500);
+  text-align: center; border-bottom: 1px solid var(--color-gray-200); white-space: nowrap;
+}
+.event-table tbody td {
+  padding: 12px; border-bottom: 1px solid var(--color-gray-100);
+  text-align: center; vertical-align: middle; font-size: 13px;
+}
+.event-table tbody tr:last-child td { border-bottom: none; }
+.event-table tbody tr:hover { background: var(--color-gray-50); }
+.table-scroll { overflow-x: auto; }
+.memo-cell {
+  display: inline-block; max-width: 150px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* Status Badges — Event Schedule */
+.status-badge--scheduled { background: var(--color-primary-light); color: var(--color-primary); }
+.status-badge--ended { background: var(--color-gray-100); color: var(--color-gray-500); }
+
+/* Empty State */
+.empty-state { text-align: center; padding: 48px 20px; color: var(--color-gray-400); }
+.empty-state__text { font-size: 14px; margin-bottom: 16px; }
+
+/* Action buttons (small) */
+.btn--ghost {
+  background: none; border: 1px solid var(--color-gray-300); color: var(--color-gray-600);
+  padding: 5px 12px; font-size: 12px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all var(--transition); font-family: inherit;
+}
+.btn--ghost:hover { background: var(--color-gray-50); border-color: var(--color-gray-400); }
+.btn--ghost-danger {
+  background: none; border: 1px solid var(--color-danger-border); color: var(--color-danger);
+  padding: 5px 12px; font-size: 12px; border-radius: var(--radius-sm);
+  cursor: pointer; transition: all var(--transition); font-family: inherit;
+}
+.btn--ghost-danger:hover { background: var(--color-danger-light); }
+
+/* Modal */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+  z-index: var(--z-modal); display: flex; align-items: center; justify-content: center;
+  opacity: 0; visibility: hidden; transition: opacity 0.2s, visibility 0.2s;
+}
+.modal-overlay.open { opacity: 1; visibility: visible; }
+.modal-dialog {
+  background: var(--color-white); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  width: 90%; max-width: 580px; max-height: 90vh; overflow-y: auto;
+  transform: translateY(20px); transition: transform 0.2s;
+}
+.modal-overlay.open .modal-dialog { transform: translateY(0); }
+.modal__header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px; border-bottom: 1px solid var(--color-gray-200);
+}
+.modal__title { font-size: 16px; font-weight: 700; color: var(--color-gray-900); }
+.modal__close {
+  background: none; border: none; cursor: pointer; padding: 4px;
+  color: var(--color-gray-400); transition: color var(--transition);
+}
+.modal__close:hover { color: var(--color-gray-700); }
+.modal__body { padding: 20px 24px; }
+.modal__footer {
+  display: flex; justify-content: flex-end; gap: 8px;
+  padding: 16px 24px; border-top: 1px solid var(--color-gray-200);
+}
+.confirm-dialog { max-width: 420px; }
+.confirm-dialog .modal__body { text-align: center; padding: 32px 24px; }
+.confirm-dialog .modal__body p { font-size: 14px; color: var(--color-gray-700); line-height: 1.6; }
+
+/* Warning box (overlap) */
+.warning-box {
+  background: var(--color-warning-light); border: 1px solid var(--color-warning-border);
+  border-radius: var(--radius-md); padding: 12px 16px;
+  font-size: 13px; color: #92400e; margin-top: 16px;
+}
+.warning-box__title {
+  font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
+}
+.warning-box__list { font-size: 12px; margin-top: 8px; padding-left: 16px; }
+.warning-box__list li { margin-bottom: 4px; }
 </style>
 </head>
 <body>
 
-<!-- ============================================================
-     HEADER
-     ============================================================ -->
-<header class="header">
-  <button class="header__menu-toggle" id="menuToggle">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-  </button>
-  <div class="header__logo">
-    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-      <rect x="2" y="2" width="28" height="28" rx="8" fill="#3b82f6"/>
-      <text x="16" y="22" text-anchor="middle" font-size="18" font-weight="700" fill="#fff" font-family="sans-serif">P</text>
-    </svg>
-    모두의주차장 관리자
-    <span class="header__env">dev</span>
-  </div>
-  <div class="header__right">
-    <span class="header__user">elice님</span>
-    <a href="javascript:void(0)" class="header__link">내정보</a>
-    <a href="javascript:void(0)" class="header__link">로그아웃</a>
-  </div>
-</header>
-
-<!-- ============================================================
-     LNB
-     ============================================================ -->
-<div class="lnb-overlay" id="lnbOverlay"></div>
-<nav class="lnb" id="lnb">
-  <!-- 판매관리 -->
-  <div class="lnb__group">
-    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
-      판매관리 <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children">
-      <a class="lnb__item" href="#">대쉬보드</a>
-      <a class="lnb__item" href="#">결제현황 관리</a>
-      <a class="lnb__item" href="340_결제주차권관리.html">결제주차권관리</a>
-      <a class="lnb__item" href="350_결제주차권관리_캘린더(월간수요).html">결제주차권관리(캘린더)</a>
-      <a class="lnb__item" href="#">맵뷰</a>
-      <a class="lnb__item" href="#">환불관리</a>
-    </div>
-  </div>
-
-  <!-- 정산 관리 -->
-  <div class="lnb__group">
-    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
-      정산 관리 <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children">
-      <a class="lnb__item" href="#">계좌환불</a>
-      <a class="lnb__item" href="#">마감처리</a>
-      <a class="lnb__item" href="#">정산내역서</a>
-    </div>
-  </div>
-
-  <!-- ERP -->
-  <div class="lnb__group">
-    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
-      ERP <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children">
-      <a class="lnb__item" href="#">매출내역 전송</a>
-      <a class="lnb__item" href="#">정산내역서 전송</a>
-    </div>
-  </div>
-
-  <!-- 정보 관리 -->
-  <div class="lnb__group">
-    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
-      정보 관리 <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children">
-      <a class="lnb__item" href="#">일반주차장 관리</a>
-      <a class="lnb__item" href="#">수정요청</a>
-      <a class="lnb__item" href="#">등록요청</a>
-    </div>
-  </div>
-
-  <!-- 공유 관리 -->
-  <div class="lnb__group">
-    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
-      공유 관리 <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children">
-      <a class="lnb__item" href="#">공유주차장</a>
-      <a class="lnb__item" href="#">IoT 관리</a>
-      <a class="lnb__item" href="#">공유시간정책</a>
-    </div>
-  </div>
-
-  <!-- 제휴 관리 (active) -->
-  <div class="lnb__group">
-    <div class="lnb__group-label open" onclick="toggleLnbGroup(this)">
-      제휴 관리 <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children open">
-      <a class="lnb__item" href="#">제휴주차장 관리</a>
-      <a class="lnb__item" href="300_주차상품판매정책설정.html" style="padding-left:48px;">제휴상품생성하기</a>
-      <a class="lnb__item lnb__item--active" href="320_제휴상품상세.html" style="padding-left:48px;">제휴상품상세</a>
-      <a class="lnb__item" href="#">월주차 현황</a>
-      <a class="lnb__item" href="#">월주차 신청</a>
-      <a class="lnb__item" href="#">거래처(BP)</a>
-      <a class="lnb__item" href="#">정산대상(STG)</a>
-      <a class="lnb__item" href="#">제휴신청목록</a>
-      <a class="lnb__item" href="#">제휴주차상품 예약관리</a>
-      <a class="lnb__item" href="#">제휴계약관리</a>
-    </div>
-  </div>
-
-  <!-- 자동결제 관리 -->
-  <div class="lnb__group">
-    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
-      자동결제 관리 <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children">
-      <a class="lnb__item" href="#">자동결제 관리</a>
-    </div>
-  </div>
-
-  <!-- 충전소 관리 -->
-  <div class="lnb__group">
-    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
-      충전소 관리 <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children">
-      <a class="lnb__item" href="#">EV 충전소</a>
-    </div>
-  </div>
-
-  <!-- 포인트/쿠폰/상품권 관리 -->
-  <div class="lnb__group">
-    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
-      포인트/쿠폰/상품권 관리 <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children">
-      <a class="lnb__item" href="#">포인트 관리</a>
-      <a class="lnb__item" href="#">쿠폰 관리</a>
-      <a class="lnb__item" href="#">상품권 관리</a>
-    </div>
-  </div>
-
-  <!-- 파트너 관리 -->
-  <div class="lnb__group">
-    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
-      파트너 관리 <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children">
-      <a class="lnb__item" href="#">파트너 관리</a>
-      <a class="lnb__item" href="I050-parking-change-request.html">파트너 주차장 변경요청</a>
-      <a class="lnb__item" href="P120-parking-log.html">입출차 확인</a>
-    </div>
-  </div>
-
-  <!-- 서비스 관리 -->
-  <div class="lnb__group">
-    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
-      서비스 관리 <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children">
-      <a class="lnb__item" href="#">메시지</a>
-      <a class="lnb__item" href="#">공지사항</a>
-      <a class="lnb__item" href="#">배너</a>
-      <a class="lnb__item" href="#">회원관리</a>
-    </div>
-  </div>
-
-  <!-- 어드민 관리 -->
-  <div class="lnb__group">
-    <div class="lnb__group-label" onclick="toggleLnbGroup(this)">
-      어드민 관리 <span class="arrow">▼</span>
-    </div>
-    <div class="lnb__group-children">
-      <a class="lnb__item" href="#">어드민관리</a>
-      <a class="lnb__item" href="#">권한관리</a>
-      <a class="lnb__item" href="#">패스워드변경</a>
-    </div>
-  </div>
-</nav>
+<!-- 헤더 + LNB: nav-menu.js 에서 자동 렌더링 -->
 
 <!-- ============================================================
      TOAST
@@ -499,6 +453,64 @@ textarea.form-input[readonly] {
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       이벤트 스케줄 조회 및 관리 (아코디언)
+       ═══════════════════════════════════════════════════════ -->
+  <div class="card es-section" id="sectionEventSchedule">
+    <!-- 아코디언 헤더 — 접힌 상태에서도 배지+등록 버튼 노출 -->
+    <div class="es-header" id="esHeader">
+      <div class="es-header__left">
+        <svg class="es-header__chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <span class="es-header__title">이벤트 스케줄 조회 및 관리</span>
+        <div class="es-header__badges" id="esBadges">
+          <span class="es-badge es-badge--active" id="esBadgeActive">적용 0</span>
+          <span class="es-badge es-badge--scheduled" id="esBadgeScheduled">예정 0</span>
+          <span class="es-badge es-badge--total" id="esBadgeTotal">전체 0</span>
+        </div>
+      </div>
+      <div class="es-header__right">
+        <span class="es-header__help">기본 판매정책 및 정기휴무보다 우선 적용</span>
+        <button type="button" class="btn btn--primary" id="btnAddSchedule" style="padding:8px 18px; font-size:13px;" onclick="event.stopPropagation()">
+          + 이벤트 스케줄 등록
+        </button>
+      </div>
+    </div>
+    <!-- 아코디언 바디 — 접힘 시 max-height: 0 -->
+    <div class="es-body" id="esBody">
+      <div style="padding:0;">
+        <div class="table-scroll">
+          <table class="event-table" id="eventScheduleTable">
+            <thead>
+              <tr>
+                <th>상태</th>
+                <th>적용기간</th>
+                <th>적용일수</th>
+                <th>변경 가격</th>
+                <th>변경 수량</th>
+                <th>등록일시</th>
+                <th>등록자</th>
+                <th>메모</th>
+                <th>액션</th>
+              </tr>
+            </thead>
+            <tbody id="eventScheduleBody"></tbody>
+          </table>
+        </div>
+        <div class="empty-state" id="eventEmptyState" style="display:none;">
+          <div style="margin-bottom:12px;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-gray-300)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <div class="empty-state__text">등록된 이벤트 스케줄이 없습니다.</div>
+          <button type="button" class="btn btn--primary" id="btnAddScheduleEmpty" style="padding:8px 20px; font-size:13px;">
+            이벤트 스케줄 등록
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1080,6 +1092,98 @@ textarea.form-input[readonly] {
 <footer class="footer" id="appFooter"></footer>
 
 <!-- ============================================================
+     이벤트 스케줄 등록/수정 모달
+     ============================================================ -->
+<div class="modal-overlay" id="scheduleModalOverlay">
+  <div class="modal-dialog">
+    <div class="modal__header">
+      <h3 class="modal__title" id="scheduleModalTitle">이벤트 스케줄 등록</h3>
+      <button type="button" class="modal__close" id="scheduleModalClose">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal__body">
+      <table class="form-table" id="scheduleForm">
+        <tbody>
+          <tr>
+            <th>적용기간 <span style="color:var(--color-danger);">*</span></th>
+            <td>
+              <div class="inline-field">
+                <input type="date" class="form-input form-input--md" id="scheduleStartDate">
+                <span class="unit-label">~</span>
+                <input type="date" class="form-input form-input--md" id="scheduleEndDate">
+              </div>
+              <div class="form-error" id="scheduleDateError" style="display:none;"></div>
+            </td>
+          </tr>
+          <tr>
+            <th>변경 가격</th>
+            <td>
+              <div class="inline-field">
+                <input type="number" class="form-input form-input--md" id="schedulePrice" min="0" step="1" placeholder="미입력 시 기본정책 유지">
+                <span class="unit-label">원</span>
+              </div>
+              <div class="form-error" id="schedulePriceError" style="display:none;"></div>
+            </td>
+          </tr>
+          <tr>
+            <th>변경 수량</th>
+            <td>
+              <div class="inline-field">
+                <input type="number" class="form-input form-input--sm" id="scheduleQuantity" min="0" max="999" step="1" placeholder="0~999">
+                <span class="unit-label">개</span>
+              </div>
+              <div class="form-helper">0 입력 시 해당 날짜 판매가 중지됩니다. 최대 999개</div>
+              <div class="form-error" id="scheduleQuantityError" style="display:none;"></div>
+            </td>
+          </tr>
+          <tr>
+            <th>메모</th>
+            <td>
+              <input type="text" class="form-input form-input--lg" id="scheduleMemo" maxlength="100" placeholder="이벤트 사유를 입력하세요">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="form-error" id="scheduleValueError" style="display:none; margin-top:12px;"></div>
+      <div class="warning-box" id="scheduleOverlapWarning" style="display:none;">
+        <div class="warning-box__title">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          겹치는 이벤트 스케줄 안내
+        </div>
+        <p>겹치는 이벤트 스케줄이 있습니다. 고객 적용 시 최근 등록이 우선 적용됩니다.</p>
+        <ul class="warning-box__list" id="overlapList"></ul>
+      </div>
+    </div>
+    <div class="modal__footer">
+      <button type="button" class="btn btn--secondary" id="scheduleModalCancel">취소</button>
+      <button type="button" class="btn btn--primary" id="scheduleModalSave">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     이벤트 스케줄 삭제 확인 다이얼로그
+     ============================================================ -->
+<div class="modal-overlay" id="deleteConfirmOverlay">
+  <div class="modal-dialog confirm-dialog">
+    <div class="modal__header">
+      <h3 class="modal__title">이벤트 스케줄 삭제</h3>
+      <button type="button" class="modal__close" id="deleteConfirmClose">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal__body">
+      <p id="deleteConfirmMsg">이 이벤트 스케줄을 삭제하시겠습니까?<br>삭제된 스케줄은 복구할 수 없습니다.</p>
+    </div>
+    <div class="modal__footer">
+      <button type="button" class="btn btn--secondary" id="deleteConfirmCancel">취소</button>
+      <button type="button" class="btn btn-danger" id="deleteConfirmOk">삭제</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
      JavaScript
      ============================================================ -->
 <script>
@@ -1097,33 +1201,6 @@ textarea.form-input[readonly] {
     var mm = String(lastMod.getMinutes()).padStart(2, '0');
     footer.textContent = '© 2026. 주차권예매서비스. 최종업데이트 : ' + yyyy + '.' + MM + '.' + dd + ' ' + hh + ':' + mm;
   })();
-
-  /* ─── LNB: collapsible menu toggle ─── */
-  window.toggleLnbGroup = function (label) {
-    label.classList.toggle('open');
-    var children = label.nextElementSibling;
-    if (children) {
-      children.classList.toggle('open');
-    }
-  };
-
-  /* ─── LNB: mobile toggle ─── */
-  var menuToggle = document.getElementById('menuToggle');
-  var lnb = document.getElementById('lnb');
-  var lnbOverlay = document.getElementById('lnbOverlay');
-
-  if (menuToggle) {
-    menuToggle.addEventListener('click', function () {
-      lnb.classList.toggle('open');
-      lnbOverlay.classList.toggle('show');
-    });
-  }
-  if (lnbOverlay) {
-    lnbOverlay.addEventListener('click', function () {
-      lnb.classList.remove('open');
-      lnbOverlay.classList.remove('show');
-    });
-  }
 
   /* ─── 주차권 유형에 따른 섹션 표시 (조회 모드) ─── */
   var LONG_TERM_TYPES = ['기간권', '월단위권', '일할권'];
@@ -1330,6 +1407,530 @@ textarea.form-input[readonly] {
     showToast('목록 페이지로 이동합니다.', 'success');
     console.log('[Mock] 목록 페이지 이동');
   };
+
+  /* ═══════════════════════════════════════════════════════
+     이벤트 스케줄 조회 및 관리 (아코디언)
+     ═══════════════════════════════════════════════════════ */
+  (function initEventSchedule() {
+
+    /* ─── Mock Data (엣지 케이스 포함) ─── */
+    var nextId = 7;
+    var schedules = [
+      {
+        id: 1, productId: 'PROD-001',
+        startDate: '2026-03-01', endDate: '2026-03-01',
+        overridePrice: 3000, overrideQuantity: null,
+        memo: '3/1 특가 이벤트 (가격만 변경, 1일)',
+        createdAt: '2026-02-10T09:00:00', createdBy: '관리자A'
+      },
+      {
+        id: 2, productId: 'PROD-001',
+        startDate: '2026-02-15', endDate: '2026-02-28',
+        overridePrice: 4000, overrideQuantity: 20,
+        memo: '2월 프로모션 (가격+수량 변경)',
+        createdAt: '2026-02-08T14:30:00', createdBy: '프레디'
+      },
+      {
+        id: 3, productId: 'PROD-001',
+        startDate: '2026-02-20', endDate: '2026-02-25',
+        overridePrice: 3500, overrideQuantity: 15,
+        memo: 'ID2와 겹침 — 최근 등록이므로 우선 적용',
+        createdAt: '2026-02-12T10:00:00', createdBy: '관리자B'
+      },
+      {
+        id: 4, productId: 'PROD-001',
+        startDate: '2026-01-01', endDate: '2026-01-15',
+        overridePrice: null, overrideQuantity: 0,
+        memo: '신정 연휴 판매 중지 (수량 0)',
+        createdAt: '2025-12-20T11:00:00', createdBy: '관리자A'
+      },
+      {
+        id: 5, productId: 'PROD-001',
+        startDate: '2026-02-17', endDate: '2026-02-17',
+        overridePrice: null, overrideQuantity: 5,
+        memo: '오늘 수량 한정 (수량만 변경, 1일)',
+        createdAt: '2026-02-16T16:00:00', createdBy: '프레디'
+      },
+      {
+        id: 6, productId: 'PROD-001',
+        startDate: '2026-04-01', endDate: '2026-04-10',
+        overridePrice: 6000, overrideQuantity: 30,
+        memo: '4월 벚꽃 시즌 특가',
+        createdAt: '2026-02-15T09:00:00', createdBy: '관리자A'
+      }
+    ];
+
+    /* ─── DOM References ─── */
+    var $esSection = document.getElementById('sectionEventSchedule');
+    var $esHeader = document.getElementById('esHeader');
+    var $badgeActive = document.getElementById('esBadgeActive');
+    var $badgeScheduled = document.getElementById('esBadgeScheduled');
+    var $badgeTotal = document.getElementById('esBadgeTotal');
+
+    var $table = document.getElementById('eventScheduleTable');
+    var $tbody = document.getElementById('eventScheduleBody');
+    var $emptyState = document.getElementById('eventEmptyState');
+    var $btnAdd = document.getElementById('btnAddSchedule');
+    var $btnAddEmpty = document.getElementById('btnAddScheduleEmpty');
+
+    var $modalOverlay = document.getElementById('scheduleModalOverlay');
+    var $modalTitle = document.getElementById('scheduleModalTitle');
+    var $modalClose = document.getElementById('scheduleModalClose');
+    var $modalCancel = document.getElementById('scheduleModalCancel');
+    var $modalSave = document.getElementById('scheduleModalSave');
+    var $startDate = document.getElementById('scheduleStartDate');
+    var $endDate = document.getElementById('scheduleEndDate');
+    var $price = document.getElementById('schedulePrice');
+    var $quantity = document.getElementById('scheduleQuantity');
+    var $memo = document.getElementById('scheduleMemo');
+    var $dateError = document.getElementById('scheduleDateError');
+    var $priceError = document.getElementById('schedulePriceError');
+    var $quantityError = document.getElementById('scheduleQuantityError');
+    var $valueError = document.getElementById('scheduleValueError');
+    var $overlapWarning = document.getElementById('scheduleOverlapWarning');
+    var $overlapList = document.getElementById('overlapList');
+
+    var $deleteOverlay = document.getElementById('deleteConfirmOverlay');
+    var $deleteClose = document.getElementById('deleteConfirmClose');
+    var $deleteCancel = document.getElementById('deleteConfirmCancel');
+    var $deleteOk = document.getElementById('deleteConfirmOk');
+    var $deleteMsg = document.getElementById('deleteConfirmMsg');
+
+    var editingId = null;
+    var deletingId = null;
+
+    /* ─── Utilities ─── */
+    function todayStr() {
+      var d = new Date();
+      return d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0');
+    }
+
+    function calcDays(start, end) {
+      return Math.floor((new Date(end) - new Date(start)) / 86400000) + 1;
+    }
+
+    function getStatus(start, end) {
+      var today = todayStr();
+      if (today < start) return 'scheduled';
+      if (today > end) return 'ended';
+      return 'active';
+    }
+
+    function statusLabel(s) {
+      return { scheduled: '예정', active: '적용', ended: '종료' }[s] || s;
+    }
+
+    function statusClass(s) {
+      return {
+        scheduled: 'status-badge--scheduled',
+        active: 'status-badge--active',
+        ended: 'status-badge--ended'
+      }[s] || '';
+    }
+
+    function fmtPrice(v) {
+      if (v === null || v === undefined || v === '') return '-';
+      return Number(v).toLocaleString() + '원';
+    }
+
+    function fmtQty(v) {
+      if (v === null || v === undefined || v === '') return '-';
+      return v + '개';
+    }
+
+    function fmtDt(iso) {
+      var d = new Date(iso);
+      return d.getFullYear() + '-' +
+        String(d.getMonth() + 1).padStart(2, '0') + '-' +
+        String(d.getDate()).padStart(2, '0') + ' ' +
+        String(d.getHours()).padStart(2, '0') + ':' +
+        String(d.getMinutes()).padStart(2, '0');
+    }
+
+    function esc(str) {
+      if (!str) return '';
+      var d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    /* ─── Accordion: 접기/펼치기 ─── */
+    function toggleSection() {
+      $esSection.classList.toggle('open');
+    }
+
+    function expandSection() {
+      $esSection.classList.add('open');
+    }
+
+    /* ─── Badge: 요약 카운트 갱신 ─── */
+    function updateBadges() {
+      var cntActive = 0;
+      var cntScheduled = 0;
+      var cntTotal = schedules.length;
+
+      schedules.forEach(function (s) {
+        var st = getStatus(s.startDate, s.endDate);
+        if (st === 'active') cntActive++;
+        else if (st === 'scheduled') cntScheduled++;
+      });
+
+      $badgeActive.textContent = '적용 ' + cntActive;
+      $badgeScheduled.textContent = '예정 ' + cntScheduled;
+      $badgeTotal.textContent = '전체 ' + cntTotal;
+    }
+
+    /* ─── Render Table + Badges ─── */
+    function render() {
+      updateBadges();
+
+      var sorted = schedules.slice().sort(function (a, b) {
+        return a.startDate.localeCompare(b.startDate);
+      });
+
+      if (sorted.length === 0) {
+        $table.style.display = 'none';
+        $emptyState.style.display = '';
+        return;
+      }
+
+      $table.style.display = '';
+      $emptyState.style.display = 'none';
+
+      var html = '';
+      sorted.forEach(function (s) {
+        var st = getStatus(s.startDate, s.endDate);
+        var days = calcDays(s.startDate, s.endDate);
+
+        html += '<tr data-id="' + s.id + '">';
+        html += '<td><span class="status-badge ' + statusClass(st) + '">';
+        html += '<span class="status-badge__dot"></span>' + statusLabel(st) + '</span></td>';
+        html += '<td style="white-space:nowrap;">' + s.startDate + ' ~ ' + s.endDate + '</td>';
+        html += '<td>' + days + '일</td>';
+        html += '<td>' + fmtPrice(s.overridePrice) + '</td>';
+        html += '<td>' + fmtQty(s.overrideQuantity) + '</td>';
+        html += '<td style="white-space:nowrap;">' + fmtDt(s.createdAt) + '</td>';
+        html += '<td>' + esc(s.createdBy) + '</td>';
+        html += '<td><span class="memo-cell" title="' + esc(s.memo) + '">' + esc(s.memo) + '</span></td>';
+        html += '<td style="white-space:nowrap;">';
+        html += '<div class="btn-group" style="justify-content:center;">';
+        if (st === 'scheduled') {
+          html += '<button type="button" class="btn--ghost" onclick="window.__esEdit(' + s.id + ')">수정</button>';
+        }
+        html += '<button type="button" class="btn--ghost-danger" onclick="window.__esDelete(' + s.id + ')">삭제</button>';
+        html += '</div></td>';
+        html += '</tr>';
+      });
+
+      $tbody.innerHTML = html;
+    }
+
+    /* ─── Modal — Open / Close ─── */
+    function openModal(schedule) {
+      editingId = schedule ? schedule.id : null;
+      $modalTitle.textContent = editingId ? '이벤트 스케줄 수정' : '이벤트 스케줄 등록';
+      $modalSave.textContent = editingId ? '수정' : '저장';
+
+      $startDate.value = schedule ? schedule.startDate : '';
+      $endDate.value = schedule ? schedule.endDate : '';
+      $price.value = (schedule && schedule.overridePrice !== null && schedule.overridePrice !== undefined)
+        ? schedule.overridePrice : '';
+      $quantity.value = (schedule && schedule.overrideQuantity !== null && schedule.overrideQuantity !== undefined)
+        ? schedule.overrideQuantity : '';
+      $memo.value = schedule ? (schedule.memo || '') : '';
+
+      /* 등록/수정 모두 과거 날짜 선택 제한 (예정 상태만 수정 가능) */
+      $startDate.min = todayStr();
+      $endDate.min = todayStr();
+
+      clearErrors();
+      hideOverlapWarning();
+      checkOverlapsPreview();
+
+      $modalOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      $modalOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+      editingId = null;
+    }
+
+    /* ─── Error Helpers ─── */
+    function clearErrors() {
+      [$dateError, $priceError, $quantityError, $valueError].forEach(function (el) {
+        el.style.display = 'none';
+        el.textContent = '';
+      });
+    }
+
+    function showError(el, msg) {
+      el.textContent = msg;
+      el.style.display = '';
+    }
+
+    function hideOverlapWarning() {
+      $overlapWarning.style.display = 'none';
+      $overlapList.innerHTML = '';
+    }
+
+    /* ─── Overlap Detection ─── */
+    function findOverlaps(start, end, excludeId) {
+      return schedules.filter(function (s) {
+        if (excludeId && s.id === excludeId) return false;
+        return s.startDate <= end && start <= s.endDate;
+      });
+    }
+
+    function showOverlaps(overlaps) {
+      if (overlaps.length === 0) { hideOverlapWarning(); return; }
+
+      var html = '';
+      overlaps.forEach(function (s) {
+        var parts = [];
+        if (s.overridePrice !== null && s.overridePrice !== undefined) parts.push('가격: ' + fmtPrice(s.overridePrice));
+        if (s.overrideQuantity !== null && s.overrideQuantity !== undefined) parts.push('수량: ' + fmtQty(s.overrideQuantity));
+        html += '<li>' + s.startDate + ' ~ ' + s.endDate;
+        html += ' (등록: ' + fmtDt(s.createdAt) + ')';
+        if (parts.length) html += ' — ' + parts.join(', ');
+        html += '</li>';
+      });
+
+      $overlapList.innerHTML = html;
+      $overlapWarning.style.display = '';
+    }
+
+    function checkOverlapsPreview() {
+      var sv = $startDate.value;
+      var ev = $endDate.value;
+      if (sv && ev && sv <= ev) {
+        showOverlaps(findOverlaps(sv, ev, editingId));
+      } else {
+        hideOverlapWarning();
+      }
+    }
+
+    /* ─── Validation ─── */
+    function validate() {
+      clearErrors();
+      var valid = true;
+      var today = todayStr();
+      var sv = $startDate.value;
+      var ev = $endDate.value;
+
+      /* 날짜 검증 */
+      if (!sv || !ev) {
+        showError($dateError, '시작일과 종료일을 모두 입력해주세요.');
+        valid = false;
+      } else if (sv > ev) {
+        showError($dateError, '시작일이 종료일보다 클 수 없습니다.');
+        valid = false;
+      } else if (sv < today) {
+        showError($dateError, '과거 날짜는 시작일로 설정할 수 없습니다.');
+        valid = false;
+      } else if (ev < today) {
+        showError($dateError, '종료일은 오늘 이후여야 합니다.');
+        valid = false;
+      }
+
+      /* 가격 검증 */
+      var pv = $price.value.trim();
+      if (pv !== '') {
+        var pn = Number(pv);
+        if (isNaN(pn) || pn < 0) {
+          showError($priceError, '가격은 0 이상의 숫자를 입력해주세요.');
+          valid = false;
+        } else if (pv.indexOf('.') !== -1) {
+          showError($priceError, '가격은 정수만 입력 가능합니다.');
+          valid = false;
+        }
+      }
+
+      /* 수량 검증 */
+      var qv = $quantity.value.trim();
+      if (qv !== '') {
+        var qn = Number(qv);
+        if (isNaN(qn) || qn < 0) {
+          showError($quantityError, '수량은 0 이상의 정수를 입력해주세요.');
+          valid = false;
+        } else if (qn > 999) {
+          showError($quantityError, '수량은 최대 999까지 입력 가능합니다.');
+          valid = false;
+        } else if (qv.indexOf('.') !== -1) {
+          showError($quantityError, '수량은 정수만 입력 가능합니다.');
+          valid = false;
+        }
+      }
+
+      /* 최소 하나 입력 필수 */
+      if (pv === '' && qv === '') {
+        showError($valueError, '변경 가격 또는 변경 수량 중 하나 이상을 입력해주세요.');
+        valid = false;
+      }
+
+      return valid;
+    }
+
+    /* ─── Save (등록/수정) ─── */
+    function save() {
+      if (!validate()) return;
+
+      var sv = $startDate.value;
+      var ev = $endDate.value;
+      var pv = $price.value.trim();
+      var qv = $quantity.value.trim();
+
+      if (editingId) {
+        for (var i = 0; i < schedules.length; i++) {
+          if (schedules[i].id === editingId) {
+            schedules[i].startDate = sv;
+            schedules[i].endDate = ev;
+            schedules[i].overridePrice = pv !== '' ? parseInt(pv, 10) : null;
+            schedules[i].overrideQuantity = qv !== '' ? parseInt(qv, 10) : null;
+            schedules[i].memo = $memo.value;
+            schedules[i].updatedAt = new Date().toISOString();
+            break;
+          }
+        }
+        showToast('이벤트 스케줄이 수정되었습니다.', 'success');
+      } else {
+        schedules.push({
+          id: nextId++,
+          productId: 'PROD-001',
+          startDate: sv,
+          endDate: ev,
+          overridePrice: pv !== '' ? parseInt(pv, 10) : null,
+          overrideQuantity: qv !== '' ? parseInt(qv, 10) : null,
+          memo: $memo.value,
+          createdAt: new Date().toISOString(),
+          createdBy: '프레디'
+        });
+        showToast('이벤트 스케줄이 등록되었습니다.', 'success');
+      }
+
+      closeModal();
+      render();
+      expandSection();
+      console.log('[Mock] 이벤트 스케줄 저장:', JSON.stringify(schedules, null, 2));
+    }
+
+    /* ─── Delete (하드 삭제) ─── */
+    function openDeleteConfirm(id) {
+      var match = schedules.filter(function (s) { return s.id === id; });
+      if (!match.length) return;
+      var s = match[0];
+      deletingId = id;
+
+      $deleteMsg.innerHTML =
+        '<strong>' + s.startDate + ' ~ ' + s.endDate + '</strong> 이벤트 스케줄을 삭제하시겠습니까?' +
+        '<br><span style="color:var(--color-gray-500); font-size:13px;">삭제된 스케줄은 복구할 수 없습니다.</span>';
+
+      $deleteOverlay.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDeleteConfirm() {
+      $deleteOverlay.classList.remove('open');
+      document.body.style.overflow = '';
+      deletingId = null;
+    }
+
+    function confirmDelete() {
+      if (!deletingId) return;
+      var targetId = deletingId;
+      schedules = schedules.filter(function (s) { return s.id !== targetId; });
+      closeDeleteConfirm();
+      render();
+      showToast('이벤트 스케줄이 삭제되었습니다.', 'success');
+      console.log('[Mock] 이벤트 스케줄 삭제, ID:', targetId);
+    }
+
+    /* ─── Event Listeners ─── */
+    /* 아코디언 헤더 클릭 → 토글 */
+    $esHeader.addEventListener('click', toggleSection);
+
+    $btnAdd.addEventListener('click', function () { openModal(null); });
+    $btnAddEmpty.addEventListener('click', function () { openModal(null); });
+
+    $modalClose.addEventListener('click', closeModal);
+    $modalCancel.addEventListener('click', closeModal);
+    $modalSave.addEventListener('click', save);
+    $modalOverlay.addEventListener('click', function (e) {
+      if (e.target === $modalOverlay) closeModal();
+    });
+
+    $deleteClose.addEventListener('click', closeDeleteConfirm);
+    $deleteCancel.addEventListener('click', closeDeleteConfirm);
+    $deleteOk.addEventListener('click', confirmDelete);
+    $deleteOverlay.addEventListener('click', function (e) {
+      if (e.target === $deleteOverlay) closeDeleteConfirm();
+    });
+
+    /* 날짜 변경 시 겹침 미리보기 */
+    $startDate.addEventListener('change', checkOverlapsPreview);
+    $endDate.addEventListener('change', checkOverlapsPreview);
+
+    /* ESC 키로 모달 닫기 */
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') {
+        if ($modalOverlay.classList.contains('open')) closeModal();
+        if ($deleteOverlay.classList.contains('open')) closeDeleteConfirm();
+      }
+    });
+
+    /* Global handlers — 테이블 버튼에서 호출 */
+    window.__esEdit = function (id) {
+      var match = schedules.filter(function (s) { return s.id === id; });
+      if (!match.length) return;
+      if (getStatus(match[0].startDate, match[0].endDate) !== 'scheduled') {
+        showToast('예정 상태의 스케줄만 수정할 수 있습니다.', 'error');
+        return;
+      }
+      openModal(match[0]);
+    };
+
+    window.__esDelete = function (id) {
+      openDeleteConfirm(id);
+    };
+
+    /* ─── 고객 적용 로직 (우선순위 반영) ───
+     *
+     * 우선순위: 이벤트 스케줄 > 기본 판매정책 > 정기휴무
+     *
+     * 사용법: window.__getEffectiveSchedule('2026-02-20')
+     *   → 해당 날짜에 적용할 이벤트 스케줄 반환
+     *   → 여러 스케줄 존재 시 createdAt 최신 1건만 반환
+     *   → 없으면 null (기본정책 적용)
+     *
+     * 적용 방식:
+     *   - overridePrice  존재 → 해당 날짜 가격 대체
+     *   - overrideQuantity 존재 → 해당 날짜 수량 대체
+     *   - 하나만 존재 시 나머지는 기본값 유지
+     */
+    window.__getEffectiveSchedule = function (dateStr) {
+      var matches = schedules.filter(function (s) {
+        return s.startDate <= dateStr && dateStr <= s.endDate;
+      });
+      if (matches.length === 0) return null;
+
+      matches.sort(function (a, b) {
+        return b.createdAt.localeCompare(a.createdAt);
+      });
+      return matches[0];
+    };
+
+    /* ─── Initial Render + 자동 펼침 ─── */
+    render();
+
+    /* 적용 중 스케줄이 1건 이상이면 자동 펼침 */
+    var hasActive = schedules.some(function (s) {
+      return getStatus(s.startDate, s.endDate) === 'active';
+    });
+    if (hasActive) expandSection();
+  })();
 
 })();
 </script>
