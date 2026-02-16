@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주차관리 - 결제주차권관리 캘린더(월간수요) | 모두의주차장 관리자</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="common.css">
+    <style>
+/* ============================================================
+   Page-specific: 350_캘린더(월간수요)
+   Namespace prefix: .cal350-
+   ============================================================ */
+
+/* App Layout */
+.app-layout { display: flex; min-height: 100vh; padding-top: var(--header-h); }
+
+/* Page Header */
+.page-header { margin-bottom: var(--space-6); }
+.page-title {
+  font-size: 22px; font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary); margin-bottom: var(--space-1);
+}
+.page-subtitle {
+  font-size: var(--font-size-md); color: var(--color-text-secondary);
+}
+
+/* Filter Card (placeholder) */
+.cal350-filter-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-5);
+  position: relative;
+}
+.cal350-filter-disabled-overlay {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.6);
+  border-radius: var(--radius-md);
+  z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  cursor: not-allowed;
+}
+.cal350-filter-disabled-msg {
+  background: var(--color-gray-800);
+  color: var(--color-white);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  padding: 6px 16px;
+  border-radius: var(--radius-sm);
+}
+.cal350-filter-row {
+  display: flex; align-items: center; gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.cal350-filter-label {
+  font-size: var(--font-size-md); font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary); min-width: 72px; flex-shrink: 0;
+}
+.cal350-filter-select {
+  height: 36px; padding: 0 var(--space-3);
+  font-size: var(--font-size-md); border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm); background: var(--color-bg-surface);
+  color: var(--color-text-disabled); outline: none;
+  appearance: none; cursor: not-allowed;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='%23ccc'%3E%3Cpath d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+/* Month Navigation */
+.cal350-month-nav {
+  display: flex; align-items: center; gap: var(--space-3);
+  margin-bottom: var(--space-5);
+}
+.cal350-month-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface); color: var(--color-text-primary);
+  cursor: pointer; transition: all var(--transition-fast);
+  font-size: 16px;
+}
+.cal350-month-btn:hover {
+  border-color: var(--color-primary-main); color: var(--color-primary-main);
+  background: var(--color-primary-light);
+}
+.cal350-month-label {
+  font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary); min-width: 140px; text-align: center;
+}
+.cal350-month-input {
+  height: 36px; padding: 0 var(--space-3);
+  font-size: var(--font-size-md); border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm); background: var(--color-bg-surface);
+  color: var(--color-text-primary); outline: none; cursor: pointer;
+}
+.cal350-month-input:focus {
+  border-color: var(--color-primary-main);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+}
+
+/* Status Legend */
+.cal350-legend {
+  display: flex; align-items: center; gap: var(--space-4); margin-left: auto;
+  flex-shrink: 0;
+}
+.cal350-legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: var(--font-size-sm); color: var(--color-text-secondary);
+}
+.cal350-legend-dot {
+  width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
+}
+.cal350-legend-dot--before { background: var(--color-status-info); }
+.cal350-legend-dot--parking { background: var(--color-status-success); }
+.cal350-legend-dot--done { background: var(--color-status-warning); }
+
+/* Calendar Grid */
+.cal350-calendar-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: var(--space-5);
+}
+.cal350-calendar-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  border-top: 1px solid var(--color-border-light);
+}
+.cal350-calendar-dow {
+  padding: var(--space-3) var(--space-2);
+  text-align: center;
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-tertiary);
+  border-bottom: 1px solid var(--color-border-light);
+  border-right: 1px solid var(--color-border-light);
+}
+.cal350-calendar-dow:nth-child(7) { border-right: none; }
+.cal350-calendar-dow--sun { color: var(--color-status-error); }
+.cal350-calendar-dow--sat { color: var(--color-status-info); }
+
+.cal350-cell {
+  min-height: 100px; padding: var(--space-2);
+  border-bottom: 1px solid var(--color-border-light);
+  border-right: 1px solid var(--color-border-light);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  position: relative;
+}
+.cal350-cell:nth-child(7n) { border-right: none; }
+.cal350-cell:hover { background: var(--color-bg-secondary); }
+.cal350-cell--today {
+  background: rgba(59,130,246,0.04);
+}
+.cal350-cell--selected {
+  background: var(--color-primary-light) !important;
+  box-shadow: inset 0 0 0 2px var(--color-primary-main);
+}
+.cal350-cell--empty {
+  background: var(--color-bg-tertiary); cursor: default;
+  opacity: 0.4;
+}
+.cal350-cell--empty:hover { background: var(--color-bg-tertiary); }
+.cal350-cell-date {
+  font-size: var(--font-size-md); font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-1);
+  color: var(--color-text-primary);
+}
+.cal350-cell--sun .cal350-cell-date { color: var(--color-status-error); }
+.cal350-cell--sat .cal350-cell-date { color: var(--color-status-info); }
+.cal350-cell-total {
+  font-size: 11px; color: var(--color-text-tertiary);
+  margin-bottom: 4px; font-weight: var(--font-weight-medium);
+}
+.cal350-cell-badges {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.cal350-badge {
+  display: flex; align-items: center; gap: 4px;
+  font-size: 11px; font-weight: var(--font-weight-medium);
+  padding: 1px 4px; border-radius: 2px;
+  line-height: 1.4;
+}
+.cal350-badge--before {
+  color: #1d4ed8; background: #eff6ff;
+}
+.cal350-badge--parking {
+  color: #166534; background: #f0fdf4;
+}
+.cal350-badge--done {
+  color: #92400e; background: #fffbeb;
+}
+.cal350-badge-dot {
+  width: 6px; height: 6px; border-radius: 1px; flex-shrink: 0;
+}
+.cal350-badge-dot--before { background: var(--color-status-info); }
+.cal350-badge-dot--parking { background: var(--color-status-success); }
+.cal350-badge-dot--done { background: var(--color-status-warning); }
+
+/* Loading overlay */
+.cal350-loading {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.7);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 5;
+  animation: cal350FadeIn 150ms ease;
+}
+@keyframes cal350FadeIn { from { opacity: 0; } to { opacity: 1; } }
+.cal350-spinner {
+  width: 28px; height: 28px;
+  border: 3px solid var(--color-border-light);
+  border-top-color: var(--color-primary-main);
+  border-radius: 50%;
+  animation: cal350Spin 0.7s linear infinite;
+}
+@keyframes cal350Spin { to { transform: rotate(360deg); } }
+
+/* Detail Table Card */
+.cal350-detail-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.cal350-detail-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: var(--space-2);
+}
+.cal350-detail-title {
+  font-size: var(--font-size-lg); font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+.cal350-detail-count {
+  font-size: var(--font-size-sm); color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Data Table reuse */
+.cal350-table { width: 100%; border-collapse: collapse; }
+.cal350-table th {
+  background: var(--color-bg-tertiary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: var(--space-3) var(--space-3);
+  text-align: center;
+  border-bottom: 2px solid var(--color-border-default);
+  white-space: nowrap;
+}
+.cal350-table td {
+  padding: var(--space-3) var(--space-3);
+  text-align: center;
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-light);
+  vertical-align: middle;
+}
+.cal350-table tbody tr:last-child td { border-bottom: none; }
+.cal350-table .td-left { text-align: left; padding-left: var(--space-4); }
+.cal350-table .td-datetime {
+  font-size: var(--font-size-sm); white-space: nowrap; color: var(--color-text-secondary);
+}
+
+/* Entry Status Badge (reuse from 340) */
+.cal350-status {
+  display: inline-flex; align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+.cal350-status--before { color: var(--color-status-info); background: #E8F4FF; }
+.cal350-status--parking { color: var(--color-status-success); background: #F0FDF4; }
+.cal350-status--done { color: var(--color-status-warning); background: #FFF7ED; }
+
+/* Payment Badge */
+.cal350-pay-badge {
+  display: inline-flex; align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface);
+  white-space: nowrap;
+}
+.cal350-pay-badge--completed { color: var(--color-status-success); border-color: var(--color-status-success); }
+
+/* Empty / Guide */
+.cal350-empty {
+  text-align: center; padding: var(--space-10) var(--space-5);
+  color: var(--color-text-disabled);
+}
+.cal350-empty p { font-size: var(--font-size-md); margin-top: var(--space-2); }
+.cal350-empty-icon {
+  font-size: 36px; margin-bottom: var(--space-2);
+  opacity: 0.4;
+}
+
+/* Info Banner */
+.cal350-info-banner {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-primary-light);
+  border: 1px solid var(--color-primary-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm); color: #1e40af;
+  margin-bottom: var(--space-4);
+}
+.cal350-info-banner svg { flex-shrink: 0; }
+
+/* Edge case note */
+.cal350-note {
+  font-size: 11px; color: var(--color-text-tertiary);
+  padding: var(--space-2) var(--space-5);
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* Link dummy */
+.cal350-link-dummy {
+  color: var(--color-primary); text-decoration: none; font-weight: 500;
+  font-size: var(--font-size-sm); cursor: pointer;
+}
+.cal350-link-dummy:hover { text-decoration: underline; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .cal350-cell { min-height: 80px; }
+  .cal350-badge { font-size: 10px; }
+  .cal350-legend { flex-wrap: wrap; }
+}
+@media (max-width: 768px) {
+  .cal350-cell { min-height: 60px; padding: 3px; }
+  .cal350-cell-date { font-size: var(--font-size-sm); }
+  .cal350-badge { font-size: 9px; padding: 0 2px; }
+  .cal350-badge-dot { width: 4px; height: 4px; }
+  .cal350-month-label { font-size: var(--font-size-lg); min-width: 100px; }
+  .cal350-table { font-size: var(--font-size-sm); }
+  .cal350-table th, .cal350-table td { padding: var(--space-2); }
+}
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect, useCallback, useRef } = React;
+
+        // ============================================================
+        // 이용상태 정의
+        // ============================================================
+        const USAGE_STATUS = {
+            BEFORE_ENTRY: '입차전',
+            PARKING: '주차중',
+            EXIT_DONE: '출차완료',
+        };
+
+        // 집계 제외 상태
+        const EXCLUDED_STATUSES = ['취소완료', '환불신청', '환불완료'];
+
+        // ============================================================
+        // Mock Data
+        // 조건: 월 내 여러 날짜, 상태별 분포, 24:00 경계값, 제외 상태
+        // ============================================================
+        const MOCK_TICKETS = [
+            // ── 2026-02 데이터 ──
+            // 2/1~2/5 이용, 입차전
+            { id: 'PT-001', orderId: 'ORD-20260201-001', customerId: 'USR-1001', vehicleNumber: '11가1234', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 5일', usageStart: '2026-02-01 09:00', usageEnd: '2026-02-05 18:00', usageStatus: '입차전', paymentStatus: '결제완료' },
+            // 2/1~2/2 24:00(=2/3 00:00) ── 경계값 케이스: 2/3에는 포함 안됨
+            { id: 'PT-002', orderId: 'ORD-20260201-002', customerId: 'USR-1002', vehicleNumber: '22나5678', parkingLotName: '역삼동 그램 주차빌딩', productName: '연박권 2일', usageStart: '2026-02-01 14:00', usageEnd: '2026-02-03 00:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+            // 2/3~2/3 당일
+            { id: 'PT-003', orderId: 'ORD-20260203-001', customerId: 'USR-1003', vehicleNumber: '33다9012', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-02-03 08:00', usageEnd: '2026-02-03 22:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            // 2/3~2/7 장기
+            { id: 'PT-004', orderId: 'ORD-20260203-002', customerId: 'USR-1004', vehicleNumber: '44라3456', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 5일', usageStart: '2026-02-03 10:00', usageEnd: '2026-02-07 10:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            // 2/5 당일
+            { id: 'PT-005', orderId: 'ORD-20260205-001', customerId: 'USR-1005', vehicleNumber: '55마7890', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-02-05 07:00', usageEnd: '2026-02-05 19:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+            // 2/5~2/6 — 취소완료 (제외 대상)
+            { id: 'PT-006', orderId: 'ORD-20260205-002', customerId: 'USR-1006', vehicleNumber: '66바1234', parkingLotName: '선릉역 스무스 지하주차장', productName: '연박권 2일', usageStart: '2026-02-05 12:00', usageEnd: '2026-02-06 12:00', usageStatus: '취소완료', paymentStatus: '결제취소' },
+            // 2/7 당일
+            { id: 'PT-007', orderId: 'ORD-20260207-001', customerId: 'USR-1007', vehicleNumber: '77사5678', parkingLotName: '투루파킹 케이 OPU407', productName: '당일권', usageStart: '2026-02-07 09:00', usageEnd: '2026-02-07 21:00', usageStatus: '입차전', paymentStatus: '결제완료' },
+            // 2/10~2/14
+            { id: 'PT-008', orderId: 'ORD-20260210-001', customerId: 'USR-1008', vehicleNumber: '88아9012', parkingLotName: '역삼동 그램 주차빌딩', productName: '단기권 5일', usageStart: '2026-02-10 08:00', usageEnd: '2026-02-14 20:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            // 2/14 당일 — 환불신청 (제외 대상)
+            { id: 'PT-009', orderId: 'ORD-20260214-001', customerId: 'USR-1009', vehicleNumber: '99자3456', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-02-14 10:00', usageEnd: '2026-02-14 18:00', usageStatus: '환불신청', paymentStatus: '환불처리중' },
+            // 2/15~2/15 24:00(=2/16 00:00) ── 경계값: 2/16에는 포함 안됨
+            { id: 'PT-010', orderId: 'ORD-20260215-001', customerId: 'USR-1010', vehicleNumber: '10가7890', parkingLotName: '투루파킹 케이 OPU407', productName: '당일권', usageStart: '2026-02-15 00:00', usageEnd: '2026-02-16 00:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+            // 2/16~2/20
+            { id: 'PT-011', orderId: 'ORD-20260216-001', customerId: 'USR-1011', vehicleNumber: '11나1234', parkingLotName: '역삼동 그램 주차빌딩', productName: '단기권 5일', usageStart: '2026-02-16 09:00', usageEnd: '2026-02-20 18:00', usageStatus: '입차전', paymentStatus: '결제완료' },
+            // 2/20 당일
+            { id: 'PT-012', orderId: 'ORD-20260220-001', customerId: 'USR-1012', vehicleNumber: '12다5678', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-02-20 10:00', usageEnd: '2026-02-20 22:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            // 2/20~2/25
+            { id: 'PT-013', orderId: 'ORD-20260220-002', customerId: 'USR-1013', vehicleNumber: '13라9012', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 6일', usageStart: '2026-02-20 07:00', usageEnd: '2026-02-25 19:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            // 2/25 당일 — 환불완료 (제외 대상)
+            { id: 'PT-014', orderId: 'ORD-20260225-001', customerId: 'USR-1014', vehicleNumber: '14마3456', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-02-25 08:00', usageEnd: '2026-02-25 20:00', usageStatus: '환불완료', paymentStatus: '환불완료' },
+            // 2/27~2/28
+            { id: 'PT-015', orderId: 'ORD-20260227-001', customerId: 'USR-1015', vehicleNumber: '15바7890', parkingLotName: '선릉역 스무스 지하주차장', productName: '연박권 2일', usageStart: '2026-02-27 14:00', usageEnd: '2026-02-28 14:00', usageStatus: '입차전', paymentStatus: '결제완료' },
+            // 2/1 당일
+            { id: 'PT-016', orderId: 'ORD-20260201-003', customerId: 'USR-1016', vehicleNumber: '16사1234', parkingLotName: '투루파킹 케이 OPU407', productName: '당일권', usageStart: '2026-02-01 08:00', usageEnd: '2026-02-01 20:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            // 2/1 당일
+            { id: 'PT-017', orderId: 'ORD-20260201-004', customerId: 'USR-1017', vehicleNumber: '17아5678', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-02-01 10:00', usageEnd: '2026-02-01 18:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+            // 2/12~2/13
+            { id: 'PT-018', orderId: 'ORD-20260212-001', customerId: 'USR-1018', vehicleNumber: '18자9012', parkingLotName: '선릉역 스무스 지하주차장', productName: '연박권 2일', usageStart: '2026-02-12 15:00', usageEnd: '2026-02-13 15:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+
+            // ── 2026-01 데이터 (이전 달 테스트용) ──
+            { id: 'PT-101', orderId: 'ORD-20260115-001', customerId: 'USR-2001', vehicleNumber: '21가1111', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 3일', usageStart: '2026-01-15 09:00', usageEnd: '2026-01-17 18:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+            { id: 'PT-102', orderId: 'ORD-20260120-001', customerId: 'USR-2002', vehicleNumber: '22나2222', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-01-20 10:00', usageEnd: '2026-01-20 22:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            { id: 'PT-103', orderId: 'ORD-20260125-001', customerId: 'USR-2003', vehicleNumber: '23다3333', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-01-25 08:00', usageEnd: '2026-01-25 20:00', usageStatus: '입차전', paymentStatus: '결제완료' },
+            // 1/30~2/1 00:00 — 경계값: 1/31까지만 포함, 2/1에는 미포함
+            { id: 'PT-104', orderId: 'ORD-20260130-001', customerId: 'USR-2004', vehicleNumber: '24라4444', parkingLotName: '투루파킹 케이 OPU407', productName: '연박권 2일', usageStart: '2026-01-30 14:00', usageEnd: '2026-02-01 00:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+        ];
+
+        // ============================================================
+        // 유틸 함수
+        // ============================================================
+
+        /**
+         * 주차일 포함 판정
+         * - usageStart < (D+1일 00:00)
+         * - usageEnd > (D일 00:00)
+         * - 단, usageEnd가 정확히 D일 00:00이면 D에 포함하지 않음 (24:00 예외)
+         */
+        function isTicketOnDate(ticket, dateStr) {
+            // dateStr: 'YYYY-MM-DD'
+            const dayStart = new Date(dateStr + 'T00:00:00');
+            const nextDayStart = new Date(dayStart);
+            nextDayStart.setDate(nextDayStart.getDate() + 1);
+
+            const start = parseDateTime(ticket.usageStart);
+            const end = parseDateTime(ticket.usageEnd);
+
+            // usageStart < nextDayStart
+            if (start >= nextDayStart) return false;
+            // usageEnd > dayStart
+            if (end <= dayStart) return false;
+            // 24:00 예외: usageEnd가 정확히 dayStart와 같으면 제외
+            // 위에서 end <= dayStart 로 이미 처리됨
+            // 추가: usageEnd가 정확히 dayStart 다음날 00:00과 같으면? 그건 포함됨(당일).
+            // 핵심: end === dayStart 일 때 제외 — 이미 end <= dayStart에서 처리
+            return true;
+        }
+
+        function parseDateTime(str) {
+            // 'YYYY-MM-DD HH:MM' → Date
+            const [datePart, timePart] = str.split(' ');
+            return new Date(datePart + 'T' + timePart + ':00');
+        }
+
+        function isExcludedStatus(status) {
+            return EXCLUDED_STATUSES.includes(status);
+        }
+
+        function getActiveTickets(tickets) {
+            return tickets.filter(t => !isExcludedStatus(t.usageStatus));
+        }
+
+        function getTicketsForDate(tickets, dateStr) {
+            const active = getActiveTickets(tickets);
+            return active.filter(t => isTicketOnDate(t, dateStr));
+        }
+
+        function countByStatus(tickets) {
+            const counts = { '입차전': 0, '주차중': 0, '출차완료': 0 };
+            tickets.forEach(t => {
+                if (counts[t.usageStatus] !== undefined) {
+                    counts[t.usageStatus]++;
+                }
+            });
+            return counts;
+        }
+
+        function formatDate(y, m, d) {
+            return `${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+        }
+
+        function getDaysInMonth(y, m) {
+            return new Date(y, m, 0).getDate();
+        }
+
+        function getFirstDayOfWeek(y, m) {
+            // 0=일, 1=월, ...
+            return new Date(y, m - 1, 1).getDay();
+        }
+
+        // ============================================================
+        // LNB Menu Data
+        // ============================================================
+        const LNB_MENUS = [
+            {
+                id: 'sales', label: '판매관리',
+                children: [
+                    { label: '대쉬보드', href: '#' },
+                    { label: '결제현황 관리', href: '#' },
+                    { label: '결제주차권관리', href: '340_결제주차권관리.html', sub: [
+                        { label: '목록', href: '340_결제주차권관리.html' },
+                        { label: '캘린더(월간 수요)', href: '350_결제주차권관리_캘린더(월간수요).html', active: true },
+                    ]},
+                    { label: '맵뷰', href: '#' },
+                    { label: '환불관리', href: '#' },
+                ],
+            },
+            { id: 'settle', label: '정산 관리', children: [{ label: '계좌환불', href: '#' }, { label: '마감처리', href: '#' }, { label: '정산내역서', href: '#' }] },
+            { id: 'erp', label: 'ERP', children: [{ label: '매출내역 전송', href: '#' }, { label: '정산내역서 전송', href: '#' }] },
+            { id: 'info', label: '정보 관리', children: [{ label: '일반주차장 관리', href: '#' }, { label: '수정요청', href: '#' }, { label: '등록요청', href: '#' }] },
+            { id: 'share', label: '공유 관리', children: [{ label: '공유주차장', href: '#' }, { label: 'IoT 관리', href: '#' }, { label: '공유시간정책', href: '#' }] },
+            { id: 'partner', label: '제휴 관리', children: [{ label: '제휴주차장 관리', href: '#' }, { label: '제휴주차상품 관리', href: '#' }, { label: '월주차 현황', href: '#' }, { label: '월주차 신청', href: '#' }, { label: '거래처(BP)', href: '#' }, { label: '정산대상(STG)', href: '#' }, { label: '제휴신청목록', href: '#' }, { label: '제휴주차상품 예약관리', href: '#' }, { label: '제휴계약관리', href: '#' }] },
+            { id: 'autopay', label: '자동결제 관리', children: [{ label: '자동결제 관리', href: '#' }] },
+            { id: 'charger', label: '충전소 관리', children: [{ label: 'EV 충전소', href: '#' }] },
+            { id: 'coupon', label: '포인트/쿠폰/상품권 관리', children: [{ label: '포인트 관리', href: '#' }, { label: '쿠폰 관리', href: '#' }, { label: '상품권 관리', href: '#' }] },
+            { id: 'partners', label: '파트너 관리', children: [{ label: '파트너 관리', href: '#' }] },
+            { id: 'service', label: '서비스 관리', children: [{ label: '메시지', href: '#' }, { label: '공지사항', href: '#' }, { label: '배너', href: '#' }, { label: '회원관리', href: '#' }] },
+            { id: 'admin', label: '어드민 관리', children: [{ label: '어드민관리', href: '#' }, { label: '권한관리', href: '#' }, { label: '패스워드변경', href: '#' }] },
+        ];
+
+        // ============================================================
+        // Header Component
+        // ============================================================
+        function Header({ onMenuToggle }) {
+            return (
+                <header className="header">
+                    <button className="header__menu-toggle" onClick={onMenuToggle}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <div className="header__logo">
+                        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                            <rect x="2" y="2" width="28" height="28" rx="8" fill="#00A8FF"/>
+                            <text x="16" y="22" textAnchor="middle" fontSize="18" fontWeight="700" fill="#fff" fontFamily="sans-serif">P</text>
+                        </svg>
+                        모두의주차장 관리자
+                        <span className="header__env">dev</span>
+                    </div>
+                    <div className="header__right">
+                        <span className="header__user">elice님</span>
+                        <a href="javascript:void(0)" className="header__link">내정보</a>
+                        <a href="javascript:void(0)" className="header__link">로그아웃</a>
+                    </div>
+                </header>
+            );
+        }
+
+        // ============================================================
+        // LNB Component (결제주차권관리 서브메뉴 포함)
+        // ============================================================
+        function LNB({ isOpen }) {
+            const [openGroups, setOpenGroups] = useState({ sales: true });
+
+            const toggleGroup = (groupId) => {
+                setOpenGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
+            };
+
+            return (
+                <nav className={`lnb ${isOpen ? 'open' : ''}`}>
+                    {LNB_MENUS.map(menu => (
+                        <div key={menu.id}>
+                            <div
+                                className={`lnb-group-label ${openGroups[menu.id] ? 'open' : ''}`}
+                                onClick={() => toggleGroup(menu.id)}
+                            >
+                                {menu.label} <span className="arrow">▼</span>
+                            </div>
+                            <div className={`lnb-group-children ${openGroups[menu.id] ? 'open' : ''}`}>
+                                {menu.children.map(child => {
+                                    if (child.sub) {
+                                        // 결제주차권관리 — 하위 메뉴 표시
+                                        return (
+                                            <div key={child.label}>
+                                                <div className="lnb-item" style={{ fontWeight: 500, color: 'var(--color-gray-300)', cursor: 'default', fontSize: '12px', paddingBottom: '2px' }}>
+                                                    {child.label}
+                                                </div>
+                                                {child.sub.map(sub => (
+                                                    <a
+                                                        key={sub.label}
+                                                        className={`lnb-item ${sub.active ? 'active' : ''}`}
+                                                        href={sub.href}
+                                                        style={{ paddingLeft: 44, fontSize: '12.5px' }}
+                                                    >
+                                                        {sub.active ? '▸ ' : ''}{sub.label}
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        );
+                                    }
+                                    return (
+                                        <a
+                                            key={child.label}
+                                            className="lnb-item"
+                                            href={child.href}
+                                        >{child.label}</a>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </nav>
+            );
+        }
+
+        // ============================================================
+        // Footer Component
+        // ============================================================
+        function Footer() {
+            const [footerText, setFooterText] = useState('');
+            useEffect(() => {
+                const lastMod = new Date(document.lastModified);
+                const yyyy = lastMod.getFullYear();
+                const MM = String(lastMod.getMonth() + 1).padStart(2, '0');
+                const dd = String(lastMod.getDate()).padStart(2, '0');
+                const hh = String(lastMod.getHours()).padStart(2, '0');
+                const mm = String(lastMod.getMinutes()).padStart(2, '0');
+                setFooterText(`\u00A9 2026. 주차권예매서비스. 최종업데이트 : ${yyyy}.${MM}.${dd} ${hh}:${mm}`);
+            }, []);
+            return <footer className="footer">{footerText}</footer>;
+        }
+
+        // ============================================================
+        // Calendar Cell Component
+        // ============================================================
+        function CalendarCell({ day, year, month, isToday, isSelected, onClick, tickets }) {
+            if (!day) {
+                return <div className="cal350-cell cal350-cell--empty" />;
+            }
+
+            const dateStr = formatDate(year, month, day);
+            const dayTickets = getTicketsForDate(tickets, dateStr);
+            const counts = countByStatus(dayTickets);
+            const total = dayTickets.length;
+            const dow = new Date(year, month - 1, day).getDay();
+
+            let cellClass = 'cal350-cell';
+            if (isToday) cellClass += ' cal350-cell--today';
+            if (isSelected) cellClass += ' cal350-cell--selected';
+            if (dow === 0) cellClass += ' cal350-cell--sun';
+            if (dow === 6) cellClass += ' cal350-cell--sat';
+
+            return (
+                <div className={cellClass} onClick={() => onClick(day)}>
+                    <div className="cal350-cell-date">{day}</div>
+                    {total > 0 && (
+                        <>
+                            <div className="cal350-cell-total">총 {total}대</div>
+                            <div className="cal350-cell-badges">
+                                {counts['입차전'] > 0 && (
+                                    <div className="cal350-badge cal350-badge--before">
+                                        <span className="cal350-badge-dot cal350-badge-dot--before" />
+                                        입차전 {counts['입차전']}
+                                    </div>
+                                )}
+                                {counts['주차중'] > 0 && (
+                                    <div className="cal350-badge cal350-badge--parking">
+                                        <span className="cal350-badge-dot cal350-badge-dot--parking" />
+                                        주차중 {counts['주차중']}
+                                    </div>
+                                )}
+                                {counts['출차완료'] > 0 && (
+                                    <div className="cal350-badge cal350-badge--done">
+                                        <span className="cal350-badge-dot cal350-badge-dot--done" />
+                                        출차완료 {counts['출차완료']}
+                                    </div>
+                                )}
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Detail Table Component
+        // ============================================================
+        function DetailTable({ selectedDate, year, month, tickets }) {
+            if (!selectedDate) {
+                return (
+                    <div className="cal350-detail-card">
+                        <div className="cal350-empty">
+                            <div className="cal350-empty-icon">📅</div>
+                            <p>날짜를 선택하면 목록이 표시됩니다.</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            const dateStr = formatDate(year, month, selectedDate);
+            const dayTickets = getTicketsForDate(tickets, dateStr);
+            const displayDate = `${year}년 ${month}월 ${selectedDate}일`;
+
+            if (dayTickets.length === 0) {
+                return (
+                    <div className="cal350-detail-card">
+                        <div className="cal350-detail-header">
+                            <span className="cal350-detail-title">{displayDate} 결제주차권 목록</span>
+                        </div>
+                        <div className="cal350-empty">
+                            <div className="cal350-empty-icon">🚗</div>
+                            <p>해당 날짜에 이용 차량이 없습니다.</p>
+                        </div>
+                    </div>
+                );
+            }
+
+            const statusClass = (s) => {
+                if (s === '입차전') return 'cal350-status--before';
+                if (s === '주차중') return 'cal350-status--parking';
+                if (s === '출차완료') return 'cal350-status--done';
+                return '';
+            };
+
+            return (
+                <div className="cal350-detail-card">
+                    <div className="cal350-detail-header">
+                        <span className="cal350-detail-title">{displayDate} 결제주차권 목록</span>
+                        <span className="cal350-detail-count">총 {dayTickets.length}건</span>
+                    </div>
+                    <div style={{ overflowX: 'auto' }}>
+                        <table className="cal350-table">
+                            <thead>
+                                <tr>
+                                    <th>주문번호</th>
+                                    <th>고객 ID</th>
+                                    <th>차량번호</th>
+                                    <th>주차장명</th>
+                                    <th>상품명</th>
+                                    <th>이용시작일시</th>
+                                    <th>이용종료일시</th>
+                                    <th>이용상태</th>
+                                    <th>결제상태</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {dayTickets.map(t => (
+                                    <tr key={t.id}>
+                                        <td style={{ fontWeight: 600 }}>{t.orderId}</td>
+                                        <td>{t.customerId}</td>
+                                        <td style={{ fontWeight: 600 }}>{t.vehicleNumber}</td>
+                                        <td className="td-left">{t.parkingLotName}</td>
+                                        <td className="td-left">{t.productName}</td>
+                                        <td className="td-datetime">{t.usageStart}</td>
+                                        <td className="td-datetime">{t.usageEnd}</td>
+                                        <td>
+                                            <span className={`cal350-status ${statusClass(t.usageStatus)}`}>{t.usageStatus}</span>
+                                        </td>
+                                        <td>
+                                            <span className="cal350-pay-badge cal350-pay-badge--completed">{t.paymentStatus}</span>
+                                        </td>
+                                        <td>
+                                            <a className="cal350-link-dummy" onClick={(e) => e.preventDefault()} title="결제관리에서 확인 (추후 연결)">결제관리</a>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div className="cal350-note">
+                        * 취소완료/환불신청/환불완료 상태는 집계 및 목록에서 제외됩니다. 추후 엣지케이스 추가 가능.
+                    </div>
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Main App
+        // ============================================================
+        function App() {
+            const today = new Date();
+            const [year, setYear] = useState(today.getFullYear());
+            const [month, setMonth] = useState(today.getMonth() + 1);
+            const [selectedDate, setSelectedDate] = useState(null);
+            const [loading, setLoading] = useState(false);
+            const [lnbOpen, setLnbOpen] = useState(false);
+
+            const daysInMonth = getDaysInMonth(year, month);
+            const firstDow = getFirstDayOfWeek(year, month);
+
+            const todayDate = today.getDate();
+            const todayMonth = today.getMonth() + 1;
+            const todayYear = today.getFullYear();
+
+            const handlePrevMonth = useCallback(() => {
+                setLoading(true);
+                setSelectedDate(null);
+                setTimeout(() => {
+                    if (month === 1) { setYear(y => y - 1); setMonth(12); }
+                    else { setMonth(m => m - 1); }
+                    setLoading(false);
+                }, 300);
+            }, [month]);
+
+            const handleNextMonth = useCallback(() => {
+                setLoading(true);
+                setSelectedDate(null);
+                setTimeout(() => {
+                    if (month === 12) { setYear(y => y + 1); setMonth(1); }
+                    else { setMonth(m => m + 1); }
+                    setLoading(false);
+                }, 300);
+            }, [month]);
+
+            const handleMonthInput = useCallback((e) => {
+                const val = e.target.value; // 'YYYY-MM'
+                if (!val) return;
+                const [y, m] = val.split('-').map(Number);
+                if (y && m) {
+                    setLoading(true);
+                    setSelectedDate(null);
+                    setTimeout(() => {
+                        setYear(y);
+                        setMonth(m);
+                        setLoading(false);
+                    }, 300);
+                }
+            }, []);
+
+            const handleCellClick = useCallback((day) => {
+                setSelectedDate(prev => prev === day ? null : day);
+            }, []);
+
+            // Build calendar grid cells
+            const cells = useMemo(() => {
+                const arr = [];
+                // Empty cells before first day
+                for (let i = 0; i < firstDow; i++) arr.push(null);
+                for (let d = 1; d <= daysInMonth; d++) arr.push(d);
+                // Pad to complete last row
+                while (arr.length % 7 !== 0) arr.push(null);
+                return arr;
+            }, [firstDow, daysInMonth]);
+
+            const monthStr = `${year}-${String(month).padStart(2,'0')}`;
+            const monthDisplay = `${year}년 ${month}월`;
+
+            return (
+                <div className="app-layout">
+                    <Header onMenuToggle={() => setLnbOpen(o => !o)} />
+                    <div className={`lnb-overlay ${lnbOpen ? 'show' : ''}`} onClick={() => setLnbOpen(false)} />
+                    <LNB isOpen={lnbOpen} />
+
+                    <main className="main" style={{ marginTop: 'var(--header-h)' }}>
+                        {/* Page Header */}
+                        <div className="page-header">
+                            <div className="main__breadcrumb">
+                                판매관리 &gt; 결제주차권관리 &gt; <span>캘린더(월간 수요)</span>
+                            </div>
+                            <h1 className="page-title">결제주차권 관리 – 캘린더(월간 수요)</h1>
+                            <p className="page-subtitle">조회 기준: 주차일(고정) · 날짜별 이용상태별 차량 수를 월간 캘린더로 확인합니다.</p>
+                        </div>
+
+                        {/* Info Banner */}
+                        <div className="cal350-info-banner">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/><path d="M8 5v3M8 10v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                            상태/컬럼/조회조건은 하위 스토리 확정 후 조정될 수 있습니다. 이용상태: 입차전 / 주차중 / 출차완료 (3종). 집계 제외: 취소완료, 환불신청, 환불완료.
+                        </div>
+
+                        {/* Filter Placeholder */}
+                        <div className="cal350-filter-card">
+                            <div className="cal350-filter-disabled-overlay">
+                                <span className="cal350-filter-disabled-msg">조회조건 — 추후 제공 예정 (주차장 / 상품 / 이용상태)</span>
+                            </div>
+                            <div className="cal350-filter-row">
+                                <span className="cal350-filter-label">주차장</span>
+                                <select className="cal350-filter-select" disabled>
+                                    <option>전체</option>
+                                </select>
+                                <span className="cal350-filter-label">상품</span>
+                                <select className="cal350-filter-select" disabled>
+                                    <option>전체</option>
+                                </select>
+                                <span className="cal350-filter-label">이용상태</span>
+                                <select className="cal350-filter-select" disabled>
+                                    <option>전체</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Month Navigation */}
+                        <div className="cal350-month-nav">
+                            <button className="cal350-month-btn" onClick={handlePrevMonth} title="이전달">◀</button>
+                            <span className="cal350-month-label">{monthDisplay}</span>
+                            <button className="cal350-month-btn" onClick={handleNextMonth} title="다음달">▶</button>
+                            <input
+                                type="month"
+                                className="cal350-month-input"
+                                value={monthStr}
+                                onChange={handleMonthInput}
+                            />
+                            <div className="cal350-legend">
+                                <div className="cal350-legend-item"><span className="cal350-legend-dot cal350-legend-dot--before" /> 입차전</div>
+                                <div className="cal350-legend-item"><span className="cal350-legend-dot cal350-legend-dot--parking" /> 주차중</div>
+                                <div className="cal350-legend-item"><span className="cal350-legend-dot cal350-legend-dot--done" /> 출차완료</div>
+                            </div>
+                        </div>
+
+                        {/* Calendar */}
+                        <div className="cal350-calendar-card" style={{ position: 'relative' }}>
+                            {loading && (
+                                <div className="cal350-loading">
+                                    <div className="cal350-spinner" />
+                                </div>
+                            )}
+                            <div className="cal350-calendar-grid">
+                                {/* DOW headers */}
+                                {['일','월','화','수','목','금','토'].map((d, i) => (
+                                    <div key={d} className={`cal350-calendar-dow ${i === 0 ? 'cal350-calendar-dow--sun' : ''} ${i === 6 ? 'cal350-calendar-dow--sat' : ''}`}>{d}</div>
+                                ))}
+                                {/* Date cells */}
+                                {cells.map((day, idx) => (
+                                    <CalendarCell
+                                        key={idx}
+                                        day={day}
+                                        year={year}
+                                        month={month}
+                                        isToday={day && year === todayYear && month === todayMonth && day === todayDate}
+                                        isSelected={day && day === selectedDate}
+                                        onClick={handleCellClick}
+                                        tickets={MOCK_TICKETS}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Detail Table */}
+                        <DetailTable
+                            selectedDate={selectedDate}
+                            year={year}
+                            month={month}
+                            tickets={MOCK_TICKETS}
+                        />
+                    </main>
+
+                    <Footer />
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Render
+        // ============================================================
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

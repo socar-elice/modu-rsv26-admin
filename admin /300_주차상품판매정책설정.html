@@ -895,11 +895,13 @@
             <tr>
               <th>연장 가능 여부</th>
               <td>
-                <select class="form-select" id="ltRenewalPossible" style="max-width:160px;">
-                  <option value="" selected>선택</option>
-                  <option value="true">가능</option>
-                  <option value="false">불가능</option>
-                </select>
+                <div class="inline-field" style="gap:10px;">
+                  <span class="unit-label" id="ltRenewalLabel" style="min-width:40px;">불가능</span>
+                  <label class="toggle-switch">
+                    <input type="checkbox" id="ltRenewalPossible">
+                    <span class="slider"></span>
+                  </label>
+                </div>
               </td>
             </tr>
             <tr>
@@ -1412,8 +1414,12 @@
   var ltRenewalFields = document.querySelectorAll('.lt-renewal-field');
   var $ltRenewalSettlement = document.getElementById('ltRenewalSettlement');
 
+  var $ltRenewalLabel = document.getElementById('ltRenewalLabel');
+
   function updateRenewalFields() {
-    var enabled = ($ltRenewalPossible.value === 'true');
+    var enabled = $ltRenewalPossible.checked;
+    $ltRenewalLabel.textContent = enabled ? '가능' : '불가능';
+    $ltRenewalLabel.style.color = enabled ? 'var(--color-primary)' : '';
     ltRenewalFields.forEach(function (field) {
       field.disabled = !enabled;
       if (!enabled) {
