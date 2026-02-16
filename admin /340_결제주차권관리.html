@@ -1,0 +1,1671 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>주차관리 - 결제주차권관리 | 모두의주차장 관리자</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link rel="stylesheet" href="common.css">
+        <style>
+/* ============================================================
+   Page-specific: 340_주차관리
+   ============================================================ */
+
+/* App Layout */
+.app-layout { display: flex; min-height: 100vh; padding-top: var(--header-h); }
+
+/* Page Header */
+.page-header { margin-bottom: var(--space-6); }
+.page-title {
+  font-size: 22px; font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary); margin-bottom: var(--space-1);
+}
+.page-subtitle {
+  font-size: var(--font-size-md); color: var(--color-text-secondary);
+}
+
+/* Filter Card */
+.filter-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-5) var(--space-6);
+  margin-bottom: var(--space-5);
+}
+.filter-row {
+  display: flex; align-items: center; gap: var(--space-3);
+  margin-bottom: var(--space-4); flex-wrap: wrap;
+}
+.filter-row:last-child { margin-bottom: 0; }
+.filter-label {
+  font-size: var(--font-size-md); font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary); min-width: 72px; flex-shrink: 0;
+}
+.filter-sub-label {
+  font-size: var(--font-size-md); font-weight: var(--font-weight-medium);
+  color: var(--color-text-tertiary); flex-shrink: 0; white-space: nowrap;
+}
+.filter-sub-label + .filter-select { margin-left: 0; }
+.filter-sub-label:not(:first-of-type) { margin-left: var(--space-4); }
+.filter-input, .filter-select {
+  height: 36px; padding: 0 var(--space-3);
+  font-size: var(--font-size-md); border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm); background: var(--color-bg-surface);
+  color: var(--color-text-primary); outline: none;
+  transition: border-color var(--transition-fast);
+}
+.filter-input:focus, .filter-select:focus {
+  border-color: var(--color-primary-main);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+}
+.filter-select {
+  appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='%23666'%3E%3Cpath d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+}
+.filter-input::placeholder { color: var(--color-text-disabled); }
+.filter-date {
+  height: 36px; padding: 0 var(--space-3);
+  font-size: var(--font-size-md); border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm); background: var(--color-bg-surface);
+  color: var(--color-text-primary); outline: none; min-width: 150px;
+  cursor: pointer; transition: border-color var(--transition-fast);
+}
+.filter-date:focus {
+  border-color: var(--color-primary-main);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+}
+.date-separator {
+  color: var(--color-text-disabled); font-size: var(--font-size-base);
+  flex-shrink: 0; padding: 0 2px;
+}
+
+/* Quick Date Buttons */
+.quick-btn-group { display: flex; gap: 4px; flex-shrink: 0; }
+.quick-btn {
+  height: 36px; padding: 0 var(--space-3);
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary); background: var(--color-bg-surface);
+  cursor: pointer; transition: all var(--transition-fast); white-space: nowrap;
+}
+.quick-btn:hover { background: var(--color-bg-secondary); border-color: var(--color-border-medium); }
+.quick-btn.active {
+  background: var(--color-primary-main); color: var(--color-text-inverse);
+  border-color: var(--color-primary-main);
+}
+.quick-btn.active:hover { background: var(--color-primary-dark); border-color: var(--color-primary-dark); }
+
+/* Search Button */
+.filter-actions {
+  display: flex; justify-content: center;
+  margin-top: var(--space-5); padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-light);
+}
+.btn-search {
+  height: 36px; padding: 0 var(--space-10);
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--color-primary-main); color: var(--color-text-inverse);
+  border: none; border-radius: var(--radius-sm);
+  font-size: var(--font-size-base); font-weight: var(--font-weight-semibold);
+  cursor: pointer; transition: background var(--transition-fast);
+}
+/* Status Chip Buttons (이용상태 바로 선택) */
+.status-chip-group { display: flex; gap: 4px; flex-wrap: wrap; }
+.status-chip {
+  height: 36px; padding: 0 var(--space-3);
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  color: var(--color-text-secondary); background: var(--color-bg-surface);
+  cursor: pointer; transition: all var(--transition-fast); white-space: nowrap;
+}
+.status-chip:hover { background: var(--color-bg-secondary); border-color: var(--color-border-medium); }
+.status-chip.active {
+  background: var(--color-primary-main); color: var(--color-text-inverse);
+  border-color: var(--color-primary-main);
+}
+.status-chip.active:hover { background: var(--color-primary-dark); border-color: var(--color-primary-dark); }
+
+.btn-search:hover { background: var(--color-primary-dark); }
+.btn-search:active { transform: scale(0.98); }
+
+/* Data Table */
+.table-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.table-header {
+  padding: var(--space-4) var(--space-5);
+  font-size: var(--font-size-lg); font-weight: var(--font-weight-bold);
+  border-bottom: 1px solid var(--color-border-light);
+}
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  background: var(--color-bg-tertiary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: var(--space-3) var(--space-3);
+  text-align: center;
+  border-bottom: 2px solid var(--color-border-default);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: var(--space-3) var(--space-3);
+  text-align: center;
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-light);
+  vertical-align: middle;
+}
+.data-table tbody tr { cursor: pointer; transition: background var(--transition-fast); }
+.data-table tbody tr:hover { background: var(--color-bg-tertiary); }
+.data-table tbody tr:last-child td { border-bottom: none; }
+
+.td-vehicle {
+  display: flex; align-items: center; gap: var(--space-2);
+  justify-content: flex-start; padding-left: var(--space-4) !important;
+}
+.vehicle-number { font-weight: var(--font-weight-semibold); white-space: nowrap; }
+.td-parking { text-align: left !important; padding-left: var(--space-4) !important; }
+.td-product { text-align: left !important; }
+.td-datetime { font-size: var(--font-size-sm); white-space: nowrap; color: var(--color-text-secondary); }
+.td-amount { font-weight: var(--font-weight-medium); text-align: right !important; padding-right: var(--space-4) !important; }
+
+/* Badges */
+.product-type-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  border: 1px solid var(--color-text-tertiary);
+  color: var(--color-text-tertiary);
+  border-radius: 2px;
+  white-space: nowrap;
+}
+.product-type-tag.pass { border-color: var(--color-status-info); color: var(--color-status-info); }
+.product-type-tag.share { border-color: var(--color-status-success); color: var(--color-status-success); }
+.product-type-tag.resident { border-color: #8B5CF6; color: #8B5CF6; }
+.product-type-tag.short { border-color: var(--color-status-warning); color: var(--color-status-warning); }
+.parking-type-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: var(--font-weight-medium);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-default);
+  border-radius: 2px;
+}
+
+/* Payment Status */
+.payment-status {
+  display: inline-flex; align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface);
+}
+.payment-status.completed { color: var(--color-status-success); border-color: var(--color-status-success); }
+.payment-status.cancelled { color: var(--color-status-error); border-color: var(--color-status-error); }
+
+/* Entry Status */
+.entry-status {
+  display: inline-flex; align-items: center;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+.entry-status.waiting { color: var(--color-text-tertiary); background: var(--color-bg-secondary); }
+.entry-status.available { color: var(--color-status-info); background: #E8F4FF; }
+.entry-status.active { color: var(--color-status-success); background: #F0FDF4; }
+.entry-status.done { color: var(--color-status-warning); background: #FFF7ED; }
+
+.no-data { font-size: var(--font-size-sm); color: var(--color-text-disabled); }
+
+/* Pagination */
+.pagination-wrapper {
+  display: flex; justify-content: center; align-items: center;
+  gap: var(--space-1); padding: var(--space-5) 0;
+}
+.page-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 36px; height: 36px; padding: 0 var(--space-2);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-surface); color: var(--color-text-primary);
+  font-size: var(--font-size-md); cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.page-btn:hover:not(:disabled) {
+  border-color: var(--color-primary-main); color: var(--color-primary-main);
+}
+.page-btn.active {
+  background: var(--color-primary-dark); color: #fff;
+  border-color: var(--color-primary-dark);
+}
+.page-btn:disabled { opacity: 0.35; cursor: default; }
+
+/* Detail Panel (Right Push) */
+.detail-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.3);
+  z-index: 999; opacity: 0; pointer-events: none;
+  transition: opacity var(--transition-base);
+}
+.detail-overlay.open { opacity: 1; pointer-events: auto; }
+.detail-panel {
+  position: fixed; top: 0; right: 0; bottom: 0;
+  width: 480px; max-width: 90%;
+  background: var(--color-bg-surface);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform var(--transition-base);
+  overflow-y: auto;
+}
+.detail-panel.open { transform: translateX(0); }
+.detail-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: var(--space-5) var(--space-6);
+  border-bottom: 1px solid var(--color-border-light);
+  position: sticky; top: 0; background: var(--color-bg-surface); z-index: 1;
+}
+.detail-panel-title {
+  font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold);
+}
+.detail-panel-close {
+  width: 36px; height: 36px; border: none; background: none;
+  font-size: 24px; color: var(--color-text-tertiary);
+  cursor: pointer; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.detail-panel-close:hover { background: var(--color-bg-secondary); color: var(--color-text-primary); }
+.detail-panel-body { padding: var(--space-6); }
+.detail-section { margin-bottom: var(--space-6); }
+.detail-section-title {
+  font-size: var(--font-size-base); font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-2);
+  border-bottom: 2px solid var(--color-border-light);
+}
+.detail-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+.detail-item { display: flex; flex-direction: column; gap: 2px; }
+.detail-item.full { grid-column: 1 / -1; }
+.detail-label {
+  font-size: var(--font-size-xs); color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+.detail-value {
+  font-size: var(--font-size-base); color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+}
+.detail-actions {
+  display: flex; gap: var(--space-2); margin-top: var(--space-4);
+}
+
+/* Detail Edit Input */
+.detail-edit-input {
+  width: 100%; padding: 6px 10px;
+  font-size: var(--font-size-md); color: var(--color-text-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm); background: var(--color-bg-surface);
+  outline: none; transition: border-color var(--transition-fast);
+  font-family: inherit;
+}
+.detail-edit-input:focus { border-color: var(--color-primary-main); box-shadow: 0 0 0 2px rgba(59,130,246,0.15); }
+
+/* Empty State */
+.empty-state {
+  text-align: center; padding: var(--space-10) var(--space-5);
+  color: var(--color-text-disabled);
+}
+.empty-state p { font-size: var(--font-size-md); margin-top: var(--space-2); }
+
+/* 340-specific responsive */
+@media (max-width: 1024px) {
+  .filter-row { flex-wrap: wrap; }
+  .filter-label { min-width: 64px; }
+}
+@media (max-width: 768px) {
+  .data-table { font-size: var(--font-size-sm); }
+  .data-table th, .data-table td { padding: var(--space-2); }
+  .filter-card { padding: var(--space-4); }
+  .filter-row { gap: var(--space-2); }
+  .filter-label { min-width: 100%; font-size: var(--font-size-sm); }
+  .filter-select, .filter-input, .filter-date { min-width: 0; flex: 1; }
+  .quick-btn { padding: 0 var(--space-2); font-size: var(--font-size-xs); }
+  .btn-search { padding: 0 var(--space-8); }
+}
+
+        </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect, useCallback, useRef } = React;
+
+        // ============================================================
+        // Mock Data
+        // ============================================================
+        const PARKING_LOTS = [
+            { id: 'pl-001', name: '투루파킹 케이 OPU407 주차장' },
+            { id: 'pl-002', name: '역삼동 그램 주차빌딩' },
+            { id: 'pl-003', name: '선릉역 스무스 지하주차장' },
+        ];
+
+        const DUMMY_VEHICLES = [
+            {
+                id: 'VH-001', vehicleNumber: '901자1234', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '정기권', productName: '강남역 월정기권',
+                usagePeriodStart: '2026-01-01 00:00', usagePeriodEnd: '2026-01-31 23:59',
+                expectedEntryTime: '', entryTime: '', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 150000,
+                buyerName: '김민수', buyerPhone: '010-1234-5678', safeNumber: '050-1234-5678',
+                vehicleModel: '카니발', departureFlight: 'KE873', arrivalFlight: 'KE874', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-002', vehicleNumber: '123가3456', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '일반권', productName: '강남역 2시간 주차권',
+                usagePeriodStart: '2026-01-19 14:00', usagePeriodEnd: '2026-01-19 16:00',
+                expectedEntryTime: '2026-01-19 14:00',
+                entryTime: '2026-01-19 14:05', exitTime: '2026-01-19 15:50',
+                paymentStatus: '결제완료', saleAmount: 8000,
+                buyerName: '이영희', buyerPhone: '010-2345-6789', safeNumber: '050-2345-6789',
+                vehicleModel: '쏘나타', departureFlight: 'OZ362', arrivalFlight: 'OZ363', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-003', vehicleNumber: '567다7890', parkingLotId: 'pl-003',
+                parkingLotName: '선릉역 스무스 지하주차장', isWebDiscount: false,
+                productType: '일반공유', productName: '선릉역 4시간 주차권',
+                usagePeriodStart: '2026-01-19 10:00', usagePeriodEnd: '2026-01-19 14:00',
+                expectedEntryTime: '2026-01-19 10:00',
+                entryTime: '2026-01-19 10:10', exitTime: '2026-01-19 13:45',
+                paymentStatus: '결제완료', saleAmount: 12000,
+                buyerName: '박지훈', buyerPhone: '010-3456-7890', safeNumber: '050-3456-7890',
+                vehicleModel: '아반떼', departureFlight: 'KE651', arrivalFlight: 'KE652', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-004', vehicleNumber: '345나5678', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '일반권', productName: '역삼동 종일 주차권',
+                usagePeriodStart: '2026-01-19 09:00', usagePeriodEnd: '2026-01-19 21:00',
+                expectedEntryTime: '2026-01-19 09:00',
+                entryTime: '2026-01-19 09:15', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 25000,
+                buyerName: '최수진', buyerPhone: '010-4567-8901', safeNumber: '050-4567-8901',
+                vehicleModel: 'K5', departureFlight: 'KE001', arrivalFlight: 'KE002', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-005', vehicleNumber: '789라9012', parkingLotId: 'pl-003',
+                parkingLotName: '선릉역 스무스 지하주차장', isWebDiscount: false,
+                productType: '정기권', productName: '선릉역 월정기권',
+                usagePeriodStart: '2026-01-01 00:00', usagePeriodEnd: '2026-01-31 23:59',
+                expectedEntryTime: '', entryTime: '', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 180000,
+                buyerName: '정해원', buyerPhone: '010-5678-9012', safeNumber: '050-5678-9012',
+                vehicleModel: '그랜저', departureFlight: 'OZ201', arrivalFlight: 'OZ202', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-006', vehicleNumber: '901소1234', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '정기권', productName: '강남역 월정기권',
+                usagePeriodStart: '2026-01-01 00:00', usagePeriodEnd: '2026-01-31 23:59',
+                expectedEntryTime: '', entryTime: '', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 150000,
+                buyerName: '강도현', buyerPhone: '010-6789-0123', safeNumber: '050-6789-0123',
+                vehicleModel: '투싼', departureFlight: 'KE631', arrivalFlight: 'KE632', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-007', vehicleNumber: '234가5678', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '일반권', productName: '강남역 3시간 주차권',
+                usagePeriodStart: '2026-01-19 09:00', usagePeriodEnd: '2026-01-19 12:00',
+                expectedEntryTime: '2026-01-19 09:00',
+                entryTime: '2026-01-19 09:05', exitTime: '2026-01-19 11:50',
+                paymentStatus: '결제완료', saleAmount: 10000,
+                buyerName: '윤서연', buyerPhone: '010-7890-1234', safeNumber: '050-7890-1234',
+                vehicleModel: '셀토스', departureFlight: 'KE853', arrivalFlight: 'KE854', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-008', vehicleNumber: '456나7890', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '거주자공유', productName: '역삼동 반일 주차권',
+                usagePeriodStart: '2026-01-19 13:00', usagePeriodEnd: '2026-01-19 19:00',
+                expectedEntryTime: '2026-01-19 13:00',
+                entryTime: '', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 18000,
+                buyerName: '임재혁', buyerPhone: '010-8901-2345', safeNumber: '050-8901-2345',
+                vehicleModel: '스포티지', departureFlight: 'OZ741', arrivalFlight: 'OZ742', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-009', vehicleNumber: '678다1234', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '일반권', productName: '강남역 당일권',
+                usagePeriodStart: '2026-01-19 00:00', usagePeriodEnd: '2026-01-19 23:59',
+                expectedEntryTime: '2026-01-19 08:00',
+                entryTime: '2026-01-19 08:15', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 30000,
+                buyerName: '한소영', buyerPhone: '010-9012-3456', safeNumber: '050-9012-3456',
+                vehicleModel: '모닝', departureFlight: 'KE623', arrivalFlight: 'KE624', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-010', vehicleNumber: '890라5678', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '일반권', productName: '역삼동 2시간 주차권',
+                usagePeriodStart: '2026-01-19 11:00', usagePeriodEnd: '2026-01-19 13:00',
+                expectedEntryTime: '2026-01-19 11:00',
+                entryTime: '2026-01-19 11:10', exitTime: '2026-01-19 12:55',
+                paymentStatus: '결제취소', saleAmount: 7000,
+                buyerName: '오대성', buyerPhone: '010-0123-4567', safeNumber: '050-0123-4567',
+                vehicleModel: '레이', departureFlight: 'KE411', arrivalFlight: 'KE412', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-011', vehicleNumber: '112가3344', parkingLotId: 'pl-003',
+                parkingLotName: '선릉역 스무스 지하주차장', isWebDiscount: false,
+                productType: '정기권', productName: '선릉역 월정기권',
+                usagePeriodStart: '2026-01-01 00:00', usagePeriodEnd: '2026-01-31 23:59',
+                expectedEntryTime: '',
+                entryTime: '2026-01-19 07:30', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 180000,
+                buyerName: '신미래', buyerPhone: '010-1111-2222', safeNumber: '050-1111-2222',
+                vehicleModel: '싼타페', departureFlight: 'OZ551', arrivalFlight: 'OZ552', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-012', vehicleNumber: '223나5566', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '단기권', productName: '강남역 5시간 주차권',
+                usagePeriodStart: '2026-01-19 08:00', usagePeriodEnd: '2026-01-19 13:00',
+                expectedEntryTime: '2026-01-19 08:00',
+                entryTime: '2026-01-19 08:05', exitTime: '2026-01-19 12:50',
+                paymentStatus: '결제완료', saleAmount: 15000,
+                buyerName: '장현우', buyerPhone: '010-3333-4444', safeNumber: '050-3333-4444',
+                vehicleModel: '코나', departureFlight: 'KE781', arrivalFlight: 'KE782', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-013', vehicleNumber: '334다7788', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '일반권', productName: '역삼동 3시간 주차권',
+                usagePeriodStart: '2026-01-20 10:00', usagePeriodEnd: '2026-01-20 13:00',
+                expectedEntryTime: '2026-01-20 10:00',
+                entryTime: '', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 10000,
+                buyerName: '권나영', buyerPhone: '010-5555-6666', safeNumber: '050-5555-6666',
+                vehicleModel: '아이오닉5', departureFlight: 'OZ301', arrivalFlight: 'OZ302', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-014', vehicleNumber: '445라9900', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '일반권', productName: '강남역 당일권',
+                usagePeriodStart: '2026-01-19 00:00', usagePeriodEnd: '2026-01-19 23:59',
+                expectedEntryTime: '2026-01-19 07:30',
+                entryTime: '2026-01-19 07:40', exitTime: '2026-01-19 18:00',
+                paymentStatus: '결제취소', saleAmount: 30000,
+                buyerName: '조승현', buyerPhone: '010-7777-8888', safeNumber: '050-7777-8888',
+                vehicleModel: '팰리세이드', departureFlight: 'KE091', arrivalFlight: 'KE092', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-015', vehicleNumber: '556가1122', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '정기권', productName: '역삼동 월정기권',
+                usagePeriodStart: '2026-01-01 00:00', usagePeriodEnd: '2026-01-31 23:59',
+                expectedEntryTime: '',
+                entryTime: '2026-01-19 08:00', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 160000,
+                buyerName: '배수빈', buyerPhone: '010-2222-3333', safeNumber: '050-2222-3333',
+                vehicleModel: '쏘렌토', departureFlight: 'KE511', arrivalFlight: 'KE512', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-016', vehicleNumber: '667나3344', parkingLotId: 'pl-003',
+                parkingLotName: '선릉역 스무스 지하주차장', isWebDiscount: false,
+                productType: '일반공유', productName: '선릉역 3시간 주차권',
+                usagePeriodStart: '2026-01-19 15:00', usagePeriodEnd: '2026-01-19 18:00',
+                expectedEntryTime: '2026-01-19 15:00',
+                entryTime: '2026-01-19 15:10', exitTime: '2026-01-19 17:45',
+                paymentStatus: '결제완료', saleAmount: 9000,
+                buyerName: '류태영', buyerPhone: '010-4444-5555', safeNumber: '050-4444-5555',
+                vehicleModel: '말리부', departureFlight: 'OZ101', arrivalFlight: 'OZ102', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-017', vehicleNumber: '778다5566', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '단기권', productName: '강남역 2시간 주차권',
+                usagePeriodStart: '2026-01-19 16:00', usagePeriodEnd: '2026-01-19 18:00',
+                expectedEntryTime: '2026-01-19 16:00',
+                entryTime: '2026-01-19 16:05', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 6000,
+                buyerName: '문정민', buyerPhone: '010-6666-7777', safeNumber: '050-6666-7777',
+                vehicleModel: '니로', departureFlight: 'KE331', arrivalFlight: 'KE332', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-018', vehicleNumber: '889라7788', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '거주자공유', productName: '역삼동 종일 공유주차권',
+                usagePeriodStart: '2026-01-19 09:00', usagePeriodEnd: '2026-01-19 18:00',
+                expectedEntryTime: '2026-01-19 09:00',
+                entryTime: '2026-01-19 09:20', exitTime: '2026-01-19 17:30',
+                paymentStatus: '결제완료', saleAmount: 20000,
+                buyerName: '손예진', buyerPhone: '010-8888-9999', safeNumber: '050-8888-9999',
+                vehicleModel: '투싼', departureFlight: 'OZ441', arrivalFlight: 'OZ442', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-019', vehicleNumber: '990소9900', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '일반권', productName: '강남역 당일권',
+                usagePeriodStart: '2026-01-20 00:00', usagePeriodEnd: '2026-01-20 23:59',
+                expectedEntryTime: '2026-01-20 09:00',
+                entryTime: '', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 30000,
+                buyerName: '양현석', buyerPhone: '010-1010-2020', safeNumber: '050-1010-2020',
+                vehicleModel: 'GV70', departureFlight: 'KE201', arrivalFlight: 'KE202', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-020', vehicleNumber: '101가2233', parkingLotId: 'pl-003',
+                parkingLotName: '선릉역 스무스 지하주차장', isWebDiscount: false,
+                productType: '정기권', productName: '선릉역 월정기권',
+                usagePeriodStart: '2026-02-01 00:00', usagePeriodEnd: '2026-02-28 23:59',
+                expectedEntryTime: '',
+                entryTime: '', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 180000,
+                buyerName: '홍길동', buyerPhone: '010-3030-4040', safeNumber: '050-3030-4040',
+                vehicleModel: '아반떼', departureFlight: 'OZ661', arrivalFlight: 'OZ662', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-021', vehicleNumber: '212나4455', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '일반공유', productName: '강남역 4시간 공유주차권',
+                usagePeriodStart: '2026-01-19 10:00', usagePeriodEnd: '2026-01-19 14:00',
+                expectedEntryTime: '2026-01-19 10:00',
+                entryTime: '2026-01-19 10:15', exitTime: '2026-01-19 13:50',
+                paymentStatus: '결제취소', saleAmount: 12000,
+                buyerName: '서지원', buyerPhone: '010-5050-6060', safeNumber: '050-5050-6060',
+                vehicleModel: '캐스퍼', departureFlight: 'KE451', arrivalFlight: 'KE452', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-022', vehicleNumber: '323다6677', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '단기권', productName: '역삼동 1시간 주차권',
+                usagePeriodStart: '2026-01-19 14:00', usagePeriodEnd: '2026-01-19 15:00',
+                expectedEntryTime: '2026-01-19 14:00',
+                entryTime: '2026-01-19 14:05', exitTime: '2026-01-19 14:55',
+                paymentStatus: '결제완료', saleAmount: 4000,
+                buyerName: '노유진', buyerPhone: '010-7070-8080', safeNumber: '050-7070-8080',
+                vehicleModel: '스파크', departureFlight: 'OZ881', arrivalFlight: 'OZ882', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-023', vehicleNumber: '434라8899', parkingLotId: 'pl-003',
+                parkingLotName: '선릉역 스무스 지하주차장', isWebDiscount: false,
+                productType: '거주자공유', productName: '선릉역 반일 공유주차권',
+                usagePeriodStart: '2026-01-19 09:00', usagePeriodEnd: '2026-01-19 15:00',
+                expectedEntryTime: '2026-01-19 09:00',
+                entryTime: '2026-01-19 09:10', exitTime: '2026-01-19 14:50',
+                paymentStatus: '결제완료', saleAmount: 15000,
+                buyerName: '차은우', buyerPhone: '010-9090-1010', safeNumber: '050-9090-1010',
+                vehicleModel: 'EV6', departureFlight: 'KE571', arrivalFlight: 'KE572', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-024', vehicleNumber: '545소1100', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '일반권', productName: '강남역 5시간 주차권',
+                usagePeriodStart: '2026-01-19 07:00', usagePeriodEnd: '2026-01-19 12:00',
+                expectedEntryTime: '2026-01-19 07:00',
+                entryTime: '2026-01-19 07:10', exitTime: '2026-01-19 11:50',
+                paymentStatus: '결제완료', saleAmount: 15000,
+                buyerName: '이하늘', buyerPhone: '010-1212-3434', safeNumber: '050-1212-3434',
+                vehicleModel: '쏘나타', departureFlight: 'KE721', arrivalFlight: 'KE722', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-025', vehicleNumber: '656가2211', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '정기권', productName: '역삼동 월정기권',
+                usagePeriodStart: '2026-01-01 00:00', usagePeriodEnd: '2026-01-31 23:59',
+                expectedEntryTime: '',
+                entryTime: '2026-01-19 08:30', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 160000,
+                buyerName: '김태리', buyerPhone: '010-5656-7878', safeNumber: '050-5656-7878',
+                vehicleModel: 'K8', departureFlight: 'OZ221', arrivalFlight: 'OZ222', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-026', vehicleNumber: '767나3322', parkingLotId: 'pl-003',
+                parkingLotName: '선릉역 스무스 지하주차장', isWebDiscount: false,
+                productType: '일반권', productName: '선릉역 2시간 주차권',
+                usagePeriodStart: '2026-01-19 17:00', usagePeriodEnd: '2026-01-19 19:00',
+                expectedEntryTime: '2026-01-19 17:00',
+                entryTime: '2026-01-19 17:05', exitTime: '2026-01-19 18:50',
+                paymentStatus: '결제완료', saleAmount: 7000,
+                buyerName: '박보검', buyerPhone: '010-9898-7676', safeNumber: '050-9898-7676',
+                vehicleModel: '그랜저', departureFlight: 'KE341', arrivalFlight: 'KE342', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-027', vehicleNumber: '878다4433', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '일반공유', productName: '강남역 3시간 공유주차권',
+                usagePeriodStart: '2026-01-20 13:00', usagePeriodEnd: '2026-01-20 16:00',
+                expectedEntryTime: '2026-01-20 13:00',
+                entryTime: '', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 9000,
+                buyerName: '정우성', buyerPhone: '010-3232-5454', safeNumber: '050-3232-5454',
+                vehicleModel: 'GV80', departureFlight: 'KE161', arrivalFlight: 'KE162', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-028', vehicleNumber: '989라5544', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '단기권', productName: '역삼동 2시간 주차권',
+                usagePeriodStart: '2026-01-19 12:00', usagePeriodEnd: '2026-01-19 14:00',
+                expectedEntryTime: '2026-01-19 12:00',
+                entryTime: '2026-01-19 12:10', exitTime: '2026-01-19 13:55',
+                paymentStatus: '결제취소', saleAmount: 6000,
+                buyerName: '안유진', buyerPhone: '010-7676-9898', safeNumber: '050-7676-9898',
+                vehicleModel: '레이', departureFlight: 'OZ991', arrivalFlight: 'OZ992', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-029', vehicleNumber: '100소6655', parkingLotId: 'pl-003',
+                parkingLotName: '선릉역 스무스 지하주차장', isWebDiscount: false,
+                productType: '거주자공유', productName: '선릉역 종일 공유주차권',
+                usagePeriodStart: '2026-01-19 08:00', usagePeriodEnd: '2026-01-19 20:00',
+                expectedEntryTime: '2026-01-19 08:00',
+                entryTime: '2026-01-19 08:20', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 22000,
+                buyerName: '송중기', buyerPhone: '010-1414-2525', safeNumber: '050-1414-2525',
+                vehicleModel: '싼타페', departureFlight: 'KE881', arrivalFlight: 'KE882', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-030', vehicleNumber: '211가7766', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '일반권', productName: '강남역 3시간 주차권',
+                usagePeriodStart: '2026-01-20 14:00', usagePeriodEnd: '2026-01-20 17:00',
+                expectedEntryTime: '2026-01-20 14:00',
+                entryTime: '', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 10000,
+                buyerName: '김수현', buyerPhone: '010-3636-4747', safeNumber: '050-3636-4747',
+                vehicleModel: '아이오닉6', departureFlight: 'KE261', arrivalFlight: 'KE262', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-031', vehicleNumber: '322나8877', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '일반권', productName: '역삼동 4시간 주차권',
+                usagePeriodStart: '2026-01-19 08:00', usagePeriodEnd: '2026-01-19 12:00',
+                expectedEntryTime: '2026-01-19 08:00',
+                entryTime: '2026-01-19 08:05', exitTime: '2026-01-19 11:50',
+                paymentStatus: '결제완료', saleAmount: 12000,
+                buyerName: '전지현', buyerPhone: '010-5858-6969', safeNumber: '050-5858-6969',
+                vehicleModel: 'K5', departureFlight: 'OZ771', arrivalFlight: 'OZ772', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-032', vehicleNumber: '433다9988', parkingLotId: 'pl-003',
+                parkingLotName: '선릉역 스무스 지하주차장', isWebDiscount: false,
+                productType: '정기권', productName: '선릉역 월정기권',
+                usagePeriodStart: '2026-01-01 00:00', usagePeriodEnd: '2026-01-31 23:59',
+                expectedEntryTime: '',
+                entryTime: '', exitTime: '',
+                paymentStatus: '결제취소', saleAmount: 180000,
+                buyerName: '공유', buyerPhone: '010-7979-8080', safeNumber: '050-7979-8080',
+                vehicleModel: '제네시스G80', departureFlight: 'KE441', arrivalFlight: 'KE442', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-033', vehicleNumber: '544라1199', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '일반공유', productName: '강남역 5시간 공유주차권',
+                usagePeriodStart: '2026-01-19 08:00', usagePeriodEnd: '2026-01-19 13:00',
+                expectedEntryTime: '2026-01-19 08:00',
+                entryTime: '2026-01-19 08:10', exitTime: '2026-01-19 12:55',
+                paymentStatus: '결제완료', saleAmount: 15000,
+                buyerName: '이준기', buyerPhone: '010-9191-0202', safeNumber: '050-9191-0202',
+                vehicleModel: '스포티지', departureFlight: 'KE551', arrivalFlight: 'KE552', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-034', vehicleNumber: '655소2200', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '일반권', productName: '역삼동 당일권',
+                usagePeriodStart: '2026-01-19 00:00', usagePeriodEnd: '2026-01-19 23:59',
+                expectedEntryTime: '2026-01-19 07:00',
+                entryTime: '2026-01-19 07:15', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 28000,
+                buyerName: '한효주', buyerPhone: '010-1313-2424', safeNumber: '050-1313-2424',
+                vehicleModel: '셀토스', departureFlight: 'OZ331', arrivalFlight: 'OZ332', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-035', vehicleNumber: '766가3311', parkingLotId: 'pl-003',
+                parkingLotName: '선릉역 스무스 지하주차장', isWebDiscount: false,
+                productType: '단기권', productName: '선릉역 1시간 주차권',
+                usagePeriodStart: '2026-01-19 11:00', usagePeriodEnd: '2026-01-19 12:00',
+                expectedEntryTime: '2026-01-19 11:00',
+                entryTime: '2026-01-19 11:05', exitTime: '2026-01-19 11:55',
+                paymentStatus: '결제완료', saleAmount: 3500,
+                buyerName: '유아인', buyerPhone: '010-4545-5656', safeNumber: '050-4545-5656',
+                vehicleModel: '모닝', departureFlight: 'KE671', arrivalFlight: 'KE672', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-036', vehicleNumber: '877나4422', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '거주자공유', productName: '강남역 반일 공유주차권',
+                usagePeriodStart: '2026-01-20 09:00', usagePeriodEnd: '2026-01-20 15:00',
+                expectedEntryTime: '2026-01-20 09:00',
+                entryTime: '', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 16000,
+                buyerName: '이병헌', buyerPhone: '010-6767-7878', safeNumber: '050-6767-7878',
+                vehicleModel: '코나', departureFlight: 'KE911', arrivalFlight: 'KE912', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-037', vehicleNumber: '988다5533', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '일반권', productName: '역삼동 3시간 주차권',
+                usagePeriodStart: '2026-01-19 15:00', usagePeriodEnd: '2026-01-19 18:00',
+                expectedEntryTime: '2026-01-19 15:00',
+                entryTime: '2026-01-19 15:05', exitTime: '2026-01-19 17:50',
+                paymentStatus: '결제완료', saleAmount: 10000,
+                buyerName: '수지', buyerPhone: '010-8989-0101', safeNumber: '050-8989-0101',
+                vehicleModel: '말리부', departureFlight: 'OZ121', arrivalFlight: 'OZ122', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-038', vehicleNumber: '099라6644', parkingLotId: 'pl-003',
+                parkingLotName: '선릉역 스무스 지하주차장', isWebDiscount: false,
+                productType: '정기권', productName: '선릉역 월정기권',
+                usagePeriodStart: '2026-01-01 00:00', usagePeriodEnd: '2026-01-31 23:59',
+                expectedEntryTime: '',
+                entryTime: '2026-01-19 09:00', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 180000,
+                buyerName: '원빈', buyerPhone: '010-2121-3232', safeNumber: '050-2121-3232',
+                vehicleModel: 'GV60', departureFlight: 'KE801', arrivalFlight: 'KE802', arrivalTerminal: 'T1'
+            },
+            {
+                id: 'VH-039', vehicleNumber: '200소7755', parkingLotId: 'pl-001',
+                parkingLotName: '투루파킹 케이 OPU407 주차장', isWebDiscount: true,
+                productType: '일반권', productName: '강남역 2시간 주차권',
+                usagePeriodStart: '2026-01-19 18:00', usagePeriodEnd: '2026-01-19 20:00',
+                expectedEntryTime: '2026-01-19 18:00',
+                entryTime: '2026-01-19 18:10', exitTime: '2026-01-19 19:55',
+                paymentStatus: '결제취소', saleAmount: 8000,
+                buyerName: '장동건', buyerPhone: '010-4343-5454', safeNumber: '050-4343-5454',
+                vehicleModel: '카니발', departureFlight: 'KE371', arrivalFlight: 'KE372', arrivalTerminal: 'T2'
+            },
+            {
+                id: 'VH-040', vehicleNumber: '311가8866', parkingLotId: 'pl-002',
+                parkingLotName: '역삼동 그램 주차빌딩', isWebDiscount: false,
+                productType: '일반공유', productName: '역삼동 2시간 공유주차권',
+                usagePeriodStart: '2026-01-20 10:00', usagePeriodEnd: '2026-01-20 12:00',
+                expectedEntryTime: '2026-01-20 10:00',
+                entryTime: '', exitTime: '',
+                paymentStatus: '결제완료', saleAmount: 6000,
+                buyerName: '김혜수', buyerPhone: '010-6565-7676', safeNumber: '050-6565-7676',
+                vehicleModel: '니로', departureFlight: 'OZ451', arrivalFlight: 'OZ452', arrivalTerminal: 'T1'
+            },
+        ];
+
+        const ITEMS_PER_PAGE = 20;
+
+        // ============================================================
+        // Utility Functions
+        // ============================================================
+        function formatDateTime(dt) {
+            if (!dt) return '-';
+            const parts = dt.split(' ');
+            if (parts.length === 2) return `${parts[0]}\n${parts[1]}`;
+            return dt;
+        }
+
+        function formatDateOnly(dt) {
+            if (!dt) return '-';
+            return dt.split(' ')[0] || '-';
+        }
+
+        function formatTimeOnly(dt) {
+            if (!dt) return '';
+            return dt.split(' ')[1] || '';
+        }
+
+        function formatAmount(n) {
+            if (!n && n !== 0) return '-';
+            return n.toLocaleString() + '원';
+        }
+
+        function getEntryStatus(vehicle) {
+            const now = new Date();
+            const hasEntry = !!vehicle.entryTime;
+            const hasExit = !!vehicle.exitTime;
+            const usageStart = new Date(vehicle.usagePeriodStart);
+            const usageEnd = new Date(vehicle.usagePeriodEnd);
+
+            if (hasExit || now > usageEnd) return '이용종료';
+            if (hasEntry && now >= usageStart && now <= usageEnd) return '이용중';
+            if (!hasEntry && now >= usageStart && now <= usageEnd) return '이용가능';
+            if (now < usageStart) return '이용대기';
+            return '이용종료';
+        }
+
+        function getProductTypeClass(type) {
+            switch (type) {
+                case '정기권': return 'pass';
+                case '일반공유': return 'share';
+                case '거주자공유': return 'resident';
+                case '단기권': return 'short';
+                default: return '';
+            }
+        }
+
+        function getEntryStatusClass(status) {
+            switch (status) {
+                case '이용대기': return 'waiting';
+                case '이용가능': return 'available';
+                case '이용중': return 'active';
+                case '이용종료': return 'done';
+                default: return '';
+            }
+        }
+
+        function getPaymentStatusClass(status) {
+            switch (status) {
+                case '결제완료': return 'completed';
+                case '결제취소': return 'cancelled';
+                default: return '';
+            }
+        }
+
+        // ============================================================
+        // SearchableDropdown Component
+        // ============================================================
+        function SearchableDropdown({ options, value, onChange, placeholder }) {
+            const [isOpen, setIsOpen] = useState(false);
+            const [search, setSearch] = useState('');
+            const ref = useRef(null);
+
+            useEffect(() => {
+                function handleClickOutside(e) {
+                    if (ref.current && !ref.current.contains(e.target)) setIsOpen(false);
+                }
+                document.addEventListener('mousedown', handleClickOutside);
+                return () => document.removeEventListener('mousedown', handleClickOutside);
+            }, []);
+
+            const filtered = useMemo(() => {
+                if (!search) return options;
+                return options.filter(o => o.name.includes(search));
+            }, [options, search]);
+
+            const displayValue = value
+                ? options.find(o => o.id === value)?.name || ''
+                : '';
+
+            return (
+                <div className="searchable-dropdown" ref={ref}>
+                    <input
+                        className="filter-input filter-input-parking"
+                        placeholder={placeholder}
+                        value={isOpen ? search : displayValue}
+                        onChange={e => { setSearch(e.target.value); if (!isOpen) setIsOpen(true); }}
+                        onFocus={() => { setIsOpen(true); setSearch(''); }}
+                    />
+                    {isOpen && (
+                        <div className="searchable-dropdown-menu">
+                            <div
+                                className={`searchable-dropdown-item ${!value ? 'selected' : ''}`}
+                                onClick={() => { onChange(''); setIsOpen(false); setSearch(''); }}
+                            >전체</div>
+                            {filtered.map(opt => (
+                                <div
+                                    key={opt.id}
+                                    className={`searchable-dropdown-item ${value === opt.id ? 'selected' : ''}`}
+                                    onClick={() => { onChange(opt.id); setIsOpen(false); setSearch(''); }}
+                                >{opt.name}</div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Pagination Component
+        // ============================================================
+        function Pagination({ currentPage, totalPages, onPageChange }) {
+            if (totalPages <= 1) return null;
+
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, startPage + 4);
+            const pages = [];
+            for (let i = startPage; i <= endPage; i++) pages.push(i);
+
+            return (
+                <div className="pagination-wrapper">
+                    <button className="page-btn" disabled={currentPage <= 1} onClick={() => onPageChange(1)}>«</button>
+                    <button className="page-btn" disabled={currentPage <= 1} onClick={() => onPageChange(currentPage - 1)}>‹</button>
+                    {pages.map(p => (
+                        <button key={p} className={`page-btn ${p === currentPage ? 'active' : ''}`}
+                            onClick={() => onPageChange(p)}>{p}</button>
+                    ))}
+                    <button className="page-btn" disabled={currentPage >= totalPages} onClick={() => onPageChange(currentPage + 1)}>›</button>
+                    <button className="page-btn" disabled={currentPage >= totalPages} onClick={() => onPageChange(totalPages)}>»</button>
+                </div>
+            );
+        }
+
+        // ============================================================
+        // VehicleDetailPanel Component
+        // ============================================================
+        function VehicleDetailPanel({ vehicle, onClose, onSave }) {
+            const [isEditing, setIsEditing] = useState(false);
+            const [editForm, setEditForm] = useState({});
+
+            useEffect(() => {
+                if (vehicle) {
+                    setIsEditing(false);
+                    setEditForm({
+                        buyerName: vehicle.buyerName || '',
+                        buyerPhone: vehicle.buyerPhone || '',
+                        safeNumber: vehicle.safeNumber || '',
+                        vehicleModel: vehicle.vehicleModel || '',
+                        departureFlight: vehicle.departureFlight || '',
+                        arrivalFlight: vehicle.arrivalFlight || '',
+                        arrivalTerminal: vehicle.arrivalTerminal || '',
+                    });
+                }
+            }, [vehicle]);
+
+            if (!vehicle) return null;
+
+            const entryStatus = getEntryStatus(vehicle);
+
+            const handleEditChange = (field, value) => {
+                setEditForm(prev => ({ ...prev, [field]: value }));
+            };
+
+            const handleSave = () => {
+                onSave(vehicle.id, editForm);
+                setIsEditing(false);
+            };
+
+            const handleCancel = () => {
+                setEditForm({
+                    buyerName: vehicle.buyerName || '',
+                    buyerPhone: vehicle.buyerPhone || '',
+                    safeNumber: vehicle.safeNumber || '',
+                    vehicleModel: vehicle.vehicleModel || '',
+                    departureFlight: vehicle.departureFlight || '',
+                    arrivalFlight: vehicle.arrivalFlight || '',
+                    arrivalTerminal: vehicle.arrivalTerminal || '',
+                });
+                setIsEditing(false);
+            };
+
+            return (
+                <>
+                    <div className={`detail-overlay ${vehicle ? 'open' : ''}`} onClick={onClose} />
+                    <div className={`detail-panel ${vehicle ? 'open' : ''}`}>
+                        <div className="detail-panel-header">
+                            <span className="detail-panel-title">차량 상세정보</span>
+                            <button className="detail-panel-close" onClick={onClose}>×</button>
+                        </div>
+                        <div className="detail-panel-body">
+                            <div className="detail-section">
+                                <div className="detail-section-title">차량 정보</div>
+                                <div className="detail-grid">
+                                    <div className="detail-item">
+                                        <span className="detail-label">차량번호</span>
+                                        <span className="detail-value">{vehicle.vehicleNumber}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">이용상태</span>
+                                        <span className="detail-value">{entryStatus}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">상품유형</span>
+                                        <span className="detail-value">
+                                            <span className={`product-type-tag ${getProductTypeClass(vehicle.productType)}`}>
+                                                {vehicle.productType}
+                                            </span>
+                                            {vehicle.isWebDiscount && <span className="parking-type-tag" style={{marginLeft: 4}}>웹할인</span>}
+                                        </span>
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">결제상태</span>
+                                        <span className="detail-value">
+                                            <span className={`payment-status ${getPaymentStatusClass(vehicle.paymentStatus)}`}>
+                                                {vehicle.paymentStatus}
+                                            </span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="detail-section">
+                                <div className="detail-section-title">주차 정보</div>
+                                <div className="detail-grid">
+                                    <div className="detail-item full">
+                                        <span className="detail-label">주차장</span>
+                                        <span className="detail-value">{vehicle.parkingLotName}</span>
+                                    </div>
+                                    <div className="detail-item full">
+                                        <span className="detail-label">상품명</span>
+                                        <span className="detail-value">{vehicle.productName}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">이용시작</span>
+                                        <span className="detail-value">{vehicle.usagePeriodStart || '-'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">이용종료</span>
+                                        <span className="detail-value">{vehicle.usagePeriodEnd || '-'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">입차예상</span>
+                                        <span className="detail-value">{vehicle.expectedEntryTime || '-'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">입차일시</span>
+                                        <span className="detail-value">{vehicle.entryTime || '-'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">출차일시</span>
+                                        <span className="detail-value">{vehicle.exitTime || '-'}</span>
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">결제금액</span>
+                                        <span className="detail-value">{formatAmount(vehicle.saleAmount)}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="detail-section">
+                                <div className="detail-section-title" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                                    <span>구매자 정보</span>
+                                    {!isEditing && (
+                                        <button className="btn btn-outline" style={{padding: '4px 12px', fontSize: '12px'}} onClick={() => setIsEditing(true)}>
+                                            수정
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="detail-grid">
+                                    <div className="detail-item">
+                                        <span className="detail-label">구매자명</span>
+                                        {isEditing ? (
+                                            <input className="detail-edit-input" value={editForm.buyerName} onChange={e => handleEditChange('buyerName', e.target.value)} />
+                                        ) : (
+                                            <span className="detail-value">{vehicle.buyerName}</span>
+                                        )}
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">연락처</span>
+                                        {isEditing ? (
+                                            <input className="detail-edit-input" value={editForm.buyerPhone} onChange={e => handleEditChange('buyerPhone', e.target.value)} placeholder="010-0000-0000" />
+                                        ) : (
+                                            <span className="detail-value">{vehicle.buyerPhone}</span>
+                                        )}
+                                    </div>
+                                    <div className="detail-item full">
+                                        <span className="detail-label">안심번호</span>
+                                        {isEditing ? (
+                                            <input className="detail-edit-input" value={editForm.safeNumber} onChange={e => handleEditChange('safeNumber', e.target.value)} placeholder="050-0000-0000" />
+                                        ) : (
+                                            <span className="detail-value">{vehicle.safeNumber || '-'}</span>
+                                        )}
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">차량모델</span>
+                                        {isEditing ? (
+                                            <input className="detail-edit-input" value={editForm.vehicleModel} onChange={e => handleEditChange('vehicleModel', e.target.value)} />
+                                        ) : (
+                                            <span className="detail-value">{vehicle.vehicleModel || '-'}</span>
+                                        )}
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">출국 항공편</span>
+                                        {isEditing ? (
+                                            <input className="detail-edit-input" value={editForm.departureFlight} onChange={e => handleEditChange('departureFlight', e.target.value)} placeholder="KE000" />
+                                        ) : (
+                                            <span className="detail-value">{vehicle.departureFlight || '-'}</span>
+                                        )}
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">입국 항공편</span>
+                                        {isEditing ? (
+                                            <input className="detail-edit-input" value={editForm.arrivalFlight} onChange={e => handleEditChange('arrivalFlight', e.target.value)} placeholder="KE000" />
+                                        ) : (
+                                            <span className="detail-value">{vehicle.arrivalFlight || '-'}</span>
+                                        )}
+                                    </div>
+                                    <div className="detail-item">
+                                        <span className="detail-label">입국 터미널</span>
+                                        {isEditing ? (
+                                            <input className="detail-edit-input" value={editForm.arrivalTerminal} onChange={e => handleEditChange('arrivalTerminal', e.target.value)} placeholder="T1" />
+                                        ) : (
+                                            <span className="detail-value">{vehicle.arrivalTerminal || '-'}</span>
+                                        )}
+                                    </div>
+                                </div>
+                                {isEditing && (
+                                    <div className="detail-actions" style={{marginTop: 16}}>
+                                        <button className="btn btn-success" onClick={handleSave}>저장</button>
+                                        <button className="btn btn-outline" onClick={handleCancel}>취소</button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </>
+            );
+        }
+
+        // ============================================================
+        // LNB Menu Data
+        // ============================================================
+        const LNB_MENUS = [
+            { id: 'sales', label: '판매관리', children: ['대쉬보드', '결제현황 관리', '결제주차권관리', '맵뷰', '환불관리'], activeChild: '결제주차권관리' },
+            { id: 'settle', label: '정산 관리', children: ['계좌환불', '마감처리', '정산내역서'] },
+            { id: 'erp', label: 'ERP', children: ['매출내역 전송', '정산내역서 전송'] },
+            { id: 'info', label: '정보 관리', children: ['일반주차장 관리', '수정요청', '등록요청'] },
+            { id: 'share', label: '공유 관리', children: ['공유주차장', 'IoT 관리', '공유시간정책'] },
+            { id: 'partner', label: '제휴 관리', children: ['제휴주차장 관리', '제휴주차상품 관리', '월주차 현황', '월주차 신청', '거래처(BP)', '정산대상(STG)', '제휴신청목록', '제휴주차상품 예약관리', '제휴계약관리'] },
+            { id: 'autopay', label: '자동결제 관리', children: ['자동결제 관리'] },
+            { id: 'charger', label: '충전소 관리', children: ['EV 충전소'] },
+            { id: 'coupon', label: '포인트/쿠폰/상품권 관리', children: ['포인트 관리', '쿠폰 관리', '상품권 관리'] },
+            { id: 'partners', label: '파트너 관리', children: ['파트너 관리'] },
+            { id: 'service', label: '서비스 관리', children: ['메시지', '공지사항', '배너', '회원관리'] },
+            { id: 'admin', label: '어드민 관리', children: ['어드민관리', '권한관리', '패스워드변경'] },
+        ];
+
+        // ============================================================
+        // Header Component
+        // ============================================================
+        function Header({ onMenuToggle }) {
+            return (
+                <header className="header">
+                    <button className="header__menu-toggle" onClick={onMenuToggle}>
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                    </button>
+                    <div className="header__logo">
+                        <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                            <rect x="2" y="2" width="28" height="28" rx="8" fill="#00A8FF"/>
+                            <text x="16" y="22" textAnchor="middle" fontSize="18" fontWeight="700" fill="#fff" fontFamily="sans-serif">P</text>
+                        </svg>
+                        모두의주차장 관리자
+                        <span className="header__env">dev</span>
+                    </div>
+                    <div className="header__right">
+                        <span className="header__user">elice님</span>
+                        <a href="javascript:void(0)" className="header__link">내정보</a>
+                        <a href="javascript:void(0)" className="header__link">로그아웃</a>
+                    </div>
+                </header>
+            );
+        }
+
+        // ============================================================
+        // LNB (Left Navigation Bar) Component
+        // ============================================================
+        function LNB({ isOpen }) {
+            const [openGroups, setOpenGroups] = useState({ sales: true });
+
+            const toggleGroup = (groupId) => {
+                setOpenGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
+            };
+
+            return (
+                <nav className={`lnb ${isOpen ? 'open' : ''}`}>
+                    {LNB_MENUS.map(menu => (
+                        <div key={menu.id}>
+                            <div
+                                className={`lnb-group-label ${openGroups[menu.id] ? 'open' : ''}`}
+                                onClick={() => toggleGroup(menu.id)}
+                            >
+                                {menu.label} <span className="arrow">▼</span>
+                            </div>
+                            <div className={`lnb-group-children ${openGroups[menu.id] ? 'open' : ''}`}>
+                                {menu.children.map(child => (
+                                    <a
+                                        key={child}
+                                        className={`lnb-item ${menu.activeChild === child ? 'active' : ''}`}
+                                        href="javascript:void(0)"
+                                    >{child}</a>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </nav>
+            );
+        }
+
+        // ============================================================
+        // Footer Component
+        // ============================================================
+        function Footer() {
+            const [footerText, setFooterText] = useState('');
+            useEffect(() => {
+                const lastMod = new Date(document.lastModified);
+                const yyyy = lastMod.getFullYear();
+                const MM = String(lastMod.getMonth() + 1).padStart(2, '0');
+                const dd = String(lastMod.getDate()).padStart(2, '0');
+                const hh = String(lastMod.getHours()).padStart(2, '0');
+                const mm = String(lastMod.getMinutes()).padStart(2, '0');
+                setFooterText(`\u00A9 2026. 주차권예매서비스. 최종업데이트 : ${yyyy}.${MM}.${dd} ${hh}:${mm}`);
+            }, []);
+            return <footer className="footer">{footerText}</footer>;
+        }
+
+        // ============================================================
+        // Toast Component
+        // ============================================================
+        function Toast({ toast, onDone }) {
+            useEffect(() => {
+                if (!toast) return;
+                const t = setTimeout(() => onDone(), 3000);
+                return () => clearTimeout(t);
+            }, [toast]);
+
+            if (!toast) return null;
+            return (
+                <div className="toast-container">
+                    <div className={`toast ${toast.type}`}>{toast.message}</div>
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Main App Component
+        // ============================================================
+        // ============================================================
+        // Date Utility
+        // ============================================================
+        function formatDateISO(date) {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
+        const TODAY = formatDateISO(new Date());
+
+        // ============================================================
+        // SearchFilter Component
+        // ============================================================
+        function SearchFilter({ onSearch }) {
+            const [periodType, setPeriodType] = useState('paymentDate');
+            const [startDate, setStartDate] = useState(TODAY);
+            const [endDate, setEndDate] = useState(TODAY);
+            const [quickRange, setQuickRange] = useState('today');
+            const [searchFieldType, setSearchFieldType] = useState('vehicleNo');
+            const [searchKeyword, setSearchKeyword] = useState('');
+            const [paymentStatus, setPaymentStatus] = useState('');
+            const [serviceType, setServiceType] = useState('');
+            const [entryStatus, setEntryStatus] = useState('');
+            const [manager, setManager] = useState('');
+
+            const CURRENT_USER_ID = '2516'; // 현재 로그인한 사용자 ID (lush)
+
+            const MANAGER_OPTIONS = [
+                { value: '2511', label: 'bring(bring@socar.kr)' },
+                { value: '2807', label: 'brooks(brooks@socar.kr)' },
+                { value: '2703', label: 'dominico(dominico@socar.kr)' },
+                { value: '2544', label: 'drew(drew@socar.kr)' },
+                { value: '2523', label: 'jim(jim@socar.kr)' },
+                { value: '2512', label: 'kay(kay@socar.kr)' },
+                { value: '2499', label: 'killo(killo@socar.kr)' },
+                { value: '2520', label: 'levi(levi@socar.kr)' },
+                { value: '2516', label: 'lush(lush@socar.kr)' },
+                { value: '2497', label: 'quinn(quinn@socar.kr)' },
+                { value: '2530', label: 'rini(rini@socar.kr)' },
+                { value: '2525', label: 'shane(shane@socar.kr)' },
+                { value: '2502', label: 'smooth(smooth@socar.kr)' },
+                { value: '2405', label: 'socar_rpa(socar_rpa)' },
+            ];
+
+            const sortedManagerOptions = useMemo(() => {
+                const current = MANAGER_OPTIONS.find(m => m.value === CURRENT_USER_ID);
+                const rest = MANAGER_OPTIONS.filter(m => m.value !== CURRENT_USER_ID);
+                return current ? [current, ...rest] : MANAGER_OPTIONS;
+            }, []);
+
+            const ENTRY_STATUS_OPTIONS = [
+                { value: '', label: '전체' },
+                { value: '이용대기', label: '이용대기' },
+                { value: '이용가능', label: '이용가능' },
+                { value: '이용중', label: '이용중' },
+                { value: '이용종료', label: '이용종료' },
+            ];
+
+            const applyQuickRange = useCallback((range) => {
+                const today = new Date();
+                let start = new Date();
+                if (range === 'today') {
+                    start = today;
+                } else if (range === 'week') {
+                    start.setDate(today.getDate() - 7);
+                } else if (range === 'month') {
+                    start.setMonth(today.getMonth() - 1);
+                }
+                setStartDate(formatDateISO(start));
+                setEndDate(formatDateISO(today));
+                setQuickRange(range);
+            }, []);
+
+            const handleDateChange = useCallback((type, value) => {
+                if (type === 'start') setStartDate(value);
+                else setEndDate(value);
+                setQuickRange('');
+            }, []);
+
+            const handleSearch = useCallback(() => {
+                onSearch({ periodType, startDate, endDate, searchFieldType, searchKeyword, paymentStatus, serviceType, entryStatus, manager });
+            }, [periodType, startDate, endDate, searchFieldType, searchKeyword, paymentStatus, serviceType, entryStatus, manager, onSearch]);
+
+            const handleKeyDown = useCallback((e) => {
+                if (e.key === 'Enter') handleSearch();
+            }, [handleSearch]);
+
+            return (
+                <div className="filter-card">
+                    {/* 1행: 조회기간 */}
+                    <div className="filter-row">
+                        <span className="filter-label">조회기간</span>
+                        <select className="filter-select" value={periodType} onChange={e => setPeriodType(e.target.value)}>
+                            <option value="paymentDate">결제일</option>
+                            <option value="cancelDate">결제취소일</option>
+                            <option value="usageStartDate">이용시작일</option>
+                            <option value="usageEndDate">이용종료일</option>
+                        </select>
+                        <div className="quick-btn-group">
+                            {[['today','오늘'],['week','1주일'],['month','1개월']].map(([key, label]) => (
+                                <button key={key} className={`quick-btn ${quickRange === key ? 'active' : ''}`}
+                                    onClick={() => applyQuickRange(key)}>{label}</button>
+                            ))}
+                        </div>
+                        <input type="date" className="filter-date" value={startDate}
+                            onChange={e => handleDateChange('start', e.target.value)} />
+                        <span className="date-separator">-</span>
+                        <input type="date" className="filter-date" value={endDate}
+                            onChange={e => handleDateChange('end', e.target.value)} />
+                    </div>
+
+                    {/* 2행: 검색어 */}
+                    <div className="filter-row">
+                        <span className="filter-label">검색어</span>
+                        <select className="filter-select" value={searchFieldType} onChange={e => setSearchFieldType(e.target.value)}>
+                            <option value="paymentNo">결제번호</option>
+                            <option value="contact">연락처</option>
+                            <option value="vehicleNo">차량번호</option>
+                            <option value="memberName">회원명</option>
+                            <option value="partnerParkingNo">제휴주차장 고유번호</option>
+                            <option value="partnerParkingName">제휴주차장 이름</option>
+                            <option value="residentSection">거주자공유 구간 / 구획번호</option>
+                            <option value="generalParkingName">일반공유주차장 이름</option>
+                            <option value="generalParkingNo">일반공유주차장 고유번호</option>
+                        </select>
+                        <input type="text" className="filter-input" placeholder="검색어를 입력하세요"
+                            value={searchKeyword} onChange={e => setSearchKeyword(e.target.value)}
+                            onKeyDown={handleKeyDown} style={{minWidth: 200, flex: 1, maxWidth: 320}} />
+                    </div>
+
+                    {/* 3행: 상세조건 */}
+                    <div className="filter-row">
+                        <span className="filter-label">상세조건</span>
+                        <span className="filter-sub-label">결제상태</span>
+                        <select className="filter-select" value={paymentStatus} onChange={e => setPaymentStatus(e.target.value)}>
+                            <option value="">전체</option>
+                            <option value="paying">결제중</option>
+                            <option value="paid">결제완료</option>
+                            <option value="cancelled">결제취소</option>
+                        </select>
+                        <span className="filter-sub-label">구매 서비스</span>
+                        <select className="filter-select" value={serviceType} onChange={e => setServiceType(e.target.value)}>
+                            <option value="">전체</option>
+                            <option value="general">일반권</option>
+                            <option value="generalShare">일반공유</option>
+                            <option value="residentShare">거주자공유</option>
+                            <option value="pass">정기권</option>
+                            <option value="shortTerm">단기권</option>
+                        </select>
+                        <span className="filter-sub-label">이용상태</span>
+                        <div className="status-chip-group">
+                            {ENTRY_STATUS_OPTIONS.map(opt => (
+                                <button key={opt.value}
+                                    className={`status-chip ${entryStatus === opt.value ? 'active' : ''}`}
+                                    onClick={() => setEntryStatus(opt.value)}
+                                >{opt.label}</button>
+                            ))}
+                        </div>
+                        <span className="filter-sub-label">담당자</span>
+                        <select className="filter-select" value={manager} onChange={e => setManager(e.target.value)} style={{minWidth: 200}}>
+                            <option value="">전체</option>
+                            {sortedManagerOptions.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* 검색 버튼 */}
+                    <div className="filter-actions">
+                        <button className="btn-search" onClick={handleSearch}>검색</button>
+                    </div>
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Main App Component
+        // ============================================================
+        function App() {
+            const [vehicles, setVehicles] = useState(DUMMY_VEHICLES);
+            const [searchParams, setSearchParams] = useState({});
+            const [selectedVehicle, setSelectedVehicle] = useState(null);
+            const [toast, setToast] = useState(null);
+            const [currentPage, setCurrentPage] = useState(1);
+            const [lnbOpen, setLnbOpen] = useState(false);
+
+            // Search handler
+            const handleSearch = useCallback((params) => {
+                setSearchParams(params);
+                setCurrentPage(1);
+
+                // 쿼리스트링 생성 및 콘솔 출력
+                const queryParts = [];
+                for (const key in params) {
+                    if (params[key] !== '') {
+                        queryParts.push(encodeURIComponent(key) + '=' + encodeURIComponent(params[key]));
+                    }
+                }
+                const url = '/api/parking-tickets/search?' + queryParts.join('&');
+                console.log('[검색 요청]', url);
+                console.log('[필터 상태]', JSON.stringify(params, null, 2));
+
+                // TODO: 실제 API 호출
+                // fetch(url).then(res => res.json()).then(data => { ... });
+            }, []);
+
+            // Filtering (로컬 mock 필터링)
+            const filteredVehicles = useMemo(() => {
+                return vehicles.filter(v => {
+                    // 결제상태 필터
+                    if (searchParams.paymentStatus) {
+                        const statusMap = { paying: '결제중', paid: '결제완료', cancelled: '결제취소' };
+                        if (v.paymentStatus !== statusMap[searchParams.paymentStatus]) return false;
+                    }
+                    // 구매 서비스 필터
+                    if (searchParams.serviceType) {
+                        const serviceMap = { general: '일반권', generalShare: '일반공유', residentShare: '거주자공유', pass: '정기권', shortTerm: '단기권' };
+                        if (v.productType !== serviceMap[searchParams.serviceType]) return false;
+                    }
+                    // 이용상태 필터
+                    if (searchParams.entryStatus) {
+                        if (getEntryStatus(v) !== searchParams.entryStatus) return false;
+                    }
+                    // 검색어 필터
+                    if (searchParams.searchKeyword) {
+                        const keyword = searchParams.searchKeyword;
+                        const fieldMap = {
+                            vehicleNo: () => v.vehicleNumber.includes(keyword),
+                            memberName: () => v.buyerName.includes(keyword),
+                            contact: () => v.buyerPhone.includes(keyword),
+                            partnerParkingName: () => v.parkingLotName.includes(keyword),
+                        };
+                        const checker = fieldMap[searchParams.searchFieldType];
+                        if (checker && !checker()) return false;
+                    }
+                    return true;
+                });
+            }, [vehicles, searchParams]);
+
+            // Pagination
+            const totalPages = Math.ceil(filteredVehicles.length / ITEMS_PER_PAGE);
+            const paginatedVehicles = useMemo(() => {
+                const start = (currentPage - 1) * ITEMS_PER_PAGE;
+                return filteredVehicles.slice(start, start + ITEMS_PER_PAGE);
+            }, [filteredVehicles, currentPage]);
+
+            useEffect(() => { setCurrentPage(1); }, [searchParams]);
+
+            // Save buyer info handler
+            const handleSave = useCallback((vehicleId, updatedFields) => {
+                setVehicles(prev => prev.map(v => v.id === vehicleId ? { ...v, ...updatedFields } : v));
+                setSelectedVehicle(prev => prev && prev.id === vehicleId ? { ...prev, ...updatedFields } : prev);
+                setToast({ type: 'success', message: '구매자 정보가 수정되었습니다.' });
+            }, []);
+
+            return (
+                <div className="app-layout">
+                    <Header onMenuToggle={() => setLnbOpen(prev => !prev)} />
+                    <div className={`lnb-overlay ${lnbOpen ? 'show' : ''}`} onClick={() => setLnbOpen(false)} />
+                    <LNB isOpen={lnbOpen} />
+                    <main className="main-content">
+                        {/* Page Header */}
+                        <div className="page-header">
+                            <h1 className="page-title">결제주차권관리</h1>
+                            <p className="page-subtitle">관리 권한이 있는 주차장의 결제주차권 현황을 확인합니다.</p>
+                        </div>
+
+                        {/* Search Filter */}
+                        <SearchFilter onSearch={handleSearch} />
+
+                        {/* Data Table */}
+                        <div className="table-card">
+                            <div className="table-header">차량 목록</div>
+                            <table className="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>차량번호</th>
+                                        <th>주차장</th>
+                                        <th>상품명</th>
+                                        <th>이용시작</th>
+                                        <th>이용종료</th>
+                                        <th>입차예상</th>
+                                        <th>입차일시</th>
+                                        <th>출차일시</th>
+                                        <th>이용상태</th>
+                                        <th>결제상태</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {paginatedVehicles.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={10}>
+                                                <div className="empty-state">
+                                                    <p>검색 결과가 없습니다.</p>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        paginatedVehicles.map(v => {
+                                            const entryStatus = getEntryStatus(v);
+                                            return (
+                                                <tr key={v.id} onClick={() => setSelectedVehicle(v)}>
+                                                    <td>
+                                                        <div className="td-vehicle">
+                                                            <span className="vehicle-number">{v.vehicleNumber}</span>
+                                                            <span className={`product-type-tag ${getProductTypeClass(v.productType)}`}>
+                                                                {v.productType}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td className="td-parking">
+                                                        {v.parkingLotName}
+                                                        {v.isWebDiscount && <span className="parking-type-tag" style={{marginLeft: 6}}>웹할인</span>}
+                                                    </td>
+                                                    <td className="td-product">{v.productName}</td>
+                                                    <td className="td-datetime">
+                                                        {formatDateOnly(v.usagePeriodStart)}<br/>
+                                                        {formatTimeOnly(v.usagePeriodStart)}
+                                                    </td>
+                                                    <td className="td-datetime">
+                                                        {formatDateOnly(v.usagePeriodEnd)}<br/>
+                                                        {formatTimeOnly(v.usagePeriodEnd)}
+                                                    </td>
+                                                    <td className="td-datetime">
+                                                        {v.expectedEntryTime ? (
+                                                            <>{formatDateOnly(v.expectedEntryTime)}<br/>{formatTimeOnly(v.expectedEntryTime)}</>
+                                                        ) : <span className="no-data">-</span>}
+                                                    </td>
+                                                    <td className="td-datetime">
+                                                        {v.entryTime ? (
+                                                            <>{formatDateOnly(v.entryTime)}<br/>{formatTimeOnly(v.entryTime)}</>
+                                                        ) : <span className="no-data">-</span>}
+                                                    </td>
+                                                    <td className="td-datetime">
+                                                        {v.exitTime ? (
+                                                            <>{formatDateOnly(v.exitTime)}<br/>{formatTimeOnly(v.exitTime)}</>
+                                                        ) : <span className="no-data">-</span>}
+                                                    </td>
+                                                    <td>
+                                                        <span className={`entry-status ${getEntryStatusClass(entryStatus)}`}>
+                                                            {entryStatus}
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <span className={`payment-status ${getPaymentStatusClass(v.paymentStatus)}`}>
+                                                            {v.paymentStatus}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
+                    </main>
+
+                    {/* Detail Panel */}
+                    <VehicleDetailPanel
+                        vehicle={selectedVehicle}
+                        onClose={() => setSelectedVehicle(null)}
+                        onSave={handleSave}
+                    />
+
+                    {/* Footer */}
+                    <Footer />
+
+                    {/* Toast */}
+                    <Toast toast={toast} onDone={() => setToast(null)} />
+                </div>
+            );
+        }
+
+        // ============================================================
+        // Render
+        // ============================================================
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
