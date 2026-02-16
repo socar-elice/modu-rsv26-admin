@@ -1168,18 +1168,25 @@
         // LNB Menu Data
         // ============================================================
         const LNB_MENUS = [
-            { id: 'sales', label: '판매관리', children: ['대쉬보드', '결제현황 관리', '결제주차권관리', '맵뷰', '환불관리'], activeChild: '결제주차권관리' },
-            { id: 'settle', label: '정산 관리', children: ['계좌환불', '마감처리', '정산내역서'] },
-            { id: 'erp', label: 'ERP', children: ['매출내역 전송', '정산내역서 전송'] },
-            { id: 'info', label: '정보 관리', children: ['일반주차장 관리', '수정요청', '등록요청'] },
-            { id: 'share', label: '공유 관리', children: ['공유주차장', 'IoT 관리', '공유시간정책'] },
-            { id: 'partner', label: '제휴 관리', children: ['제휴주차장 관리', '제휴주차상품 관리', '월주차 현황', '월주차 신청', '거래처(BP)', '정산대상(STG)', '제휴신청목록', '제휴주차상품 예약관리', '제휴계약관리'] },
-            { id: 'autopay', label: '자동결제 관리', children: ['자동결제 관리'] },
-            { id: 'charger', label: '충전소 관리', children: ['EV 충전소'] },
-            { id: 'coupon', label: '포인트/쿠폰/상품권 관리', children: ['포인트 관리', '쿠폰 관리', '상품권 관리'] },
-            { id: 'partners', label: '파트너 관리', children: ['파트너 관리'] },
-            { id: 'service', label: '서비스 관리', children: ['메시지', '공지사항', '배너', '회원관리'] },
-            { id: 'admin', label: '어드민 관리', children: ['어드민관리', '권한관리', '패스워드변경'] },
+            { id: 'sales', label: '판매관리', children: [
+                { label: '대쉬보드', href: '#' },
+                { label: '결제현황 관리', href: '#' },
+                { label: '결제주차권관리', href: '340_결제주차권관리.html', active: true },
+                { label: '결제주차권관리(캘린더)', href: '350_결제주차권관리_캘린더(월간수요).html' },
+                { label: '맵뷰', href: '#' },
+                { label: '환불관리', href: '#' },
+            ]},
+            { id: 'settle', label: '정산 관리', children: [{ label: '계좌환불', href: '#' }, { label: '마감처리', href: '#' }, { label: '정산내역서', href: '#' }] },
+            { id: 'erp', label: 'ERP', children: [{ label: '매출내역 전송', href: '#' }, { label: '정산내역서 전송', href: '#' }] },
+            { id: 'info', label: '정보 관리', children: [{ label: '일반주차장 관리', href: '#' }, { label: '수정요청', href: '#' }, { label: '등록요청', href: '#' }] },
+            { id: 'share', label: '공유 관리', children: [{ label: '공유주차장', href: '#' }, { label: 'IoT 관리', href: '#' }, { label: '공유시간정책', href: '#' }] },
+            { id: 'partner', label: '제휴 관리', children: [{ label: '제휴주차장 관리', href: '#' }, { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true }, { label: '월주차 현황', href: '#' }, { label: '월주차 신청', href: '#' }, { label: '거래처(BP)', href: '#' }, { label: '정산대상(STG)', href: '#' }, { label: '제휴신청목록', href: '#' }, { label: '제휴주차상품 예약관리', href: '#' }, { label: '제휴계약관리', href: '#' }] },
+            { id: 'autopay', label: '자동결제 관리', children: [{ label: '자동결제 관리', href: '#' }] },
+            { id: 'charger', label: '충전소 관리', children: [{ label: 'EV 충전소', href: '#' }] },
+            { id: 'coupon', label: '포인트/쿠폰/상품권 관리', children: [{ label: '포인트 관리', href: '#' }, { label: '쿠폰 관리', href: '#' }, { label: '상품권 관리', href: '#' }] },
+            { id: 'partners', label: '파트너 관리', children: [{ label: '파트너 관리', href: '#' }, { label: '파트너 주차장 변경요청', href: 'I050-parking-change-request.html' }, { label: '입출차 확인', href: 'P120-parking-log.html' }] },
+            { id: 'service', label: '서비스 관리', children: [{ label: '메시지', href: '#' }, { label: '공지사항', href: '#' }, { label: '배너', href: '#' }, { label: '회원관리', href: '#' }] },
+            { id: 'admin', label: '어드민 관리', children: [{ label: '어드민관리', href: '#' }, { label: '권한관리', href: '#' }, { label: '패스워드변경', href: '#' }] },
         ];
 
         // ============================================================
@@ -1231,10 +1238,11 @@
                             <div className={`lnb-group-children ${openGroups[menu.id] ? 'open' : ''}`}>
                                 {menu.children.map(child => (
                                     <a
-                                        key={child}
-                                        className={`lnb-item ${menu.activeChild === child ? 'active' : ''}`}
-                                        href="javascript:void(0)"
-                                    >{child}</a>
+                                        key={child.label}
+                                        className={`lnb-item ${child.active ? 'active' : ''}`}
+                                        href={child.href || '#'}
+                                        style={child.indent ? {paddingLeft:'48px'} : undefined}
+                                    >{child.label}</a>
                                 ))}
                             </div>
                         </div>

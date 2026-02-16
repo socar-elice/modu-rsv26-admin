@@ -1230,6 +1230,54 @@
                 overflow-x: visible;
             }
 
+            .lnb-group-label {
+                padding: 12px 16px 4px;
+                font-size: 11px;
+                font-weight: 600;
+                color: var(--color-text-tertiary);
+                letter-spacing: 0.03em;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                user-select: none;
+                transition: color 0.15s;
+            }
+            .lnb-group-label:hover { color: var(--color-text-primary); }
+            .lnb-group-label .arrow {
+                font-size: 10px;
+                transition: transform 0.2s;
+                color: var(--color-text-disabled);
+            }
+            .lnb-group-label.open .arrow { transform: rotate(180deg); }
+            .lnb-group-children {
+                overflow: hidden;
+                max-height: 0;
+                transition: max-height 0.3s ease;
+            }
+            .lnb-group-children.open { max-height: 600px; }
+            .lnb-group-item {
+                display: flex;
+                align-items: center;
+                padding: 8px 16px 8px 28px;
+                font-size: 13px;
+                color: var(--color-text-secondary);
+                cursor: pointer;
+                text-decoration: none;
+                transition: background 0.15s, color 0.15s;
+                border-left: 3px solid transparent;
+            }
+            .lnb-group-item:hover {
+                background: var(--color-bg-tertiary);
+                color: var(--color-text-primary);
+            }
+            .lnb-group-item.active {
+                background: var(--color-primary-light);
+                color: var(--color-primary-main);
+                font-weight: 600;
+                border-left-color: var(--color-primary-main);
+            }
+
             .lnb-footer {
                 padding: var(--space-3) var(--space-4);
                 border-top: 1px solid var(--color-border-default);
@@ -4326,59 +4374,33 @@
         // ================================================
         // LNB (데스크톱용)
         // ================================================
+        const LNB_MENUS = [
+            { id: 'sales', label: '판매관리', children: [
+                { label: '대쉬보드', href: '#' },
+                { label: '결제현황 관리', href: '#' },
+                { label: '결제주차권관리', href: '340_결제주차권관리.html' },
+                { label: '결제주차권관리(캘린더)', href: '350_결제주차권관리_캘린더(월간수요).html' },
+                { label: '맵뷰', href: '#' },
+                { label: '환불관리', href: '#' },
+            ]},
+            { id: 'settle', label: '정산 관리', children: [{ label: '계좌환불', href: '#' }, { label: '마감처리', href: '#' }, { label: '정산내역서', href: '#' }] },
+            { id: 'erp', label: 'ERP', children: [{ label: '매출내역 전송', href: '#' }, { label: '정산내역서 전송', href: '#' }] },
+            { id: 'info', label: '정보 관리', children: [{ label: '일반주차장 관리', href: '#' }, { label: '수정요청', href: '#' }, { label: '등록요청', href: '#' }] },
+            { id: 'share', label: '공유 관리', children: [{ label: '공유주차장', href: '#' }, { label: 'IoT 관리', href: '#' }, { label: '공유시간정책', href: '#' }] },
+            { id: 'partner', label: '제휴 관리', children: [{ label: '제휴주차장 관리', href: '#' }, { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true }, { label: '월주차 현황', href: '#' }, { label: '월주차 신청', href: '#' }, { label: '거래처(BP)', href: '#' }, { label: '정산대상(STG)', href: '#' }, { label: '제휴신청목록', href: '#' }, { label: '제휴주차상품 예약관리', href: '#' }, { label: '제휴계약관리', href: '#' }] },
+            { id: 'autopay', label: '자동결제 관리', children: [{ label: '자동결제 관리', href: '#' }] },
+            { id: 'charger', label: '충전소 관리', children: [{ label: 'EV 충전소', href: '#' }] },
+            { id: 'coupon', label: '포인트/쿠폰/상품권 관리', children: [{ label: '포인트 관리', href: '#' }, { label: '쿠폰 관리', href: '#' }, { label: '상품권 관리', href: '#' }] },
+            { id: 'partners', label: '파트너 관리', children: [{ label: '파트너 관리', href: '#' }, { label: '파트너 주차장 변경요청', href: 'I050-parking-change-request.html' }, { label: '입출차 확인', href: 'P120-parking-log.html', active: true }] },
+            { id: 'service', label: '서비스 관리', children: [{ label: '메시지', href: '#' }, { label: '공지사항', href: '#' }, { label: '배너', href: '#' }, { label: '회원관리', href: '#' }] },
+            { id: 'admin', label: '어드민 관리', children: [{ label: '어드민관리', href: '#' }, { label: '권한관리', href: '#' }, { label: '패스워드변경', href: '#' }] },
+        ];
+
         function LNB({ user }) {
-            const menuItems = [
-                { id: 'notice', label: '공지사항', href: 'P060-notice-board.html', userStory: 'PARKING-2384' },
-                { id: 'payment', label: '결제 내역 조회', href: 'P110-payment-history.html', userStory: 'PARKING-2389' },
-                { id: 'settlement', label: '정산 내역 다운로드', href: 'P170-settlement-history.html', userStory: 'PARKING-2395' },
-                { id: 'unsettled', label: '미정산 내역 조회', href: 'P180-unsettled-transactions.html', userStory: 'PARKING-2914' },
-                { id: 'parking-log', label: '입출차 확인', href: 'P120-parking-log.html', userStory: 'PARKING-2390' },
-                { id: 'exhibition', label: '전시 관리', href: 'P080-exhibition-management.html', userStory: 'PARKING-2386' },
-                { id: 'product', label: '상품 정보 관리', href: 'P070-product-list.html', userStory: 'PARKING-2385' },
-                { id: 'parking-info', label: '주차장 정보 관리', href: 'P050-parking-info.html', userStory: 'PARKING-2383' },
-                { id: 'account', label: '계정 관리', href: 'P020-account-management.html', userStory: 'PARKING-2380' }
-            ];
+            const [openGroups, setOpenGroups] = useState({ partners: true });
 
-            const currentPageId = 'parking-log';
-
-            // href에서 페이지 ID 추출 (예: P110-payment-history.html → P110)
-            const getPageId = (href) => {
-                if (!href) return '';
-                const match = href.match(/([PI]\d{3})/);
-                return match ? match[1] : '';
-            };
-
-            const handleLogout = () => {
-                window.location.href = 'P010-login.html';
-            };
-
-            const handleChangePassword = () => {
-                window.location.href = 'P200-account-settings.html';
-            };
-
-            const handleMenuClick = (item) => {
-                if (item.href) {
-                    window.location.href = item.href;
-                }
-            };
-
-            const handleManualClick = () => {
-                window.open('https://docs.google.com/presentation/d/1yjWgLInsYyjNcR_iLJEI2YHHodAaVacLR_Uk9xdeJ9w/edit?slide=id.p#slide=id.p', '_blank');
-            };
-
-            const handleRAGClick = (e) => {
-                e.preventDefault();
-                const confirmMessage =
-                    "⚠️ 파트너센터 RAG 사용 안내\n\n" +
-                    "• SOCAR 와이파이에서는 동작하지 않습니다.\n" +
-                    "• 외부 네트워크, 테더링 또는 SOCAR-Tech 와이파이에서 이용 가능합니다.\n" +
-                    "• 너무 많이 조회하면 로저가 가난해질 수 있으니 하루 최대 5번만 조회해주세요.\n\n" +
-                    "계속하시겠습니까?\n\n" +
-                    "[취소]를 누르면 이전 화면으로 돌아갑니다.";
-
-                if (confirm(confirmMessage)) {
-                    window.open('http://dduks.modudev.cloud:3200/', '_blank', 'noopener,noreferrer');
-                }
+            const toggleGroup = (groupId) => {
+                setOpenGroups(prev => ({ ...prev, [groupId]: !prev[groupId] }));
             };
 
             return (
@@ -4389,62 +4411,49 @@
                             <path d="M 6 28 Q 6 24 10 24 Q 10 21 14 21 Q 14 19 18 19 Q 22 19 22 21 Q 26 21 26 24 Q 30 24 30 28 L 6 28 Z" fill="white"/>
                             <rect x="15" y="11" width="4" height="16" rx="1" fill="white"/>
                             <path d="M 19 11 Q 26 11 26 16 Q 26 21 19 21 L 19 11 Z" fill="white"/>
-                            <path d="M 24 8 Q 26 8 27 6" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                            <path d="M 26 11 Q 28 11 29 9" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
-                            <path d="M 28 14 Q 30 14 31 12" stroke="white" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+                            <path d="M 24 8 Q 26 8 27 6" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                            <path d="M 26 11 Q 28 11 29 9" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
+                            <path d="M 28 14 Q 30 14 31 12" stroke="white" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
                         </svg>
-                        <span>모두의주차장 파트너센터</span>
+                        <span>모두의주차장 관리자</span>
                     </a>
                     <div className="lnb-account">
                         <div className="lnb-account-name">{user.name}</div>
                         <div className="lnb-account-actions">
-                            <button className="lnb-account-btn" onClick={handleLogout}>
+                            <button className="lnb-account-btn" onClick={() => { window.location.href = 'P010-login.html'; }}>
                                 로그아웃
                             </button>
-                            <button className="lnb-account-btn" onClick={handleChangePassword}>
+                            <button className="lnb-account-btn" onClick={() => { window.location.href = 'P200-account-settings.html'; }}>
                                 계정설정
                             </button>
                         </div>
                     </div>
-                    <ul className="lnb-menu">
-                        {menuItems.map(item => {
-                            const isActive = currentPageId === item.id;
-                            const isDisabled = !item.href;
-                            const pageId = getPageId(item.href);
-
-                            return (
-                                <li
-                                    key={item.id}
-                                    className={`lnb-menu-item ${isActive ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
-                                    onClick={() => handleMenuClick(item)}
+                    <div className="lnb-menu">
+                        {LNB_MENUS.map(menu => (
+                            <div key={menu.id}>
+                                <div
+                                    className={`lnb-group-label ${openGroups[menu.id] ? 'open' : ''}`}
+                                    onClick={() => toggleGroup(menu.id)}
                                 >
-                                    <MenuIcon type={item.id} />
-                                    <span className="lnb-menu-label">{item.label}</span>
-                                    {pageId && item.userStory && (
+                                    {menu.label} <span className="arrow">▼</span>
+                                </div>
+                                <div className={`lnb-group-children ${openGroups[menu.id] ? 'open' : ''}`}>
+                                    {menu.children.map(child => (
                                         <a
-                                            href={`https://socarcorp.atlassian.net/browse/${item.userStory}`}
-                                            className="page-id-badge"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            onClick={(e) => e.stopPropagation()}
-                                        >
-                                            {pageId}
-                                        </a>
-                                    )}
-                                </li>
-                            );
-                        })}
-                    </ul>
+                                            key={child.label}
+                                            className={`lnb-group-item ${child.active ? 'active' : ''}`}
+                                            href={child.href || '#'}
+                                            style={child.indent ? {paddingLeft:'48px'} : undefined}
+                                        >{child.label}</a>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                     <div className="lnb-footer">
                         <div className="lnb-footer-title">문의</div>
                         <div>contact@moduparking.com</div>
                         <div>1899-8242 (평일 10~19시)</div>
-                        <button className="lnb-manual-btn" onClick={handleManualClick}>
-                            이용매뉴얼
-                        </button>
-                        <button className="lnb-rag-btn" onClick={handleRAGClick}>
-                            파트너센터 RAG <span className="beta-badge">Beta</span>
-                        </button>
                     </div>
                 </nav>
             );

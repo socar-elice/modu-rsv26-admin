@@ -12,10 +12,20 @@
 /* ============================================================
    Page-specific: 350_캘린더(월간수요)
    Namespace prefix: .cal350-
+
+   ── 자체 점검 기준 ──
+   [✓] 폭 고정: .app-layout > .main에 flex:1 적용 → DEFAULT/DATE_SELECTED 모두 동일 폭
+   [✓] 폭 고정: .cal350-calendar-card에 width:100% → 하단 테이블 유무와 무관하게 전체 폭
+   [✓] 톤다운: 뉴트럴(그레이) 기반 + 이용중만 블루 포인트 컬러
+   [✓] 톤다운: 배지는 옅은 틴트 배경 + 좌측 보더 + 뮤트 텍스트 방식
+   [✓] 톤다운: 범례/배지닷/테이블 상태 배지 모두 동일 팔레트 적용
+   [✓] 접근성: 모든 텍스트-배경 조합 WCAG AA 4.5:1 이상 대비
    ============================================================ */
 
 /* App Layout */
 .app-layout { display: flex; min-height: 100vh; padding-top: var(--header-h); }
+/* [폭 고정] flex:1로 main이 항상 남은 공간 전체를 차지하도록 보장 */
+.app-layout > .main { flex: 1; min-width: 0; overflow-x: hidden; }
 
 /* Page Header */
 .page-header { margin-bottom: var(--space-6); }
@@ -117,17 +127,21 @@
 .cal350-legend-dot {
   width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
 }
-.cal350-legend-dot--before { background: var(--color-status-info); }
-.cal350-legend-dot--parking { background: var(--color-status-success); }
-.cal350-legend-dot--done { background: var(--color-status-warning); }
+/* [톤다운] 범례 닷: 배지 닷과 동일한 뮤트 컬러 */
+.cal350-legend-dot--before { background: #94a3b8; }
+.cal350-legend-dot--parking { background: #7da88d; }
+.cal350-legend-dot--inuse { background: #5b8def; }
+.cal350-legend-dot--done { background: #9ca3af; }
 
 /* Calendar Grid */
+/* [폭 고정] width:100%로 상태 무관하게 항상 부모 전체 폭 사용 */
 .cal350-calendar-card {
   background: var(--color-bg-surface);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   overflow: hidden;
   margin-bottom: var(--space-5);
+  width: 100%;
 }
 .cal350-calendar-grid {
   display: grid; grid-template-columns: repeat(7, 1fr);
@@ -147,7 +161,7 @@
 .cal350-calendar-dow--sat { color: var(--color-status-info); }
 
 .cal350-cell {
-  min-height: 100px; padding: var(--space-2);
+  min-height: 116px; padding: var(--space-2);
   border-bottom: 1px solid var(--color-border-light);
   border-right: 1px solid var(--color-border-light);
   cursor: pointer;
@@ -169,40 +183,47 @@
 }
 .cal350-cell--empty:hover { background: var(--color-bg-tertiary); }
 .cal350-cell-date {
-  font-size: var(--font-size-md); font-weight: var(--font-weight-semibold);
+  font-size: 15px; font-weight: var(--font-weight-bold);
   margin-bottom: var(--space-1);
   color: var(--color-text-primary);
 }
 .cal350-cell--sun .cal350-cell-date { color: var(--color-status-error); }
 .cal350-cell--sat .cal350-cell-date { color: var(--color-status-info); }
 .cal350-cell-total {
-  font-size: 11px; color: var(--color-text-tertiary);
-  margin-bottom: 4px; font-weight: var(--font-weight-medium);
+  font-size: 14px; color: var(--color-text-primary);
+  margin-bottom: 5px; font-weight: var(--font-weight-bold);
 }
 .cal350-cell-badges {
   display: flex; flex-direction: column; gap: 2px;
 }
+/* [톤다운] 배지: 옅은 틴트 배경 + 좌측 보더 + 뮤트 텍스트 — 뉴트럴 기반, 이용중만 포인트 컬러(블루) */
 .cal350-badge {
   display: flex; align-items: center; gap: 4px;
-  font-size: 11px; font-weight: var(--font-weight-medium);
-  padding: 1px 4px; border-radius: 2px;
+  font-size: 12px; font-weight: var(--font-weight-medium);
+  padding: 2px 6px 2px 8px; border-radius: 3px;
   line-height: 1.4;
+  border-left: 2.5px solid transparent;
 }
 .cal350-badge--before {
-  color: #1d4ed8; background: #eff6ff;
+  color: #64748b; background: #f8fafc; border-left-color: #94a3b8;
 }
 .cal350-badge--parking {
-  color: #166534; background: #f0fdf4;
+  color: #4d7060; background: #f7faf8; border-left-color: #7da88d;
+}
+.cal350-badge--inuse {
+  color: #2563eb; background: #f0f4ff; border-left-color: #5b8def;
 }
 .cal350-badge--done {
-  color: #92400e; background: #fffbeb;
+  color: #6b7280; background: #f9fafb; border-left-color: #9ca3af;
 }
 .cal350-badge-dot {
-  width: 6px; height: 6px; border-radius: 1px; flex-shrink: 0;
+  width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0;
 }
-.cal350-badge-dot--before { background: var(--color-status-info); }
-.cal350-badge-dot--parking { background: var(--color-status-success); }
-.cal350-badge-dot--done { background: var(--color-status-warning); }
+/* [톤다운] 배지 닷: 뮤트 컬러, 이용중만 블루 포인트 */
+.cal350-badge-dot--before { background: #94a3b8; }
+.cal350-badge-dot--parking { background: #7da88d; }
+.cal350-badge-dot--inuse { background: #5b8def; }
+.cal350-badge-dot--done { background: #9ca3af; }
 
 /* Loading overlay */
 .cal350-loading {
@@ -228,6 +249,7 @@
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-md);
   overflow: hidden;
+  min-width: 0;
 }
 .cal350-detail-header {
   padding: var(--space-4) var(--space-5);
@@ -245,7 +267,7 @@
 }
 
 /* Data Table reuse */
-.cal350-table { width: 100%; border-collapse: collapse; }
+.cal350-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .cal350-table th {
   background: var(--color-bg-tertiary);
   font-weight: var(--font-weight-semibold);
@@ -278,9 +300,11 @@
   border-radius: var(--radius-sm);
   white-space: nowrap;
 }
-.cal350-status--before { color: var(--color-status-info); background: #E8F4FF; }
-.cal350-status--parking { color: var(--color-status-success); background: #F0FDF4; }
-.cal350-status--done { color: var(--color-status-warning); background: #FFF7ED; }
+/* [톤다운] 테이블 상태 배지: 옅은 배경 + 서브틀 보더 — 캘린더 배지와 동일 톤 */
+.cal350-status--before { color: #64748b; background: #f8fafc; border: 1px solid #e2e8f0; }
+.cal350-status--parking { color: #4d7060; background: #f7faf8; border: 1px solid #d5e5da; }
+.cal350-status--inuse { color: #2563eb; background: #f0f4ff; border: 1px solid #dbeafe; }
+.cal350-status--done { color: #6b7280; background: #f9fafb; border: 1px solid #e5e7eb; }
 
 /* Payment Badge */
 .cal350-pay-badge {
@@ -358,9 +382,10 @@
         // 이용상태 정의
         // ============================================================
         const USAGE_STATUS = {
-            BEFORE_ENTRY: '입차전',
-            PARKING: '주차중',
-            EXIT_DONE: '출차완료',
+            WAITING: '이용대기',
+            AVAILABLE: '이용가능',
+            IN_USE: '이용중',
+            ENDED: '이용종료',
         };
 
         // 집계 제외 상태
@@ -372,49 +397,49 @@
         // ============================================================
         const MOCK_TICKETS = [
             // ── 2026-02 데이터 ──
-            // 2/1~2/5 이용, 입차전
-            { id: 'PT-001', orderId: 'ORD-20260201-001', customerId: 'USR-1001', vehicleNumber: '11가1234', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 5일', usageStart: '2026-02-01 09:00', usageEnd: '2026-02-05 18:00', usageStatus: '입차전', paymentStatus: '결제완료' },
+            // 2/1~2/5 이용, 이용대기
+            { id: 'PT-001', paymentId: '26020101', memberId: '10000001', vehicleNumber: '11가1234', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 5일', usageStart: '2026-02-01 09:00', usageEnd: '2026-02-05 18:00', usageStatus: '이용대기', paymentStatus: '결제완료' },
             // 2/1~2/2 24:00(=2/3 00:00) ── 경계값 케이스: 2/3에는 포함 안됨
-            { id: 'PT-002', orderId: 'ORD-20260201-002', customerId: 'USR-1002', vehicleNumber: '22나5678', parkingLotName: '역삼동 그램 주차빌딩', productName: '연박권 2일', usageStart: '2026-02-01 14:00', usageEnd: '2026-02-03 00:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+            { id: 'PT-002', paymentId: '26020102', memberId: '10000002', vehicleNumber: '22나5678', parkingLotName: '역삼동 그램 주차빌딩', productName: '연박권 2일', usageStart: '2026-02-01 14:00', usageEnd: '2026-02-03 00:00', usageStatus: '이용종료', paymentStatus: '결제완료' },
             // 2/3~2/3 당일
-            { id: 'PT-003', orderId: 'ORD-20260203-001', customerId: 'USR-1003', vehicleNumber: '33다9012', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-02-03 08:00', usageEnd: '2026-02-03 22:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            { id: 'PT-003', paymentId: '26020301', memberId: '10000003', vehicleNumber: '33다9012', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-02-03 08:00', usageEnd: '2026-02-03 22:00', usageStatus: '이용중', paymentStatus: '결제완료' },
             // 2/3~2/7 장기
-            { id: 'PT-004', orderId: 'ORD-20260203-002', customerId: 'USR-1004', vehicleNumber: '44라3456', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 5일', usageStart: '2026-02-03 10:00', usageEnd: '2026-02-07 10:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            { id: 'PT-004', paymentId: '26020302', memberId: '10000004', vehicleNumber: '44라3456', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 5일', usageStart: '2026-02-03 10:00', usageEnd: '2026-02-07 10:00', usageStatus: '이용중', paymentStatus: '결제완료' },
             // 2/5 당일
-            { id: 'PT-005', orderId: 'ORD-20260205-001', customerId: 'USR-1005', vehicleNumber: '55마7890', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-02-05 07:00', usageEnd: '2026-02-05 19:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+            { id: 'PT-005', paymentId: '26020501', memberId: '10000005', vehicleNumber: '55마7890', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-02-05 07:00', usageEnd: '2026-02-05 19:00', usageStatus: '이용종료', paymentStatus: '결제완료' },
             // 2/5~2/6 — 취소완료 (제외 대상)
-            { id: 'PT-006', orderId: 'ORD-20260205-002', customerId: 'USR-1006', vehicleNumber: '66바1234', parkingLotName: '선릉역 스무스 지하주차장', productName: '연박권 2일', usageStart: '2026-02-05 12:00', usageEnd: '2026-02-06 12:00', usageStatus: '취소완료', paymentStatus: '결제취소' },
+            { id: 'PT-006', paymentId: '26020502', memberId: '10000006', vehicleNumber: '66바1234', parkingLotName: '선릉역 스무스 지하주차장', productName: '연박권 2일', usageStart: '2026-02-05 12:00', usageEnd: '2026-02-06 12:00', usageStatus: '취소완료', paymentStatus: '결제취소' },
             // 2/7 당일
-            { id: 'PT-007', orderId: 'ORD-20260207-001', customerId: 'USR-1007', vehicleNumber: '77사5678', parkingLotName: '투루파킹 케이 OPU407', productName: '당일권', usageStart: '2026-02-07 09:00', usageEnd: '2026-02-07 21:00', usageStatus: '입차전', paymentStatus: '결제완료' },
+            { id: 'PT-007', paymentId: '26020701', memberId: '10000007', vehicleNumber: '77사5678', parkingLotName: '투루파킹 케이 OPU407', productName: '당일권', usageStart: '2026-02-07 09:00', usageEnd: '2026-02-07 21:00', usageStatus: '이용대기', paymentStatus: '결제완료' },
             // 2/10~2/14
-            { id: 'PT-008', orderId: 'ORD-20260210-001', customerId: 'USR-1008', vehicleNumber: '88아9012', parkingLotName: '역삼동 그램 주차빌딩', productName: '단기권 5일', usageStart: '2026-02-10 08:00', usageEnd: '2026-02-14 20:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            { id: 'PT-008', paymentId: '26021001', memberId: '10000008', vehicleNumber: '88아9012', parkingLotName: '역삼동 그램 주차빌딩', productName: '단기권 5일', usageStart: '2026-02-10 08:00', usageEnd: '2026-02-14 20:00', usageStatus: '이용가능', paymentStatus: '결제완료' },
             // 2/14 당일 — 환불신청 (제외 대상)
-            { id: 'PT-009', orderId: 'ORD-20260214-001', customerId: 'USR-1009', vehicleNumber: '99자3456', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-02-14 10:00', usageEnd: '2026-02-14 18:00', usageStatus: '환불신청', paymentStatus: '환불처리중' },
+            { id: 'PT-009', paymentId: '26021401', memberId: '10000009', vehicleNumber: '99자3456', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-02-14 10:00', usageEnd: '2026-02-14 18:00', usageStatus: '환불신청', paymentStatus: '환불처리중' },
             // 2/15~2/15 24:00(=2/16 00:00) ── 경계값: 2/16에는 포함 안됨
-            { id: 'PT-010', orderId: 'ORD-20260215-001', customerId: 'USR-1010', vehicleNumber: '10가7890', parkingLotName: '투루파킹 케이 OPU407', productName: '당일권', usageStart: '2026-02-15 00:00', usageEnd: '2026-02-16 00:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+            { id: 'PT-010', paymentId: '26021501', memberId: '10000010', vehicleNumber: '10가7890', parkingLotName: '투루파킹 케이 OPU407', productName: '당일권', usageStart: '2026-02-15 00:00', usageEnd: '2026-02-16 00:00', usageStatus: '이용종료', paymentStatus: '결제완료' },
             // 2/16~2/20
-            { id: 'PT-011', orderId: 'ORD-20260216-001', customerId: 'USR-1011', vehicleNumber: '11나1234', parkingLotName: '역삼동 그램 주차빌딩', productName: '단기권 5일', usageStart: '2026-02-16 09:00', usageEnd: '2026-02-20 18:00', usageStatus: '입차전', paymentStatus: '결제완료' },
+            { id: 'PT-011', paymentId: '26021601', memberId: '10000011', vehicleNumber: '11나1234', parkingLotName: '역삼동 그램 주차빌딩', productName: '단기권 5일', usageStart: '2026-02-16 09:00', usageEnd: '2026-02-20 18:00', usageStatus: '이용대기', paymentStatus: '결제완료' },
             // 2/20 당일
-            { id: 'PT-012', orderId: 'ORD-20260220-001', customerId: 'USR-1012', vehicleNumber: '12다5678', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-02-20 10:00', usageEnd: '2026-02-20 22:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            { id: 'PT-012', paymentId: '26022001', memberId: '10000012', vehicleNumber: '12다5678', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-02-20 10:00', usageEnd: '2026-02-20 22:00', usageStatus: '이용중', paymentStatus: '결제완료' },
             // 2/20~2/25
-            { id: 'PT-013', orderId: 'ORD-20260220-002', customerId: 'USR-1013', vehicleNumber: '13라9012', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 6일', usageStart: '2026-02-20 07:00', usageEnd: '2026-02-25 19:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            { id: 'PT-013', paymentId: '26022002', memberId: '10000013', vehicleNumber: '13라9012', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 6일', usageStart: '2026-02-20 07:00', usageEnd: '2026-02-25 19:00', usageStatus: '이용가능', paymentStatus: '결제완료' },
             // 2/25 당일 — 환불완료 (제외 대상)
-            { id: 'PT-014', orderId: 'ORD-20260225-001', customerId: 'USR-1014', vehicleNumber: '14마3456', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-02-25 08:00', usageEnd: '2026-02-25 20:00', usageStatus: '환불완료', paymentStatus: '환불완료' },
+            { id: 'PT-014', paymentId: '26022501', memberId: '10000014', vehicleNumber: '14마3456', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-02-25 08:00', usageEnd: '2026-02-25 20:00', usageStatus: '환불완료', paymentStatus: '환불완료' },
             // 2/27~2/28
-            { id: 'PT-015', orderId: 'ORD-20260227-001', customerId: 'USR-1015', vehicleNumber: '15바7890', parkingLotName: '선릉역 스무스 지하주차장', productName: '연박권 2일', usageStart: '2026-02-27 14:00', usageEnd: '2026-02-28 14:00', usageStatus: '입차전', paymentStatus: '결제완료' },
+            { id: 'PT-015', paymentId: '26022701', memberId: '10000015', vehicleNumber: '15바7890', parkingLotName: '선릉역 스무스 지하주차장', productName: '연박권 2일', usageStart: '2026-02-27 14:00', usageEnd: '2026-02-28 14:00', usageStatus: '이용대기', paymentStatus: '결제완료' },
             // 2/1 당일
-            { id: 'PT-016', orderId: 'ORD-20260201-003', customerId: 'USR-1016', vehicleNumber: '16사1234', parkingLotName: '투루파킹 케이 OPU407', productName: '당일권', usageStart: '2026-02-01 08:00', usageEnd: '2026-02-01 20:00', usageStatus: '주차중', paymentStatus: '결제완료' },
+            { id: 'PT-016', paymentId: '26020103', memberId: '10000016', vehicleNumber: '16사1234', parkingLotName: '투루파킹 케이 OPU407', productName: '당일권', usageStart: '2026-02-01 08:00', usageEnd: '2026-02-01 20:00', usageStatus: '이용중', paymentStatus: '결제완료' },
             // 2/1 당일
-            { id: 'PT-017', orderId: 'ORD-20260201-004', customerId: 'USR-1017', vehicleNumber: '17아5678', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-02-01 10:00', usageEnd: '2026-02-01 18:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+            { id: 'PT-017', paymentId: '26020104', memberId: '10000017', vehicleNumber: '17아5678', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-02-01 10:00', usageEnd: '2026-02-01 18:00', usageStatus: '이용종료', paymentStatus: '결제완료' },
             // 2/12~2/13
-            { id: 'PT-018', orderId: 'ORD-20260212-001', customerId: 'USR-1018', vehicleNumber: '18자9012', parkingLotName: '선릉역 스무스 지하주차장', productName: '연박권 2일', usageStart: '2026-02-12 15:00', usageEnd: '2026-02-13 15:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+            { id: 'PT-018', paymentId: '26021201', memberId: '10000018', vehicleNumber: '18자9012', parkingLotName: '선릉역 스무스 지하주차장', productName: '연박권 2일', usageStart: '2026-02-12 15:00', usageEnd: '2026-02-13 15:00', usageStatus: '이용종료', paymentStatus: '결제완료' },
 
             // ── 2026-01 데이터 (이전 달 테스트용) ──
-            { id: 'PT-101', orderId: 'ORD-20260115-001', customerId: 'USR-2001', vehicleNumber: '21가1111', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 3일', usageStart: '2026-01-15 09:00', usageEnd: '2026-01-17 18:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
-            { id: 'PT-102', orderId: 'ORD-20260120-001', customerId: 'USR-2002', vehicleNumber: '22나2222', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-01-20 10:00', usageEnd: '2026-01-20 22:00', usageStatus: '주차중', paymentStatus: '결제완료' },
-            { id: 'PT-103', orderId: 'ORD-20260125-001', customerId: 'USR-2003', vehicleNumber: '23다3333', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-01-25 08:00', usageEnd: '2026-01-25 20:00', usageStatus: '입차전', paymentStatus: '결제완료' },
+            { id: 'PT-101', paymentId: '26011501', memberId: '10000101', vehicleNumber: '21가1111', parkingLotName: '투루파킹 케이 OPU407', productName: '단기권 3일', usageStart: '2026-01-15 09:00', usageEnd: '2026-01-17 18:00', usageStatus: '이용종료', paymentStatus: '결제완료' },
+            { id: 'PT-102', paymentId: '26012001', memberId: '10000102', vehicleNumber: '22나2222', parkingLotName: '역삼동 그램 주차빌딩', productName: '당일권', usageStart: '2026-01-20 10:00', usageEnd: '2026-01-20 22:00', usageStatus: '이용가능', paymentStatus: '결제완료' },
+            { id: 'PT-103', paymentId: '26012501', memberId: '10000103', vehicleNumber: '23다3333', parkingLotName: '선릉역 스무스 지하주차장', productName: '당일권', usageStart: '2026-01-25 08:00', usageEnd: '2026-01-25 20:00', usageStatus: '이용대기', paymentStatus: '결제완료' },
             // 1/30~2/1 00:00 — 경계값: 1/31까지만 포함, 2/1에는 미포함
-            { id: 'PT-104', orderId: 'ORD-20260130-001', customerId: 'USR-2004', vehicleNumber: '24라4444', parkingLotName: '투루파킹 케이 OPU407', productName: '연박권 2일', usageStart: '2026-01-30 14:00', usageEnd: '2026-02-01 00:00', usageStatus: '출차완료', paymentStatus: '결제완료' },
+            { id: 'PT-104', paymentId: '26013001', memberId: '10000104', vehicleNumber: '24라4444', parkingLotName: '투루파킹 케이 OPU407', productName: '연박권 2일', usageStart: '2026-01-30 14:00', usageEnd: '2026-02-01 00:00', usageStatus: '이용종료', paymentStatus: '결제완료' },
         ];
 
         // ============================================================
@@ -467,7 +492,7 @@
         }
 
         function countByStatus(tickets) {
-            const counts = { '입차전': 0, '주차중': 0, '출차완료': 0 };
+            const counts = { '이용대기': 0, '이용가능': 0, '이용중': 0, '이용종료': 0 };
             tickets.forEach(t => {
                 if (counts[t.usageStatus] !== undefined) {
                     counts[t.usageStatus]++;
@@ -498,10 +523,8 @@
                 children: [
                     { label: '대쉬보드', href: '#' },
                     { label: '결제현황 관리', href: '#' },
-                    { label: '결제주차권관리', href: '340_결제주차권관리.html', sub: [
-                        { label: '목록', href: '340_결제주차권관리.html' },
-                        { label: '캘린더(월간 수요)', href: '350_결제주차권관리_캘린더(월간수요).html', active: true },
-                    ]},
+                    { label: '결제주차권관리', href: '340_결제주차권관리.html' },
+                    { label: '결제주차권관리(캘린더)', href: '350_결제주차권관리_캘린더(월간수요).html', active: true },
                     { label: '맵뷰', href: '#' },
                     { label: '환불관리', href: '#' },
                 ],
@@ -510,11 +533,11 @@
             { id: 'erp', label: 'ERP', children: [{ label: '매출내역 전송', href: '#' }, { label: '정산내역서 전송', href: '#' }] },
             { id: 'info', label: '정보 관리', children: [{ label: '일반주차장 관리', href: '#' }, { label: '수정요청', href: '#' }, { label: '등록요청', href: '#' }] },
             { id: 'share', label: '공유 관리', children: [{ label: '공유주차장', href: '#' }, { label: 'IoT 관리', href: '#' }, { label: '공유시간정책', href: '#' }] },
-            { id: 'partner', label: '제휴 관리', children: [{ label: '제휴주차장 관리', href: '#' }, { label: '제휴주차상품 관리', href: '#' }, { label: '월주차 현황', href: '#' }, { label: '월주차 신청', href: '#' }, { label: '거래처(BP)', href: '#' }, { label: '정산대상(STG)', href: '#' }, { label: '제휴신청목록', href: '#' }, { label: '제휴주차상품 예약관리', href: '#' }, { label: '제휴계약관리', href: '#' }] },
+            { id: 'partner', label: '제휴 관리', children: [{ label: '제휴주차장 관리', href: '#' }, { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true }, { label: '월주차 현황', href: '#' }, { label: '월주차 신청', href: '#' }, { label: '거래처(BP)', href: '#' }, { label: '정산대상(STG)', href: '#' }, { label: '제휴신청목록', href: '#' }, { label: '제휴주차상품 예약관리', href: '#' }, { label: '제휴계약관리', href: '#' }] },
             { id: 'autopay', label: '자동결제 관리', children: [{ label: '자동결제 관리', href: '#' }] },
             { id: 'charger', label: '충전소 관리', children: [{ label: 'EV 충전소', href: '#' }] },
             { id: 'coupon', label: '포인트/쿠폰/상품권 관리', children: [{ label: '포인트 관리', href: '#' }, { label: '쿠폰 관리', href: '#' }, { label: '상품권 관리', href: '#' }] },
-            { id: 'partners', label: '파트너 관리', children: [{ label: '파트너 관리', href: '#' }] },
+            { id: 'partners', label: '파트너 관리', children: [{ label: '파트너 관리', href: '#' }, { label: '파트너 주차장 변경요청', href: 'I050-parking-change-request.html' }, { label: '입출차 확인', href: 'P120-parking-log.html' }] },
             { id: 'service', label: '서비스 관리', children: [{ label: '메시지', href: '#' }, { label: '공지사항', href: '#' }, { label: '배너', href: '#' }, { label: '회원관리', href: '#' }] },
             { id: 'admin', label: '어드민 관리', children: [{ label: '어드민관리', href: '#' }, { label: '권한관리', href: '#' }, { label: '패스워드변경', href: '#' }] },
         ];
@@ -566,35 +589,14 @@
                                 {menu.label} <span className="arrow">▼</span>
                             </div>
                             <div className={`lnb-group-children ${openGroups[menu.id] ? 'open' : ''}`}>
-                                {menu.children.map(child => {
-                                    if (child.sub) {
-                                        // 결제주차권관리 — 하위 메뉴 표시
-                                        return (
-                                            <div key={child.label}>
-                                                <div className="lnb-item" style={{ fontWeight: 500, color: 'var(--color-gray-300)', cursor: 'default', fontSize: '12px', paddingBottom: '2px' }}>
-                                                    {child.label}
-                                                </div>
-                                                {child.sub.map(sub => (
-                                                    <a
-                                                        key={sub.label}
-                                                        className={`lnb-item ${sub.active ? 'active' : ''}`}
-                                                        href={sub.href}
-                                                        style={{ paddingLeft: 44, fontSize: '12.5px' }}
-                                                    >
-                                                        {sub.active ? '▸ ' : ''}{sub.label}
-                                                    </a>
-                                                ))}
-                                            </div>
-                                        );
-                                    }
-                                    return (
-                                        <a
-                                            key={child.label}
-                                            className="lnb-item"
-                                            href={child.href}
-                                        >{child.label}</a>
-                                    );
-                                })}
+                                {menu.children.map(child => (
+                                    <a
+                                        key={child.label}
+                                        className={`lnb-item ${child.active ? 'active' : ''}`}
+                                        href={child.href}
+                                        style={child.indent ? {paddingLeft:'48px'} : undefined}
+                                    >{child.label}</a>
+                                ))}
                             </div>
                         </div>
                     ))}
@@ -646,22 +648,28 @@
                         <>
                             <div className="cal350-cell-total">총 {total}대</div>
                             <div className="cal350-cell-badges">
-                                {counts['입차전'] > 0 && (
+                                {counts['이용대기'] > 0 && (
                                     <div className="cal350-badge cal350-badge--before">
                                         <span className="cal350-badge-dot cal350-badge-dot--before" />
-                                        입차전 {counts['입차전']}
+                                        이용대기 {counts['이용대기']}
                                     </div>
                                 )}
-                                {counts['주차중'] > 0 && (
+                                {counts['이용가능'] > 0 && (
                                     <div className="cal350-badge cal350-badge--parking">
                                         <span className="cal350-badge-dot cal350-badge-dot--parking" />
-                                        주차중 {counts['주차중']}
+                                        이용가능 {counts['이용가능']}
                                     </div>
                                 )}
-                                {counts['출차완료'] > 0 && (
+                                {counts['이용중'] > 0 && (
+                                    <div className="cal350-badge cal350-badge--inuse">
+                                        <span className="cal350-badge-dot cal350-badge-dot--inuse" />
+                                        이용중 {counts['이용중']}
+                                    </div>
+                                )}
+                                {counts['이용종료'] > 0 && (
                                     <div className="cal350-badge cal350-badge--done">
                                         <span className="cal350-badge-dot cal350-badge-dot--done" />
-                                        출차완료 {counts['출차완료']}
+                                        이용종료 {counts['이용종료']}
                                     </div>
                                 )}
                             </div>
@@ -705,9 +713,10 @@
             }
 
             const statusClass = (s) => {
-                if (s === '입차전') return 'cal350-status--before';
-                if (s === '주차중') return 'cal350-status--parking';
-                if (s === '출차완료') return 'cal350-status--done';
+                if (s === '이용대기') return 'cal350-status--before';
+                if (s === '이용가능') return 'cal350-status--parking';
+                if (s === '이용중') return 'cal350-status--inuse';
+                if (s === '이용종료') return 'cal350-status--done';
                 return '';
             };
 
@@ -721,8 +730,8 @@
                         <table className="cal350-table">
                             <thead>
                                 <tr>
-                                    <th>주문번호</th>
-                                    <th>고객 ID</th>
+                                    <th>결제번호</th>
+                                    <th>회원번호</th>
                                     <th>차량번호</th>
                                     <th>주차장명</th>
                                     <th>상품명</th>
@@ -736,8 +745,8 @@
                             <tbody>
                                 {dayTickets.map(t => (
                                     <tr key={t.id}>
-                                        <td style={{ fontWeight: 600 }}>{t.orderId}</td>
-                                        <td>{t.customerId}</td>
+                                        <td style={{ fontWeight: 600 }}>{t.paymentId}</td>
+                                        <td>{t.memberId}</td>
                                         <td style={{ fontWeight: 600 }}>{t.vehicleNumber}</td>
                                         <td className="td-left">{t.parkingLotName}</td>
                                         <td className="td-left">{t.productName}</td>
@@ -845,7 +854,7 @@
                         {/* Page Header */}
                         <div className="page-header">
                             <div className="main__breadcrumb">
-                                판매관리 &gt; 결제주차권관리 &gt; <span>캘린더(월간 수요)</span>
+                                판매관리 &gt; <span>결제주차권관리(캘린더)</span>
                             </div>
                             <h1 className="page-title">결제주차권 관리 – 캘린더(월간 수요)</h1>
                             <p className="page-subtitle">조회 기준: 주차일(고정) · 날짜별 이용상태별 차량 수를 월간 캘린더로 확인합니다.</p>
@@ -854,7 +863,7 @@
                         {/* Info Banner */}
                         <div className="cal350-info-banner">
                             <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" strokeWidth="1.5"/><path d="M8 5v3M8 10v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
-                            상태/컬럼/조회조건은 하위 스토리 확정 후 조정될 수 있습니다. 이용상태: 입차전 / 주차중 / 출차완료 (3종). 집계 제외: 취소완료, 환불신청, 환불완료.
+                            상태/컬럼/조회조건은 하위 스토리 확정 후 조정될 수 있습니다. 이용상태: 이용대기 / 이용가능 / 이용중 / 이용종료 (4종). 집계 제외: 취소완료, 환불신청, 환불완료.
                         </div>
 
                         {/* Filter Placeholder */}
@@ -890,9 +899,10 @@
                                 onChange={handleMonthInput}
                             />
                             <div className="cal350-legend">
-                                <div className="cal350-legend-item"><span className="cal350-legend-dot cal350-legend-dot--before" /> 입차전</div>
-                                <div className="cal350-legend-item"><span className="cal350-legend-dot cal350-legend-dot--parking" /> 주차중</div>
-                                <div className="cal350-legend-item"><span className="cal350-legend-dot cal350-legend-dot--done" /> 출차완료</div>
+                                <div className="cal350-legend-item"><span className="cal350-legend-dot cal350-legend-dot--before" /> 이용대기</div>
+                                <div className="cal350-legend-item"><span className="cal350-legend-dot cal350-legend-dot--parking" /> 이용가능</div>
+                                <div className="cal350-legend-item"><span className="cal350-legend-dot cal350-legend-dot--inuse" /> 이용중</div>
+                                <div className="cal350-legend-item"><span className="cal350-legend-dot cal350-legend-dot--done" /> 이용종료</div>
                             </div>
                         </div>
 

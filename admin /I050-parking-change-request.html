@@ -1143,24 +1143,71 @@
         // LNB Menu Data
         // ============================================
         const LNB_MENU = [
-            { id: 'sales', name: '판매관리', submenus: [] },
-            { id: 'settlement', name: '정산 관리', submenus: [] },
-            { id: 'erp', name: 'ERP', submenus: [] },
-            { id: 'info', name: '정보 관리', submenus: [] },
-            { id: 'share', name: '공유 관리', submenus: [] },
-            { id: 'partnership', name: '제휴 관리', submenus: [] },
-            { id: 'autopay', name: '자동결제 관리', submenus: [] },
-            { id: 'charging', name: '충전소 관리', submenus: [] },
-            { id: 'pointcoupon', name: '포인트/쿠폰/상품권 관리', submenus: [] },
-            { id: 'partner', name: '파트너 관리', submenus: [
-                { id: 'partner-parking-change', name: '파트너 주차장 변경요청', url: 'I050-parking-change-request.html' },
-                { id: 'partner-product-change', name: '파트너 상품 변경요청', url: 'I140-product-change-request.html' },
-                { id: 'partner-account', name: '파트너센터 계정 관리', url: 'I010-partner-account.html' },
-                { id: 'partner-notice', name: '파트너센터 공지 관리', url: 'I060-partner-notice.html' },
-                { id: 'reference-data', name: '기준정보 관리', url: 'I030-parking-lot-type.html' }
+            { id: 'sales', name: '판매관리', submenus: [
+                { id: 'dashboard', name: '대쉬보드' },
+                { id: 'payment-status', name: '결제현황 관리' },
+                { id: 'payment-ticket', name: '결제주차권관리', url: '340_결제주차권관리.html' },
+                { id: 'payment-calendar', name: '결제주차권관리(캘린더)', url: '350_결제주차권관리_캘린더(월간수요).html' },
+                { id: 'mapview', name: '맵뷰' },
+                { id: 'refund', name: '환불관리' },
             ]},
-            { id: 'service', name: '서비스 관리', submenus: [] },
-            { id: 'admin', name: '어드민 관리', submenus: [] },
+            { id: 'settlement', name: '정산 관리', submenus: [
+                { id: 'account-refund', name: '계좌환불' },
+                { id: 'closing', name: '마감처리' },
+                { id: 'settlement-detail', name: '정산내역서' },
+            ]},
+            { id: 'erp', name: 'ERP', submenus: [
+                { id: 'sales-transfer', name: '매출내역 전송' },
+                { id: 'settlement-transfer', name: '정산내역서 전송' },
+            ]},
+            { id: 'info', name: '정보 관리', submenus: [
+                { id: 'general-parking', name: '일반주차장 관리' },
+                { id: 'edit-request', name: '수정요청' },
+                { id: 'register-request', name: '등록요청' },
+            ]},
+            { id: 'share', name: '공유 관리', submenus: [
+                { id: 'share-parking', name: '공유주차장' },
+                { id: 'iot', name: 'IoT 관리' },
+                { id: 'share-time-policy', name: '공유시간정책' },
+            ]},
+            { id: 'partnership', name: '제휴 관리', submenus: [
+                { id: 'partner-parking', name: '제휴주차장 관리' },
+                { id: 'partner-product', name: '제휴상품생성하기', url: '300_주차상품판매정책설정.html', indent: true },
+                { id: 'monthly-status', name: '월주차 현황' },
+                { id: 'monthly-apply', name: '월주차 신청' },
+                { id: 'bp', name: '거래처(BP)' },
+                { id: 'stg', name: '정산대상(STG)' },
+                { id: 'partner-apply-list', name: '제휴신청목록' },
+                { id: 'partner-product-reservation', name: '제휴주차상품 예약관리' },
+                { id: 'partner-contract', name: '제휴계약관리' },
+            ]},
+            { id: 'autopay', name: '자동결제 관리', submenus: [
+                { id: 'autopay-manage', name: '자동결제 관리' },
+            ]},
+            { id: 'charging', name: '충전소 관리', submenus: [
+                { id: 'ev-charger', name: 'EV 충전소' },
+            ]},
+            { id: 'pointcoupon', name: '포인트/쿠폰/상품권 관리', submenus: [
+                { id: 'point', name: '포인트 관리' },
+                { id: 'coupon', name: '쿠폰 관리' },
+                { id: 'gift', name: '상품권 관리' },
+            ]},
+            { id: 'partner', name: '파트너 관리', submenus: [
+                { id: 'partner-manage', name: '파트너 관리' },
+                { id: 'partner-parking-change', name: '파트너 주차장 변경요청', url: 'I050-parking-change-request.html' },
+                { id: 'parking-log', name: '입출차 확인', url: 'P120-parking-log.html' },
+            ]},
+            { id: 'service', name: '서비스 관리', submenus: [
+                { id: 'message', name: '메시지' },
+                { id: 'notice', name: '공지사항' },
+                { id: 'banner', name: '배너' },
+                { id: 'member', name: '회원관리' },
+            ]},
+            { id: 'admin', name: '어드민 관리', submenus: [
+                { id: 'admin-manage', name: '어드민관리' },
+                { id: 'role-manage', name: '권한관리' },
+                { id: 'password-change', name: '패스워드변경' },
+            ]},
         ];
 
         // ============================================
@@ -1245,7 +1292,7 @@
                                     <div className="lnb-submenu">
                                         {menu.submenus.map(sub => (
                                             sub.url ? (
-                                                <a key={sub.id} href={sub.url} className={`lnb-menu-item-2depth ${activeMenu === sub.id ? 'active' : ''}`} style={{ textDecoration: 'none', display: 'block' }}>
+                                                <a key={sub.id} href={sub.url} className={`lnb-menu-item-2depth ${activeMenu === sub.id ? 'active' : ''}`} style={{ textDecoration: 'none', display: 'block', ...(sub.indent ? {paddingLeft: '48px'} : {}) }}>
                                                     {sub.name}
                                                 </a>
                                             ) : (
