@@ -130,9 +130,9 @@
         [ProductType.GENERAL_TICKET]: [
             { id: SectionId.BASIC_INFO },
             { id: SectionId.USAGE_INFO },
-            { id: SectionId.ENTRY_PROCESSING },
             { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
             { id: SectionId.TICKET_SUMMARY },
+            { id: SectionId.ENTRY_PROCESSING },
         ],
         [ProductType.GENERAL_SHARE]: [
             { id: SectionId.BASIC_INFO },
@@ -147,16 +147,16 @@
         [ProductType.SUBSCRIPTION_TICKET]: [
             { id: SectionId.BASIC_INFO },
             { id: SectionId.USAGE_INFO },
-            { id: SectionId.ENTRY_PROCESSING },
             { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
             { id: SectionId.TICKET_SUMMARY },
+            { id: SectionId.ENTRY_PROCESSING },
         ],
         [ProductType.SHORT_TERM_TICKET]: [
             { id: SectionId.BASIC_INFO },
             { id: SectionId.USAGE_INFO },
-            { id: SectionId.ENTRY_PROCESSING },
             { id: SectionId.CUSTOMER_EXTRA_INFO, condition: 'hasAdditionalInfo' },
             { id: SectionId.TICKET_SUMMARY },
+            { id: SectionId.ENTRY_PROCESSING },
         ],
     });
 
