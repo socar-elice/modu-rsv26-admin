@@ -13,25 +13,26 @@
    ============================================================ */
 
 /* Main content max-width override */
-.main { max-width: calc(var(--lnb-w) + 960px); }
+.main { max-width: calc(var(--lnb-w) + 1060px); }
 
 /* Pricing Section */
 .pricing-table {
-  width: 100%; max-width: 720px;
+  width: 100%; max-width: 900px;
   border-collapse: separate;
   border-spacing: 0;
   font-size: 13.5px;
 }
 .pricing-table thead th {
   background: var(--color-gray-50);
-  padding: 12px 16px;
+  padding: 10px 12px;
   font-size: 12px; font-weight: 600; color: var(--color-gray-500);
-  text-align: center; text-transform: uppercase; letter-spacing: 0.03em;
+  text-align: center; letter-spacing: 0.03em;
   border-bottom: 1px solid var(--color-gray-200);
+  white-space: nowrap;
 }
 .pricing-table thead th:first-child { text-align: left; }
 .pricing-table tbody td {
-  padding: 12px 16px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--color-gray-100);
   text-align: center;
   vertical-align: middle;
@@ -41,9 +42,9 @@
   text-align: left; font-weight: 600; color: var(--color-gray-700);
 }
 .price-input {
-  width: 100%; max-width: 130px;
-  height: 36px; padding: 6px 10px;
-  font-size: 13.5px;
+  width: 100%; max-width: 110px;
+  height: 34px; padding: 5px 8px;
+  font-size: 13px;
   border: 1px solid var(--color-gray-300);
   border-radius: var(--radius-sm);
   text-align: right; outline: none;
@@ -51,6 +52,34 @@
   background: var(--color-white);
   color: var(--color-gray-800);
 }
+/* Bulk day selector */
+.bulk-day-selector {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--color-gray-100);
+  background: var(--color-gray-50);
+}
+.bulk-day-selector__label {
+  font-size: 13px; font-weight: 600; color: var(--color-gray-600);
+  white-space: nowrap;
+}
+.bulk-day-selector__hint {
+  font-size: 12px; color: var(--color-gray-400);
+  margin-left: auto;
+}
+/* ─── 일괄요금 인라인 필드 ─── */
+.bulk-inline-fields {
+  display: flex; align-items: flex-end; gap: 20px;
+  padding: 16px;
+}
+.bulk-inline-item {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.bulk-inline-label {
+  font-size: 12px; font-weight: 600; color: var(--color-gray-500);
+}
+.bulk-inline-item .price-input { max-width: 140px; }
+
 .price-input:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
@@ -73,8 +102,8 @@
   margin-bottom: 20px;
 }
 .mode-selector__btn {
-  padding: 10px 24px;
-  font-size: 14px; font-weight: 600;
+  padding: 8px 18px;
+  font-size: 13px; font-weight: 600;
   color: var(--color-gray-500);
   background: var(--color-white);
   border: none; cursor: default;
@@ -247,6 +276,70 @@ textarea.form-input[readonly] {
 }
 .warning-box__list { font-size: 12px; margin-top: 8px; padding-left: 16px; }
 .warning-box__list li { margin-bottom: 4px; }
+
+/* ─── Period-based Policy: Split Layout ─── */
+.period-split {
+  display: flex; min-height: 360px;
+}
+.period-split__left {
+  width: 300px; min-width: 300px;
+  border-right: 1px solid var(--color-gray-200);
+  display: flex; flex-direction: column;
+}
+.period-split__right {
+  flex: 1; min-width: 0;
+}
+
+/* 기간 리스트 */
+.period-list { list-style: none; margin: 0; padding: 0; flex: 1; overflow-y: auto; }
+.period-list__item {
+  padding: 12px 16px; cursor: pointer;
+  border-bottom: 1px solid var(--color-gray-100);
+  transition: background 0.15s;
+}
+.period-list__item:last-child { border-bottom: none; }
+.period-list__item:hover { background: var(--color-gray-50); }
+.period-list__item.selected {
+  background: var(--color-primary-light);
+  border-left: 3px solid var(--color-primary);
+  padding-left: 13px;
+}
+.period-list__dates {
+  font-size: 13px; font-weight: 600; color: var(--color-gray-800);
+  margin-bottom: 4px;
+}
+.period-list__item.selected .period-list__dates { color: var(--color-primary); }
+.period-list__meta {
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 11px; color: var(--color-gray-400);
+}
+.period-list__item.expired { opacity: 0.5; }
+.period-list__item.expired .period-list__dates { color: var(--color-gray-400); }
+.period-list__actions { display: flex; gap: 4px; }
+
+/* 상세 영역 */
+.period-detail__header {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 16px; background: var(--color-gray-50);
+  font-size: 13px; color: var(--color-gray-700);
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--color-gray-200);
+}
+.period-detail__header .mode-selector {
+  transform: scale(0.85); transform-origin: right center;
+}
+.period-detail__header strong { color: var(--color-gray-900); }
+.period-detail__dates { display: flex; align-items: center; gap: 8px; }
+.period-detail__dates input[type="date"] {
+  height: 32px; padding: 4px 8px; font-size: 13px;
+  border: 1px solid var(--color-gray-300); border-radius: var(--radius-sm);
+  font-family: inherit;
+}
+.period-detail__dates .no-end-date {
+  height: 32px; line-height: 32px; padding: 0 8px; font-size: 13px;
+  color: var(--color-gray-500); font-style: italic;
+}
+.card__header { display: flex; align-items: center; justify-content: space-between; }
 </style>
 </head>
 <body>
@@ -386,23 +479,23 @@ textarea.form-input[readonly] {
           <tr id="rowSaleStartTime" style="display:none;">
             <th>판매 시작시간</th>
             <td>
-              <input type="time" step="1" class="form-input form-input--md" id="saleStartTime" value="00:00:00" readonly>
+              <input type="time" class="form-input form-input--md" id="saleStartTime" value="00:00" readonly>
             </td>
           </tr>
           <tr id="rowSaleEndTime" style="display:none;">
             <th>판매 종료시간</th>
             <td>
-              <input type="time" step="1" class="form-input form-input--md" id="saleEndTime" value="23:59:00" readonly>
+              <input type="time" class="form-input form-input--md" id="saleEndTime" value="23:59" readonly>
             </td>
           </tr>
           <tr id="rowParkingStartTime">
-            <th>주차가능 시작시간</th>
+            <th>이용가능 시작시간</th>
             <td>
               <input type="time" class="form-input form-input--md" id="parkingStartTime" value="00:00" readonly>
             </td>
           </tr>
           <tr id="rowParkingEndTime">
-            <th>주차가능 종료시간</th>
+            <th>이용가능 종료시간</th>
             <td>
               <input type="time" class="form-input form-input--md" id="parkingEndTime" value="23:59" readonly>
             </td>
@@ -420,17 +513,43 @@ textarea.form-input[readonly] {
               </div>
             </td>
           </tr>
+          <tr id="rowReservationType">
+            <th>예매 설정</th>
+            <td>
+              <div class="inline-field" style="gap:20px;">
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="radio" name="reservationType" value="available" checked disabled style="accent-color:var(--color-primary);"> 예매가능
+                </label>
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="radio" name="reservationType" value="unavailable" disabled style="accent-color:var(--color-primary);"> 예매불가
+                </label>
+              </div>
+            </td>
+          </tr>
+          <tr id="rowResvSaleStartTime" style="display:none;">
+            <th>판매 시작시간</th>
+            <td>
+              <input type="time" class="form-input form-input--md" id="resvSaleStartTime" value="00:00">
+            </td>
+          </tr>
+          <tr id="rowResvSaleEndTime" style="display:none;">
+            <th>판매 종료시간</th>
+            <td>
+              <input type="time" class="form-input form-input--md" id="resvSaleEndTime" value="23:59">
+            </td>
+          </tr>
           <tr id="rowPurchaseStart">
             <th>이용일 시작일 기준<br>구매가능 시작일</th>
             <td>
               <div class="inline-field">
                 <div class="segment" id="startUnitSegment">
-                  <button type="button" class="segment__btn segment__btn--active" data-unit="hour" disabled>시간</button>
-                  <button type="button" class="segment__btn" data-unit="day" disabled>일</button>
+                  <button type="button" class="segment__btn segment__btn--active" data-unit="day" style="min-width:52px;" disabled>일</button>
+                  <button type="button" class="segment__btn" data-unit="hour" style="min-width:52px;" disabled>시간</button>
                 </div>
                 <input type="text" inputmode="numeric" class="form-input form-input--sm" id="startDeadlineValue" value="0" readonly>
-                <span class="unit-label" id="startUnitLabel">시간 전까지</span>
+                <span class="unit-label" id="startUnitLabel">일 전까지</span>
               </div>
+              <div class="text-hint mt-1">0 이상의 정수를 입력하세요. 예) 0 = 이용시작 직전까지 예매 가능</div>
             </td>
           </tr>
           <tr id="rowPurchaseEnd">
@@ -438,12 +557,13 @@ textarea.form-input[readonly] {
             <td>
               <div class="inline-field">
                 <div class="segment" id="unitSegment">
-                  <button type="button" class="segment__btn segment__btn--active" data-unit="hour" disabled>시간</button>
-                  <button type="button" class="segment__btn" data-unit="day" disabled>일</button>
+                  <button type="button" class="segment__btn segment__btn--active" data-unit="day" style="min-width:52px;" disabled>일</button>
+                  <button type="button" class="segment__btn" data-unit="hour" style="min-width:52px;" disabled>시간</button>
                 </div>
                 <input type="text" inputmode="numeric" class="form-input form-input--sm" id="deadlineValue" value="0" readonly>
-                <span class="unit-label" id="unitLabel">시간 전까지</span>
+                <span class="unit-label" id="unitLabel">일 전까지</span>
               </div>
+              <div class="text-hint mt-1">0 이상의 정수를 입력하세요. 예) 0 = 이용시작 직전까지 예매 가능</div>
             </td>
           </tr>
           <tr id="rowAirport">
@@ -455,6 +575,15 @@ textarea.form-input[readonly] {
                 <option value="ICN_T2">인천공항 T2</option>
                 <option value="GMP">김포공항</option>
               </select>
+            </td>
+          </tr>
+          <tr>
+            <th>주차장 정산비율</th>
+            <td>
+              <div class="inline-field">
+                <input type="number" class="form-input form-input--sm" id="settlementRate" value="70" readonly>
+                <span class="unit-label">%</span>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -520,21 +649,11 @@ textarea.form-input[readonly] {
     </div>
   </div>
 
-  <!-- ─── Section 2: 요금 설정 모드 선택 ─── -->
-  <div class="mode-selector" id="pricingModeSelector">
-    <button type="button" class="mode-selector__btn mode-selector__btn--active" data-mode="daily">요일별 설정</button>
-    <button type="button" class="mode-selector__btn" data-mode="bulk">일괄요금 설정</button>
-  </div>
+  <!-- ─── Section 2: 요금 설정 ─── -->
+  <!-- 모드 선택기는 기간 상세영역 안으로 이동됨 -->
+  <div id="pricingModeSelector" style="display:none;"></div>
 
   <div id="pricingContent">
-
-    <!-- 주차장 정산비율 -->
-    <div class="card">
-      <div class="card__header"><h3>주차장 정산비율</h3></div>
-      <div class="card__body">
-        <input type="number" class="form-input form-input--sm" id="settlementRate" value="70" readonly>
-      </div>
-    </div>
 
     <!-- 최소이용금액 -->
     <div class="card" id="sectionMinPrice" style="display:none;">
@@ -566,142 +685,199 @@ textarea.form-input[readonly] {
       </div>
     </div>
 
-    <!-- 일괄요금 설정 모드 -->
-    <div id="bulkPricingSection" style="display:none;">
-      <div class="card">
-        <div class="card__header"><h3>기본 판매정책</h3></div>
-        <div class="card__body" style="padding:0;">
-          <!-- 판매요일 선택 -->
-          <div id="bulkSaleDaysArea">
-            <div style="padding:16px 16px 4px; font-size:13px; font-weight:600; color:var(--color-gray-600);">판매 요일</div>
-            <div class="day-btn-group" id="bulkDayBtnGroup">
-              <button type="button" class="day-btn active" data-day="mon" disabled>월</button>
-              <button type="button" class="day-btn active" data-day="tue" disabled>화</button>
-              <button type="button" class="day-btn active" data-day="wed" disabled>수</button>
-              <button type="button" class="day-btn active" data-day="thu" disabled>목</button>
-              <button type="button" class="day-btn active" data-day="fri" disabled>금</button>
-              <button type="button" class="day-btn active" data-day="sat" disabled>토</button>
-              <button type="button" class="day-btn active" data-day="sun" disabled>일</button>
+    <!-- 판매정책 (기간별: 기본 + 공휴일) -->
+    <div class="card" id="basicPolicyPeriodCard">
+      <div class="card__header">
+        <h3>판매정책</h3>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <button type="button" class="btn--ghost" id="btnAddBasicPeriod">+ 기간 추가</button>
+          <div id="headerAddActions" style="display:none; align-items:center; gap:8px;">
+            <button type="button" class="btn btn--primary" id="btnHeaderSave" style="font-size:12px; padding:5px 14px;">저장</button>
+            <button type="button" class="btn btn--secondary" id="btnHeaderCancel" style="font-size:12px; padding:5px 14px;">취소</button>
+          </div>
+        </div>
+      </div>
+      <div class="card__body" style="padding:0;">
+        <div class="period-split">
+          <!-- 왼쪽: 기간 리스트 -->
+          <div class="period-split__left">
+            <ul class="period-list" id="basicPeriodList">
+              <!-- JS에서 렌더링 -->
+            </ul>
+          </div>
+
+          <!-- 오른쪽: 선택 기간 상세 -->
+          <div class="period-split__right">
+            <div id="basicPeriodDetail">
+              <div class="period-detail__header">
+                <div style="display:flex; align-items:center; gap:12px;">
+                  <strong>적용 기간</strong>
+                  <div class="period-detail__dates">
+                    <input type="date" value="2025-01-01" readonly>
+                    <span>~</span>
+                    <input type="date" value="2025-06-30" readonly>
+                  </div>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <!-- 수정 모드에서만 표시: 모드 토글 -->
+                  <div id="editActionButtons" style="display:none; align-items:center; gap:8px;">
+                    <div class="mode-selector" id="periodModeSelector" style="margin:0;">
+                      <button type="button" class="mode-selector__btn mode-selector__btn--active" data-mode="daily">요일별 설정</button>
+                      <button type="button" class="mode-selector__btn" data-mode="bulk">일괄요금 설정</button>
+                    </div>
+                  </div>
+                  <!-- 조회 모드: 수정/삭제 -->
+                  <div id="viewActionButtons" style="display:flex; gap:6px; align-items:center;">
+                    <button type="button" class="btn--ghost" id="btnEditPeriod" style="font-size:12px; padding:5px 12px;">수정</button>
+                    <button type="button" class="btn--ghost-danger" id="btnDeletePeriod" style="font-size:12px; padding:5px 12px;">삭제</button>
+                  </div>
+                </div>
+              </div>
+
+          <!-- 일괄요금 설정 모드 -->
+          <div id="bulkPricingSection" style="display:none;">
+            <!-- 판매 요일 설정 -->
+            <div id="bulkSaleDaysArea">
+              <div style="padding:16px 16px 4px; font-size:13px; font-weight:600; color:var(--color-gray-600);">판매 요일 설정</div>
+              <div class="day-btn-group" id="bulkDayBtnGroup" style="padding-top:4px;">
+                <button type="button" class="day-btn active" data-day="mon" disabled>월</button>
+                <button type="button" class="day-btn active" data-day="tue" disabled>화</button>
+                <button type="button" class="day-btn active" data-day="wed" disabled>수</button>
+                <button type="button" class="day-btn active" data-day="thu" disabled>목</button>
+                <button type="button" class="day-btn active" data-day="fri" disabled>금</button>
+                <button type="button" class="day-btn active" data-day="sat" disabled>토</button>
+                <button type="button" class="day-btn active" data-day="sun" disabled>일</button>
+              </div>
+            </div>
+
+            <!-- 판매금액 / 주차장 정산금액 / 판매수량 (가로 배치) -->
+            <div class="bulk-inline-fields">
+              <div class="bulk-inline-item">
+                <label class="bulk-inline-label">판매금액</label>
+                <input type="number" class="price-input" id="bulkPrice" value="5000" readonly>
+              </div>
+              <div class="bulk-inline-item">
+                <label class="bulk-inline-label">주차장 정산금액</label>
+                <input type="number" class="price-input" id="bulkSettlement" value="3500" readonly>
+              </div>
+              <div class="bulk-inline-item">
+                <label class="bulk-inline-label">판매수량</label>
+                <input type="number" class="price-input" id="bulkStock" value="10" readonly>
+              </div>
+            </div>
+
+            <!-- 구분선 -->
+            <div style="border-top:1px solid var(--color-gray-200); margin:0 16px;"></div>
+
+            <!-- 공휴일 설정 -->
+            <div class="bulk-holiday-area" id="bulkHolidayArea">
+              <div style="display:flex; align-items:center; gap:10px; padding:16px 16px 8px;">
+                <span style="font-size:13px; font-weight:600; color:var(--color-gray-600);">공휴일</span>
+                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
+                  <input type="checkbox" id="bulkHolidayToggle" checked disabled style="width:16px; height:16px; accent-color:var(--color-primary); cursor:pointer;">
+                  <span style="font-size:13px; color:var(--color-gray-600);">판매</span>
+                </label>
+              </div>
+              <div class="bulk-inline-fields" id="bulkHolidayFields">
+                <div class="bulk-inline-item">
+                  <label class="bulk-inline-label">판매금액</label>
+                  <input type="number" class="price-input" id="bulkHolidayPrice" value="10000" readonly>
+                </div>
+                <div class="bulk-inline-item">
+                  <label class="bulk-inline-label">주차장 정산금액</label>
+                  <input type="number" class="price-input" id="bulkHolidaySettlement" value="7000" readonly>
+                </div>
+                <div class="bulk-inline-item">
+                  <label class="bulk-inline-label">판매수량</label>
+                  <input type="number" class="price-input" id="bulkHolidayStock" value="10" readonly>
+                </div>
+              </div>
             </div>
           </div>
-          <table class="pricing-table" style="margin-top:12px;">
-            <thead>
-              <tr>
-                <th>판매금액</th>
-                <th>주차장 정산금액</th>
-                <th>판매수량</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><input type="number" class="price-input" id="bulkPrice" value="5000" readonly></td>
-                <td><input type="number" class="price-input" id="bulkSettlement" value="3500" readonly></td>
-                <td><input type="number" class="price-input" id="bulkStock" value="10" readonly></td>
-              </tr>
-            </tbody>
-          </table>
-          <p style="font-size:12px; color:var(--color-gray-400); padding:12px 16px; margin:0;">
-            선택한 요일에 동일한 금액과 수량이 적용됩니다.
-          </p>
-        </div>
-      </div>
-    </div>
 
-    <!-- 요일별 설정 모드 -->
-    <div id="dailyPricingSection">
-      <div class="card">
-        <div class="card__header"><h3>기본 판매정책</h3></div>
-        <div class="card__body" style="padding:0;">
-          <table class="pricing-table" id="dailyPricingTable">
-            <thead>
-              <tr>
-                <th style="width:100px;"></th>
-                <th style="width:70px;"></th>
-                <th>판매금액</th>
-                <th>주차장 정산금액</th>
-                <th>판매수량</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr data-day="mon">
-                <td>월요일</td>
-                <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
-                <td><input type="number" class="price-input day-price" value="5000" data-day="mon" readonly></td>
-                <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
-                <td><input type="number" class="price-input day-stock" value="10" readonly></td>
-              </tr>
-              <tr data-day="tue">
-                <td>화요일</td>
-                <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
-                <td><input type="number" class="price-input day-price" value="5000" data-day="tue" readonly></td>
-                <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
-                <td><input type="number" class="price-input day-stock" value="10" readonly></td>
-              </tr>
-              <tr data-day="wed">
-                <td>수요일</td>
-                <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
-                <td><input type="number" class="price-input day-price" value="5000" data-day="wed" readonly></td>
-                <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
-                <td><input type="number" class="price-input day-stock" value="10" readonly></td>
-              </tr>
-              <tr data-day="thu">
-                <td>목요일</td>
-                <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
-                <td><input type="number" class="price-input day-price" value="5000" data-day="thu" readonly></td>
-                <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
-                <td><input type="number" class="price-input day-stock" value="10" readonly></td>
-              </tr>
-              <tr data-day="fri">
-                <td>금요일</td>
-                <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
-                <td><input type="number" class="price-input day-price" value="5000" data-day="fri" readonly></td>
-                <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
-                <td><input type="number" class="price-input day-stock" value="10" readonly></td>
-              </tr>
-              <tr data-day="sat">
-                <td>토요일</td>
-                <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
-                <td><input type="number" class="price-input day-price" value="7000" data-day="sat" readonly></td>
-                <td><input type="number" class="price-input day-settlement" value="4900" readonly></td>
-                <td><input type="number" class="price-input day-stock" value="10" readonly></td>
-              </tr>
-              <tr data-day="sun">
-                <td>일요일</td>
-                <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
-                <td><input type="number" class="price-input day-price" value="7000" data-day="sun" readonly></td>
-                <td><input type="number" class="price-input day-settlement" value="4900" readonly></td>
-                <td><input type="number" class="price-input day-stock" value="10" readonly></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+          <!-- 요일별 설정 모드 -->
+          <div id="dailyPricingSection">
+            <table class="pricing-table" id="dailyPricingTable">
+              <thead>
+                <tr>
+                  <th style="width:80px;"></th>
+                  <th style="width:55px;"></th>
+                  <th>판매금액</th>
+                  <th>정산금액</th>
+                  <th>판매수량</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr data-day="mon">
+                  <td>월요일</td>
+                  <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
+                  <td><input type="number" class="price-input day-price" value="5000" data-day="mon" readonly></td>
+                  <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
+                  <td><input type="number" class="price-input day-stock" value="10" readonly></td>
+                </tr>
+                <tr data-day="tue">
+                  <td>화요일</td>
+                  <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
+                  <td><input type="number" class="price-input day-price" value="5000" data-day="tue" readonly></td>
+                  <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
+                  <td><input type="number" class="price-input day-stock" value="10" readonly></td>
+                </tr>
+                <tr data-day="wed">
+                  <td>수요일</td>
+                  <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
+                  <td><input type="number" class="price-input day-price" value="5000" data-day="wed" readonly></td>
+                  <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
+                  <td><input type="number" class="price-input day-stock" value="10" readonly></td>
+                </tr>
+                <tr data-day="thu">
+                  <td>목요일</td>
+                  <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
+                  <td><input type="number" class="price-input day-price" value="5000" data-day="thu" readonly></td>
+                  <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
+                  <td><input type="number" class="price-input day-stock" value="10" readonly></td>
+                </tr>
+                <tr data-day="fri">
+                  <td>금요일</td>
+                  <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
+                  <td><input type="number" class="price-input day-price" value="5000" data-day="fri" readonly></td>
+                  <td><input type="number" class="price-input day-settlement" value="3500" readonly></td>
+                  <td><input type="number" class="price-input day-stock" value="10" readonly></td>
+                </tr>
+                <tr data-day="sat">
+                  <td>토요일</td>
+                  <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
+                  <td><input type="number" class="price-input day-price" value="7000" data-day="sat" readonly></td>
+                  <td><input type="number" class="price-input day-settlement" value="4900" readonly></td>
+                  <td><input type="number" class="price-input day-stock" value="10" readonly></td>
+                </tr>
+                <tr data-day="sun">
+                  <td>일요일</td>
+                  <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
+                  <td><input type="number" class="price-input day-price" value="7000" data-day="sun" readonly></td>
+                  <td><input type="number" class="price-input day-settlement" value="4900" readonly></td>
+                  <td><input type="number" class="price-input day-stock" value="10" readonly></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-    <!-- 공휴일 판매정책 -->
-    <div class="card" id="sectionHolidayPricing">
-      <div class="card__header"><h3>공휴일 판매정책</h3></div>
-      <div class="card__body" style="padding:0;">
-        <table class="pricing-table" id="holidayPricingTable">
-          <thead>
-            <tr>
-              <th style="width:100px;"></th>
-              <th style="width:70px;"></th>
-              <th>판매금액</th>
-              <th>주차장 정산금액</th>
-              <th>판매수량</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr data-day="holiday">
-              <td>공휴일</td>
-              <td><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
-              <td><input type="number" class="price-input day-price" value="10000" data-day="holiday" readonly></td>
-              <td><input type="number" class="price-input day-settlement" value="7000" readonly></td>
-              <td><input type="number" class="price-input day-stock" value="10" readonly></td>
-            </tr>
-          </tbody>
-        </table>
+          <!-- 공휴일 판매정책 (요일별/일괄 관계없이 독립 섹션) -->
+          <div id="holidayPricingSection" style="border-top:2px solid var(--color-gray-200);">
+            <table class="pricing-table">
+              <tbody>
+                <tr data-day="holiday">
+                  <td style="width:80px; color:var(--color-danger); font-weight:700;">공휴일</td>
+                  <td style="width:55px;"><label class="toggle-switch"><input type="checkbox" checked disabled><span class="slider"></span></label></td>
+                  <td><input type="number" class="price-input holiday-price" value="10000" readonly></td>
+                  <td><input type="number" class="price-input holiday-settlement" value="7000" readonly></td>
+                  <td><input type="number" class="price-input holiday-stock" value="10" readonly></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div><!-- /basicPeriodDetail -->
+          </div><!-- /period-split__right -->
+        </div><!-- /period-split -->
       </div>
     </div>
 
@@ -1235,6 +1411,9 @@ textarea.form-input[readonly] {
   ];
   var nonLongTermRows = [
     document.getElementById('rowKeywords'),
+    document.getElementById('rowReservationType'),
+    document.getElementById('rowResvSaleStartTime'),
+    document.getElementById('rowResvSaleEndTime'),
     document.getElementById('rowPurchaseStart'),
     document.getElementById('rowPurchaseEnd'),
     document.getElementById('rowAirport')
@@ -1247,6 +1426,27 @@ textarea.form-input[readonly] {
     shortTermRows.forEach(function (row) {
       if (row) row.style.display = '';
     });
+
+    /* 유형별 기본 이용가능 시작/종료시간 세팅 */
+    var parkingTimeDefaults = {
+      '당일권':       { start: '00:00', end: '23:59' },
+      '주간권':       { start: '05:00', end: '22:00' },
+      '오전권':       { start: '00:00', end: '12:00' },
+      '오후권':       { start: '12:00', end: '23:59' },
+      '야간권':       { start: '18:00', end: '23:59' },
+      '심야권':       { start: '19:00', end: '07:00' },
+      '시간권(시간대)': { start: '00:00', end: '23:59' },
+      '연박권':       { start: '00:00', end: '23:59' },
+      '기간권':       { start: '00:00', end: '23:59' },
+      '월단위권':     { start: '00:00', end: '23:59' },
+      '일할권':       { start: '00:00', end: '23:59' },
+      '단기권':       { start: '00:00', end: '23:59' }
+    };
+    var defaults = parkingTimeDefaults[typeName] || { start: '00:00', end: '23:59' };
+    var $parkingStart = document.getElementById('parkingStartTime');
+    var $parkingEnd = document.getElementById('parkingEndTime');
+    if ($parkingStart) $parkingStart.value = defaults.start;
+    if ($parkingEnd) $parkingEnd.value = defaults.end;
 
     shortTermOnlyRows.forEach(function (row) {
       if (row) row.style.display = isShortTerm ? '' : 'none';
@@ -1311,29 +1511,31 @@ textarea.form-input[readonly] {
     if ($longTermSections) $longTermSections.style.display = 'none';
   }
 
-  /* ─── 요금 모드 표시 (조회 전용 - 토글 가능) ─── */
-  var $modeSelector = document.getElementById('pricingModeSelector');
-  var $dailySection = document.getElementById('dailyPricingSection');
-  var $bulkSection  = document.getElementById('bulkPricingSection');
+  /* ─── 예매 설정 토글 ─── */
+  (function () {
+    var radios = document.querySelectorAll('input[name="reservationType"]');
+    var $saleStart = document.getElementById('rowResvSaleStartTime');
+    var $saleEnd = document.getElementById('rowResvSaleEndTime');
+    var $purchaseStart = document.getElementById('rowPurchaseStart');
+    var $purchaseEnd = document.getElementById('rowPurchaseEnd');
 
-  $modeSelector.addEventListener('click', function (e) {
-    var btn = e.target.closest('.mode-selector__btn');
-    if (!btn) return;
-    var mode = btn.getAttribute('data-mode');
-
-    $modeSelector.querySelectorAll('.mode-selector__btn').forEach(function (b) {
-      b.classList.remove('mode-selector__btn--active');
-    });
-    btn.classList.add('mode-selector__btn--active');
-
-    if (mode === 'bulk') {
-      $dailySection.style.display = 'none';
-      $bulkSection.style.display = '';
-    } else {
-      $dailySection.style.display = '';
-      $bulkSection.style.display = 'none';
+    function toggleReservationRows() {
+      var val = document.querySelector('input[name="reservationType"]:checked').value;
+      var isAvailable = (val === 'available');
+      $saleStart.style.display = isAvailable ? 'none' : '';
+      $saleEnd.style.display = isAvailable ? 'none' : '';
+      $purchaseStart.style.display = isAvailable ? '' : 'none';
+      $purchaseEnd.style.display = isAvailable ? '' : 'none';
     }
-  });
+
+    radios.forEach(function (r) {
+      r.addEventListener('change', toggleReservationRows);
+    });
+
+    toggleReservationRows();
+  })();
+
+  /* ─── 요금 모드 표시: 기간별 상세영역 내 periodModeSelector로 이동됨 ─── */
 
   /* ─── 일반권 템플릿 (읽기 전용 렌더링) ─── */
   var GN_TEMPLATES = {
@@ -1967,6 +2169,372 @@ textarea.form-input[readonly] {
       return getStatus(s.startDate, s.endDate) === 'active';
     });
     if (hasActive) expandSection();
+  })();
+
+  /* ================================================================
+     기간별 판매정책 관리 (기본판매정책 / 공휴일정책)
+     ================================================================ */
+  (function () {
+    /* ── 목업 데이터 ── */
+    var basicPeriods = [
+      { id: 1, start: '2025-01-01', end: '2025-06-30', mode: 'daily' },
+      { id: 2, start: '2025-07-01', end: '',            mode: 'bulk'  }
+    ];
+    var basicNextId = 3;
+
+    /* ── 유틸 ── */
+    function parseDate(s) { return s ? new Date(s + 'T00:00:00') : null; }
+
+    function periodsOverlap(periods, newStart, newEnd, excludeId) {
+      var ns = parseDate(newStart);
+      var ne = newEnd ? parseDate(newEnd) : new Date('9999-12-31');
+      for (var i = 0; i < periods.length; i++) {
+        var p = periods[i];
+        if (p.id === excludeId) continue;
+        var ps = parseDate(p.start);
+        var pe = p.end ? parseDate(p.end) : new Date('9999-12-31');
+        if (ns <= pe && ne >= ps) return true;
+      }
+      return false;
+    }
+
+    /* ── 기본판매정책 기간 리스트 ── */
+    var $basicList = document.getElementById('basicPeriodList');
+    var $basicDetail = document.getElementById('basicPeriodDetail');
+    var $btnAddBasic = document.getElementById('btnAddBasicPeriod');
+    var $headerAddActions = document.getElementById('headerAddActions');
+    var $btnHeaderSave = document.getElementById('btnHeaderSave');
+    var $btnHeaderCancel = document.getElementById('btnHeaderCancel');
+    var basicSelected = 1;
+
+    var editingId = null; /* 현재 수정 중인 기간 id (null이면 조회 모드) */
+    var editSnapshot = null; /* 수정 전 상태 스냅샷 (취소 시 복원용) */
+
+    /* 현재 우측 패널의 모든 입력값을 스냅샷으로 저장 */
+    function captureSnapshot(p) {
+      var snap = { start: p.start, end: p.end, mode: p.mode };
+      /* 요일별 섹션 */
+      snap.daily = [];
+      $dailySection.querySelectorAll('tr[data-day]').forEach(function (tr) {
+        var day = tr.getAttribute('data-day');
+        var toggle = tr.querySelector('.toggle-switch input[type="checkbox"]');
+        var prices = [];
+        tr.querySelectorAll('input.price-input').forEach(function (inp) { prices.push(inp.value); });
+        snap.daily.push({ day: day, checked: toggle ? toggle.checked : true, prices: prices });
+      });
+      /* 일괄 섹션 */
+      snap.bulk = {};
+      snap.bulk.prices = [];
+      $bulkSection.querySelectorAll('input.price-input').forEach(function (inp) { snap.bulk.prices.push(inp.value); });
+      snap.bulk.days = [];
+      $bulkSection.querySelectorAll('.day-btn').forEach(function (btn) {
+        snap.bulk.days.push({ day: btn.textContent, active: btn.classList.contains('day-btn--active') });
+      });
+      var bulkHToggle = $bulkSection.querySelector('#bulkHolidayRow .toggle-switch input[type="checkbox"]');
+      snap.bulk.holidayChecked = bulkHToggle ? bulkHToggle.checked : true;
+      /* 공휴일 섹션 */
+      var $holiday = document.getElementById('holidayPricingSection');
+      snap.holiday = {};
+      var hToggle = $holiday.querySelector('.toggle-switch input[type="checkbox"]');
+      snap.holiday.checked = hToggle ? hToggle.checked : true;
+      snap.holiday.prices = [];
+      $holiday.querySelectorAll('input.price-input').forEach(function (inp) { snap.holiday.prices.push(inp.value); });
+      return snap;
+    }
+
+    /* 스냅샷으로 우측 패널 복원 */
+    function restoreSnapshot(p, snap) {
+      p.start = snap.start;
+      p.end = snap.end;
+      p.mode = snap.mode;
+      /* 요일별 섹션 */
+      var dailyRows = $dailySection.querySelectorAll('tr[data-day]');
+      snap.daily.forEach(function (s, i) {
+        if (!dailyRows[i]) return;
+        var toggle = dailyRows[i].querySelector('.toggle-switch input[type="checkbox"]');
+        if (toggle) toggle.checked = s.checked;
+        var inputs = dailyRows[i].querySelectorAll('input.price-input');
+        s.prices.forEach(function (v, j) { if (inputs[j]) inputs[j].value = v; });
+      });
+      /* 일괄 섹션 */
+      var bulkInputs = $bulkSection.querySelectorAll('input.price-input');
+      snap.bulk.prices.forEach(function (v, i) { if (bulkInputs[i]) bulkInputs[i].value = v; });
+      var dayBtns = $bulkSection.querySelectorAll('.day-btn');
+      snap.bulk.days.forEach(function (s, i) {
+        if (!dayBtns[i]) return;
+        dayBtns[i].classList.toggle('day-btn--active', s.active);
+      });
+      var bulkHToggle = $bulkSection.querySelector('#bulkHolidayRow .toggle-switch input[type="checkbox"]');
+      if (bulkHToggle) bulkHToggle.checked = snap.bulk.holidayChecked;
+      /* 공휴일 섹션 */
+      var $holiday = document.getElementById('holidayPricingSection');
+      var hToggle = $holiday.querySelector('.toggle-switch input[type="checkbox"]');
+      if (hToggle) hToggle.checked = snap.holiday.checked;
+      var hInputs = $holiday.querySelectorAll('input.price-input');
+      snap.holiday.prices.forEach(function (v, i) { if (hInputs[i]) hInputs[i].value = v; });
+    }
+
+    /* 오늘 날짜 문자열 */
+    var todayStr = (function () {
+      var d = new Date();
+      var mm = ('0' + (d.getMonth() + 1)).slice(-2);
+      var dd = ('0' + d.getDate()).slice(-2);
+      return d.getFullYear() + '-' + mm + '-' + dd;
+    })();
+
+    function isExpired(p) {
+      return p.end && p.end < todayStr;
+    }
+
+    function getSorted() {
+      var active = basicPeriods.filter(function (p) { return !isExpired(p); });
+      var expired = basicPeriods.filter(function (p) { return isExpired(p); });
+      active.sort(function (a, b) { return a.start.localeCompare(b.start); });
+      expired.sort(function (a, b) { return a.start.localeCompare(b.start); });
+      return active.concat(expired);
+    }
+
+    function renderBasicList() {
+      $basicList.innerHTML = '';
+      var sorted = getSorted();
+      sorted.forEach(function (p) {
+        var li = document.createElement('li');
+        li.className = 'period-list__item';
+        li.setAttribute('data-period', p.id);
+        if (p.id === basicSelected) li.classList.add('selected');
+        if (isExpired(p)) li.classList.add('expired');
+        var endLabel = p.end || '종료일 없음';
+        li.innerHTML =
+          '<div class="period-list__dates">' + p.start + ' ~ ' + endLabel + '</div>' +
+          (isExpired(p) ? '<div class="period-list__meta"><span>종료</span></div>' : '');
+        $basicList.appendChild(li);
+      });
+    }
+
+    var $periodModeSelector = document.getElementById('periodModeSelector');
+    var $dailySection = document.getElementById('dailyPricingSection');
+    var $bulkSection  = document.getElementById('bulkPricingSection');
+    var $viewActions  = document.getElementById('viewActionButtons');
+    var $editActions  = document.getElementById('editActionButtons');
+    var $btnEdit      = document.getElementById('btnEditPeriod');
+    var $btnDelete    = document.getElementById('btnDeletePeriod');
+    var $btnSave      = document.getElementById('btnHeaderSave');
+    var $btnCancel    = document.getElementById('btnHeaderCancel');
+
+    var $holidaySection = document.getElementById('holidayPricingSection');
+
+    function applyMode(mode) {
+      if (mode === 'bulk') {
+        $dailySection.style.display = 'none';
+        $bulkSection.style.display = '';
+        $holidaySection.style.display = 'none';
+      } else {
+        $dailySection.style.display = '';
+        $bulkSection.style.display = 'none';
+        $holidaySection.style.display = '';
+      }
+      $periodModeSelector.querySelectorAll('.mode-selector__btn').forEach(function (b) {
+        b.classList.toggle('mode-selector__btn--active', b.getAttribute('data-mode') === mode);
+      });
+    }
+
+    /* ── 수정/조회 모드 전환 ── */
+    function setEditMode(enabled) {
+      $viewActions.style.display = enabled ? 'none' : 'flex';
+      $editActions.style.display = enabled ? 'flex' : 'none';
+
+      /* 날짜 입력 */
+      var datesContainer = $basicDetail.querySelector('.period-detail__dates');
+      var noEndSpan = datesContainer.querySelector('.no-end-date');
+      if (enabled && noEndSpan) {
+        var inp = document.createElement('input');
+        inp.type = 'date'; inp.value = '';
+        noEndSpan.replaceWith(inp);
+      } else if (!enabled) {
+        var endInput = datesContainer.querySelectorAll('input[type="date"]')[1];
+        if (endInput && !endInput.value) {
+          var span = document.createElement('span');
+          span.className = 'no-end-date';
+          span.textContent = '종료일 없음';
+          endInput.replaceWith(span);
+        }
+      }
+      datesContainer.querySelectorAll('input[type="date"]').forEach(function (inp) {
+        if (enabled) inp.removeAttribute('readonly'); else inp.setAttribute('readonly', '');
+      });
+
+      /* 요일별 가격 입력 */
+      $dailySection.querySelectorAll('input.price-input').forEach(function (inp) {
+        if (enabled) inp.removeAttribute('readonly'); else inp.setAttribute('readonly', '');
+      });
+      $dailySection.querySelectorAll('.toggle-switch input[type="checkbox"]').forEach(function (cb) {
+        if (enabled) cb.removeAttribute('disabled'); else cb.setAttribute('disabled', '');
+      });
+
+      /* 일괄 가격 입력 (공휴일 포함) */
+      $bulkSection.querySelectorAll('input.price-input').forEach(function (inp) {
+        if (enabled) inp.removeAttribute('readonly'); else inp.setAttribute('readonly', '');
+      });
+      $bulkSection.querySelectorAll('.day-btn').forEach(function (btn) {
+        if (enabled) btn.removeAttribute('disabled'); else btn.setAttribute('disabled', '');
+      });
+      $bulkSection.querySelectorAll('.toggle-switch input[type="checkbox"]').forEach(function (cb) {
+        if (enabled) cb.removeAttribute('disabled'); else cb.setAttribute('disabled', '');
+      });
+
+      /* 공휴일 가격 입력 */
+      var $holiday = document.getElementById('holidayPricingSection');
+      $holiday.querySelectorAll('input.price-input').forEach(function (inp) {
+        if (enabled) inp.removeAttribute('readonly'); else inp.setAttribute('readonly', '');
+      });
+      $holiday.querySelectorAll('.toggle-switch input[type="checkbox"]').forEach(function (cb) {
+        if (enabled) cb.removeAttribute('disabled'); else cb.setAttribute('disabled', '');
+      });
+    }
+
+    function renderBasicDetail() {
+      var p = basicPeriods.filter(function (x) { return x.id === basicSelected; })[0];
+      if (!p) { $basicDetail.style.display = 'none'; return; }
+      $basicDetail.style.display = '';
+      var dates = $basicDetail.querySelector('.period-detail__dates');
+      dates.innerHTML =
+        '<input type="date" value="' + p.start + '" readonly>' +
+        '<span>~</span>' +
+        (p.end
+          ? '<input type="date" value="' + p.end + '" readonly>'
+          : '<span class="no-end-date">종료일 없음</span>');
+      applyMode(p.mode || 'daily');
+      setEditMode(editingId === p.id);
+      /* 종료된 기간은 수정 불가 */
+      $btnEdit.style.display = isExpired(p) ? 'none' : '';
+      /* 헤더: 수정/추가 중이면 저장/취소 표시, 아니면 기간추가 버튼 표시 */
+      var editing = !!editingId;
+      $btnAddBasic.style.display = editing ? 'none' : '';
+      $headerAddActions.style.display = editing ? 'flex' : 'none';
+    }
+
+    /* 기간 내 모드 전환 (수정 모드에서만 작동) */
+    $periodModeSelector.addEventListener('click', function (e) {
+      if (!editingId) return;
+      var btn = e.target.closest('.mode-selector__btn');
+      if (!btn) return;
+      var mode = btn.getAttribute('data-mode');
+      var p = basicPeriods.filter(function (x) { return x.id === basicSelected; })[0];
+      if (p) p.mode = mode;
+      applyMode(mode);
+    });
+
+    /* 리스트 클릭: 항목 선택 */
+    $basicList.addEventListener('click', function (e) {
+      var li = e.target.closest('[data-period]');
+      if (!li) return;
+      basicSelected = parseInt(li.getAttribute('data-period'));
+      editingId = null;
+      renderBasicList();
+      renderBasicDetail();
+    });
+
+    /* 수정 버튼 (오른쪽 패널) */
+    $btnEdit.addEventListener('click', function () {
+      if (!basicSelected) return;
+      var p = basicPeriods.filter(function (x) { return x.id === basicSelected; })[0];
+      if (p && isExpired(p)) return;
+      /* 수정 전 상태 스냅샷 저장 */
+      editSnapshot = captureSnapshot(p);
+      editingId = basicSelected;
+      renderBasicList();
+      renderBasicDetail();
+    });
+
+    /* 삭제 버튼 (오른쪽 패널) */
+    $btnDelete.addEventListener('click', function () {
+      if (!basicSelected) return;
+      if (!confirm('이 기간 정책을 삭제하시겠습니까?')) return;
+      basicPeriods = basicPeriods.filter(function (x) { return x.id !== basicSelected; });
+      var sorted = getSorted();
+      basicSelected = sorted.length ? sorted[0].id : 0;
+      editingId = null;
+      renderBasicList();
+      renderBasicDetail();
+    });
+
+    /* 저장 */
+    $btnSave.addEventListener('click', function () {
+      var p = basicPeriods.filter(function (x) { return x.id === editingId; })[0];
+      if (!p) return;
+      var dateInputs = $basicDetail.querySelectorAll('.period-detail__dates input[type="date"]');
+      var newStart = dateInputs[0].value;
+      var newEnd = dateInputs[1] ? dateInputs[1].value : '';
+      if (!newStart) { alert('시작일을 입력하세요.'); return; }
+      if (newEnd && parseDate(newEnd) < parseDate(newStart)) { alert('종료일은 시작일 이후여야 합니다.'); return; }
+
+      /* 종료일 없는 기존 정책 → 신규 시작일 전날로 자동 마감 */
+      var autoClosedNames = [];
+      basicPeriods.forEach(function (op) {
+        if (op.id === editingId) return;
+        if (!op.end && parseDate(op.start) < parseDate(newStart)) {
+          op.end = dayBefore(newStart);
+          autoClosedNames.push(op.start + ' ~ ' + op.end);
+        }
+      });
+
+      if (periodsOverlap(basicPeriods, newStart, newEnd, editingId)) { alert('기존 기간과 겹칩니다.'); return; }
+      p.start = newStart;
+      p.end = newEnd;
+      editSnapshot = null;
+      editingId = null;
+      isNewPeriod = false;
+      renderBasicList();
+      renderBasicDetail();
+
+      if (autoClosedNames.length) {
+        alert('기존 종료일 없는 정책의 종료일이 자동 설정되었습니다:\n' + autoClosedNames.join('\n'));
+      }
+    });
+
+    /* 취소 → 신규면 삭제, 기존이면 스냅샷 복원 */
+    $btnCancel.addEventListener('click', function () {
+      if (isNewPeriod && editingId) {
+        /* 신규 추가 후 취소 → 생성된 기간 삭제 */
+        basicPeriods = basicPeriods.filter(function (x) { return x.id !== editingId; });
+        var sorted = getSorted();
+        basicSelected = sorted.length ? sorted[0].id : 0;
+      } else if (editSnapshot && editingId) {
+        var p = basicPeriods.filter(function (x) { return x.id === editingId; })[0];
+        if (p) restoreSnapshot(p, editSnapshot);
+      }
+      editSnapshot = null;
+      editingId = null;
+      isNewPeriod = false;
+      renderBasicList();
+      renderBasicDetail();
+    });
+
+    /* 날짜를 하루 전으로 계산 (YYYY-MM-DD 문자열 반환) */
+    function dayBefore(dateStr) {
+      var d = new Date(dateStr + 'T00:00:00');
+      d.setDate(d.getDate() - 1);
+      var mm = ('0' + (d.getMonth() + 1)).slice(-2);
+      var dd = ('0' + d.getDate()).slice(-2);
+      return d.getFullYear() + '-' + mm + '-' + dd;
+    }
+
+    var isNewPeriod = false; /* 신규 추가 중 여부 (취소 시 삭제용) */
+
+    $btnAddBasic.addEventListener('click', function () {
+      /* 빈 기간으로 생성 → 우측 패널 수정 모드에서 직접 날짜 입력 */
+      basicPeriods.push({ id: basicNextId, start: '', end: '', mode: 'daily' });
+      basicSelected = basicNextId;
+      editingId = basicNextId;
+      isNewPeriod = true;
+      basicNextId++;
+      renderBasicList();
+      renderBasicDetail();
+    });
+
+    /* 초기 렌더링 */
+    renderBasicList();
+    renderBasicDetail();
   })();
 
 })();
