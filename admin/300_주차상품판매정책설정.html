@@ -6,6 +6,7 @@
 <title>제휴주차권 생성 - 모두의주차장 관리자</title>
 <link rel="stylesheet" href="common.css">
 <script src="nav-menu.js"></script>
+<script src="shared.js"></script>
 <script src="mockup-info.js"></script>
 <style>
 /* ============================================================
@@ -14,82 +15,9 @@
 
 /* Main content max-width override */
 .main { max-width: calc(var(--lnb-w) + 960px); }
-
-/* Pricing Section */
-.pricing-table {
-  width: 100%; max-width: 720px;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 13.5px;
-}
-.pricing-table thead th {
-  background: var(--color-gray-50);
-  padding: 12px 16px;
-  font-size: 12px; font-weight: 600; color: var(--color-gray-500);
-  text-align: center; text-transform: uppercase; letter-spacing: 0.03em;
-  border-bottom: 1px solid var(--color-gray-200);
-}
-.pricing-table thead th:first-child { text-align: left; }
-.pricing-table tbody td {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--color-gray-100);
-  text-align: center;
-  vertical-align: middle;
-}
-.pricing-table tbody tr:last-child td { border-bottom: none; }
-.pricing-table tbody td:first-child {
-  text-align: left; font-weight: 600; color: var(--color-gray-700);
-}
-.price-input {
-  width: 100%; max-width: 130px;
-  height: 36px; padding: 6px 10px;
-  font-size: 13.5px;
-  border: 1px solid var(--color-gray-300);
-  border-radius: var(--radius-sm);
-  text-align: right; outline: none;
-  transition: border-color var(--transition);
-  background: var(--color-white);
-  color: var(--color-gray-800);
-}
-.price-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
-}
-.price-input[readonly] {
-  background: var(--color-gray-50); color: var(--color-gray-400); cursor: default;
-}
-.price-input:disabled {
-  background: var(--color-gray-100); color: var(--color-gray-300); opacity: 0.7;
-}
-
-/* Mode Selector */
-.mode-selector {
-  display: inline-flex;
-  background: var(--color-white);
-  border: 1px solid var(--color-gray-200);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-.mode-selector__btn {
-  padding: 10px 24px;
-  font-size: 14px; font-weight: 600;
-  color: var(--color-gray-500);
-  background: var(--color-white);
-  border: none; cursor: pointer;
-  transition: background var(--transition), color var(--transition);
-  border-right: 1px solid var(--color-gray-200);
-  font-family: inherit;
-  display: inline-flex; align-items: center; gap: 6px;
-}
-.mode-selector__btn:last-child { border-right: none; }
-.mode-selector__btn:hover { background: var(--color-gray-50); }
-.mode-selector__btn--active {
-  background: var(--color-primary);
-  color: var(--color-white);
-}
-.mode-selector__btn--active:hover { background: var(--color-primary-hover); }
+.pricing-table { max-width: 720px; }
+.pricing-table thead th { padding: 12px 16px; text-transform: uppercase; }
+.pricing-table tbody td { padding: 12px 16px; }
 
 /* User Input Info Section */
 .user-input-mode {
@@ -190,46 +118,6 @@
   background: var(--color-primary-light);
 }
 
-/* ─── 판매정책 기간 관리 ─── */
-.period-list { display: flex; flex-direction: column; gap: 6px; }
-.period-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 8px 12px;
-  background: var(--color-gray-50);
-  border: 1px solid var(--color-gray-200);
-  border-radius: var(--radius-sm);
-  font-size: 13px; color: var(--color-gray-700);
-}
-.period-item__dates { font-weight: 500; }
-.period-item__delete {
-  margin-left: auto;
-  padding: 2px 8px; font-size: 12px; font-family: inherit;
-  color: var(--color-gray-400); background: none; border: 1px solid var(--color-gray-200);
-  border-radius: var(--radius-sm); cursor: pointer; transition: all var(--transition);
-}
-.period-item__delete:hover { color: var(--color-danger); border-color: var(--color-danger); }
-.period-edit-area {
-  display: flex; align-items: center; gap: 8px;
-  margin-top: 8px; padding: 10px 12px;
-  background: var(--color-primary-light); border: 1px dashed var(--color-primary);
-  border-radius: var(--radius-sm);
-}
-.period-edit-area input[type="date"] { max-width: 160px; }
-.period-action-bar { margin-top: 10px; }
-.period-action-bar .btn { min-width: 64px; }
-
-/* ─── 일괄요금 인라인 필드 ─── */
-.bulk-inline-fields {
-  display: flex; align-items: flex-end; gap: 20px;
-  padding: 16px;
-}
-.bulk-inline-item {
-  display: flex; flex-direction: column; gap: 6px;
-}
-.bulk-inline-label {
-  font-size: 12px; font-weight: 600; color: var(--color-gray-500);
-}
-.bulk-inline-item .price-input { max-width: 140px; }
 </style>
 </head>
 <body>
@@ -275,7 +163,7 @@
           </tr>
           <tr>
             <th>주차장 담당자</th>
-            <td><input type="text" class="form-input" id="parkingManager" value="프레디(프레디)" readonly></td>
+            <td><input type="text" class="form-input" id="parkingManager" value="담당자C" readonly></td>
           </tr>
           <tr>
             <th>주차장 이름</th>
@@ -356,26 +244,12 @@
             <td><input type="text" class="form-input form-input--lg" id="ticketMemo" placeholder="주차권 메모를 입력하세요"></td>
           </tr>
           <tr>
-            <th>판매정책 기간</th>
-            <td>
-              <div class="period-list" id="periodList">
-                <!-- 기존 기간 항목 (JS에서 렌더링) -->
-              </div>
-              <!-- 새 기간 입력 영역 (기간추가 시 표시) -->
-              <div class="period-edit-area" id="periodEditArea" style="display:none;">
-                <input type="date" class="form-input form-input--md" id="newPeriodStart">
-                <span style="color:var(--color-gray-400);">~</span>
-                <input type="date" class="form-input form-input--md" id="newPeriodEnd">
-              </div>
-              <!-- 기간추가 / 저장·취소 버튼 -->
-              <div class="period-action-bar">
-                <button type="button" class="ui-add-btn" id="btnAddPeriod">+ 기간추가</button>
-                <div id="periodSaveCancelBtns" style="display:none;">
-                  <button type="button" class="btn btn--primary" id="btnSavePeriod" style="padding:7px 20px; font-size:13px;">저장</button>
-                  <button type="button" class="btn btn--secondary" id="btnCancelPeriod" style="padding:7px 20px; font-size:13px;">취소</button>
-                </div>
-              </div>
-            </td>
+            <th>판매 시작일</th>
+            <td><input type="date" class="form-input form-input--md" id="saleStartDate"></td>
+          </tr>
+          <tr>
+            <th>판매 종료일</th>
+            <td><input type="date" class="form-input form-input--md" id="saleEndDate"></td>
           </tr>
           <tr id="rowSaleStartTime" style="display:none;">
             <th>판매 시작시간</th>
@@ -1138,18 +1012,6 @@
 (function () {
   'use strict';
 
-  /* ─── Footer: file last modified date ─── */
-  (function initFooter() {
-    var footer = document.getElementById('appFooter');
-    var lastMod = new Date(document.lastModified);
-    var yyyy = lastMod.getFullYear();
-    var MM = String(lastMod.getMonth() + 1).padStart(2, '0');
-    var dd = String(lastMod.getDate()).padStart(2, '0');
-    var hh = String(lastMod.getHours()).padStart(2, '0');
-    var mm = String(lastMod.getMinutes()).padStart(2, '0');
-    footer.textContent = '© 2026. 주차권예매서비스. 최종업데이트 : ' + yyyy + '.' + MM + '.' + dd + ' ' + hh + ':' + mm;
-  })();
-
   /* ─── State ─── */
   var state = {
     deadlineUnit: 'hour',
@@ -1158,7 +1020,6 @@
   };
 
   /* ─── DOM refs ─── */
-  var $toastContainer = document.getElementById('toastContainer');
   var $settlementRate = document.getElementById('settlementRate');
 
   /* ─── DOM refs (deadline) ─── */
@@ -1205,29 +1066,8 @@
     $startUnitLabel.textContent = UNIT_KR[newUnit] + ' 전까지';
   });
 
-  /* ─── 예매 설정 토글 ─── */
-  (function () {
-    var radios = document.querySelectorAll('input[name="reservationType"]');
-    var $saleStart = document.getElementById('rowResvSaleStartTime');
-    var $saleEnd = document.getElementById('rowResvSaleEndTime');
-    var $purchaseStart = document.getElementById('rowPurchaseStart');
-    var $purchaseEnd = document.getElementById('rowPurchaseEnd');
-
-    function toggleReservationRows() {
-      var val = document.querySelector('input[name="reservationType"]:checked').value;
-      var isAvailable = (val === 'available');
-      $saleStart.style.display = isAvailable ? 'none' : '';
-      $saleEnd.style.display = isAvailable ? 'none' : '';
-      $purchaseStart.style.display = isAvailable ? '' : 'none';
-      $purchaseEnd.style.display = isAvailable ? '' : 'none';
-    }
-
-    radios.forEach(function (r) {
-      r.addEventListener('change', toggleReservationRows);
-    });
-
-    toggleReservationRows();
-  })();
+  /* ─── 예매 설정 토글 (shared.js) ─── */
+  Shared.initReservationTypeToggle();
 
   /* ─── 주차권 유형별 기본값 ─── */
   var TICKET_TYPE_DEFAULTS = {
@@ -1489,10 +1329,9 @@
     if ($bulkSaleDaysArea) $bulkSaleDaysArea.style.display = isLongTerm ? 'none' : '';
   }
 
-  /* ─── Settlement calculation ─── */
+  /* ─── Settlement calculation (shared.js) ─── */
   function calcSettlement(price) {
-    var rate = parseFloat($settlementRate.value) || 0;
-    return Math.round(price * rate / 100);
+    return Shared.calcSettlement(price, 'settlementRate');
   }
 
   document.querySelectorAll('.day-price').forEach(function (input) {
@@ -1608,17 +1447,11 @@
   $ltRenewalPrice.addEventListener('input', calcRenewalSettlement);
   $ltRenewalRatio.addEventListener('input', calcRenewalSettlement);
 
-  /* ─── 안내메시지 글자수 카운터 ─── */
-  function bindCounter(textareaId, counterId) {
-    var ta = document.getElementById(textareaId);
-    var ct = document.getElementById(counterId);
-    if (!ta || !ct) return;
-    ta.addEventListener('input', function () { ct.textContent = ta.value.length; });
-  }
-  bindCounter('ltNotice', 'ltNoticeCount');
-  bindCounter('ltBeforeWarning', 'ltBeforeCount');
-  bindCounter('ltAfterWarning', 'ltAfterCount');
-  bindCounter('ltTicketNotice', 'ltTicketNoticeCount');
+  /* ─── 안내메시지 글자수 카운터 (shared.js) ─── */
+  Shared.bindCounter('ltNotice', 'ltNoticeCount');
+  Shared.bindCounter('ltBeforeWarning', 'ltBeforeCount');
+  Shared.bindCounter('ltAfterWarning', 'ltAfterCount');
+  Shared.bindCounter('ltTicketNotice', 'ltTicketNoticeCount');
 
   /* ─── 안내메시지 타입 토글 (KAKAO/SMS) ─── */
   var ltMsgRadios = document.querySelectorAll('input[name="ltMsgType"]');
@@ -1667,11 +1500,11 @@
      일반권/단기권 안내메시지 JS
      ═══════════════════════════════════════════════════════ */
 
-  /* ─── 글자수 카운터 ─── */
-  bindCounter('gnNotice', 'gnNoticeCount');
-  bindCounter('gnBeforeWarning', 'gnBeforeCount');
-  bindCounter('gnAfterWarning', 'gnAfterCount');
-  bindCounter('gnTicketNotice', 'gnTicketNoticeCount');
+  /* ─── 글자수 카운터 (shared.js) ─── */
+  Shared.bindCounter('gnNotice', 'gnNoticeCount');
+  Shared.bindCounter('gnBeforeWarning', 'gnBeforeCount');
+  Shared.bindCounter('gnAfterWarning', 'gnAfterCount');
+  Shared.bindCounter('gnTicketNotice', 'gnTicketNoticeCount');
 
   var $gnPosition = document.getElementById('gnPosition');
   var $gnPositionCount = document.getElementById('gnPositionCount');
@@ -1833,105 +1666,6 @@
   /* 초기 렌더 */
   renderUserInputTable();
 
-
-  /* ═══════════════════════════════════════════════════════════
-     판매정책 기간 관리
-     ═══════════════════════════════════════════════════════════ */
-  var salePeriods = [
-    { start: '', end: '2099-12-31' }
-  ];
-  var periodEditing = false; // 기간 추가 task 진행 중 여부
-
-  var $periodList       = document.getElementById('periodList');
-  var $periodEditArea   = document.getElementById('periodEditArea');
-  var $btnAddPeriod     = document.getElementById('btnAddPeriod');
-  var $periodSaveCancel = document.getElementById('periodSaveCancelBtns');
-  var $newPeriodStart   = document.getElementById('newPeriodStart');
-  var $newPeriodEnd     = document.getElementById('newPeriodEnd');
-
-  function renderPeriodList() {
-    var html = '';
-    for (var i = 0; i < salePeriods.length; i++) {
-      var p = salePeriods[i];
-      var startLabel = p.start || '(미지정)';
-      html += '<div class="period-item" data-idx="' + i + '">'
-            +   '<span class="period-item__dates">' + startLabel + ' ~ ' + p.end + '</span>'
-            +   '<button type="button" class="period-item__delete" data-idx="' + i + '">삭제</button>'
-            + '</div>';
-    }
-    if (salePeriods.length === 0) {
-      html = '<div style="font-size:13px; color:var(--color-gray-400); padding:8px 0;">등록된 기간이 없습니다.</div>';
-    }
-    $periodList.innerHTML = html;
-  }
-
-  function enterPeriodEditMode() {
-    periodEditing = true;
-    $newPeriodStart.value = '';
-    $newPeriodEnd.value = '';
-    $periodEditArea.style.display = 'flex';
-    $btnAddPeriod.style.display = 'none';
-    $periodSaveCancel.style.cssText = 'display:inline-flex; gap:6px; margin-top:8px;';
-    $newPeriodStart.focus();
-  }
-
-  function exitPeriodEditMode() {
-    periodEditing = false;
-    $periodEditArea.style.display = 'none';
-    $btnAddPeriod.style.display = '';
-    $periodSaveCancel.style.cssText = 'display:none;';
-  }
-
-  $btnAddPeriod.addEventListener('click', function () {
-    if (periodEditing) return; // 이미 편집 중이면 무시
-    enterPeriodEditMode();
-  });
-
-  document.getElementById('btnSavePeriod').addEventListener('click', function () {
-    var start = $newPeriodStart.value;
-    var end   = $newPeriodEnd.value;
-    if (!start || !end) {
-      showToast('시작일과 종료일을 모두 입력하세요.', 'error');
-      return;
-    }
-    if (start > end) {
-      showToast('종료일은 시작일 이후여야 합니다.', 'error');
-      return;
-    }
-    salePeriods.push({ start: start, end: end });
-    renderPeriodList();
-    exitPeriodEditMode();
-    showToast('기간이 추가되었습니다.', 'success');
-  });
-
-  document.getElementById('btnCancelPeriod').addEventListener('click', function () {
-    exitPeriodEditMode();
-  });
-
-  $periodList.addEventListener('click', function (e) {
-    var btn = e.target.closest('.period-item__delete');
-    if (!btn) return;
-    var idx = parseInt(btn.getAttribute('data-idx'), 10);
-    if (isNaN(idx)) return;
-    salePeriods.splice(idx, 1);
-    renderPeriodList();
-  });
-
-  /* 초기 렌더 */
-  renderPeriodList();
-
-
-  /* ─── Toast ─── */
-  function showToast(message, type) {
-    var toast = document.createElement('div');
-    toast.className = 'toast toast--' + (type || 'success');
-    toast.innerHTML = '<span>' + message + '</span>';
-    $toastContainer.appendChild(toast);
-    setTimeout(function () {
-      toast.classList.add('toast--out');
-      setTimeout(function () { toast.remove(); }, 260);
-    }, 3000);
-  }
 
   /* ─── Save ─── */
   window.handleSave = function () {

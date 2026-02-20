@@ -63,6 +63,7 @@
         { label: '제휴주차장 관리', href: '#' },
         { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true, badge: '변경' },
         { label: '제휴상품상세', href: '320_제휴상품상세.html', indent: true, badge: '변경' },
+        { label: '판매정책 캘린더뷰', href: '325_판매정책_캘린더뷰.html', indent: true, badge: '변경' },
         { label: '월주차 현황', href: '#' },
         { label: '월주차 신청', href: '#' },
         { label: '거래처(BP)', href: '#' },

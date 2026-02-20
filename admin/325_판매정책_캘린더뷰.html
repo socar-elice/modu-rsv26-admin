@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>판매정책 캘린더뷰 - 모두의주차장 관리자</title>
+<link rel="stylesheet" href="common.css">
+<script src="nav-menu.js"></script>
+<script src="mockup-info.js"></script>
+<style>
+/* ============================================================
+   Page-specific: 325_판매정책_캘린더뷰
+   Namespace prefix: .pcal-
+   ============================================================ */
+
+.main { max-width: calc(var(--lnb-w) + 1060px); }
+
+/* ─── Product Summary ─── */
+.pcal-summary {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.pcal-summary__item {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 13px; color: var(--color-gray-600);
+}
+.pcal-summary__item strong {
+  color: var(--color-gray-900); font-weight: 600;
+}
+.pcal-summary__divider {
+  width: 1px; height: 16px; background: var(--color-gray-200);
+}
+
+/* ─── Month Navigation ─── */
+.pcal-month-nav {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 20px;
+}
+.pcal-month-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  background: var(--color-white); color: var(--color-gray-700);
+  cursor: pointer; transition: all 0.15s;
+  font-size: 16px;
+}
+.pcal-month-btn:hover {
+  border-color: var(--color-primary); color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+.pcal-month-label {
+  font-size: 20px; font-weight: 700;
+  color: var(--color-gray-900); min-width: 140px; text-align: center;
+}
+.pcal-month-input {
+  height: 36px; padding: 0 12px;
+  font-size: 13px; border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-sm); background: var(--color-white);
+  color: var(--color-gray-900); outline: none; cursor: pointer;
+  font-family: inherit;
+}
+.pcal-month-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(59,130,246,0.12);
+}
+
+/* ─── Legend ─── */
+.pcal-legend {
+  display: flex; align-items: center; gap: 16px; margin-left: auto;
+  flex-shrink: 0;
+}
+.pcal-legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 12px; color: var(--color-gray-500);
+}
+.pcal-legend-dot {
+  width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0;
+}
+.pcal-legend-dot--base { background: #64748b; }
+.pcal-legend-dot--event { background: #d97706; }
+.pcal-legend-dot--holiday { background: #dc2626; }
+.pcal-legend-dot--closed { background: #d1d5db; }
+
+/* ─── Calendar Grid ─── */
+.pcal-calendar-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin-bottom: 20px;
+  width: 100%;
+}
+.pcal-calendar-grid {
+  display: grid; grid-template-columns: repeat(7, 1fr);
+  border-top: 1px solid var(--color-gray-200);
+}
+.pcal-calendar-dow {
+  padding: 10px 8px;
+  text-align: center;
+  font-size: 12px; font-weight: 600;
+  color: var(--color-gray-500);
+  background: var(--color-gray-50);
+  border-bottom: 1px solid var(--color-gray-200);
+  border-right: 1px solid var(--color-gray-200);
+}
+.pcal-calendar-dow:nth-child(7) { border-right: none; }
+.pcal-calendar-dow--sun { color: #dc2626; }
+.pcal-calendar-dow--sat { color: #2563eb; }
+
+.pcal-cell {
+  min-height: 110px; padding: 6px 8px;
+  border-bottom: 1px solid var(--color-gray-200);
+  border-right: 1px solid var(--color-gray-200);
+  cursor: pointer;
+  transition: background 0.12s;
+  position: relative;
+}
+.pcal-cell:nth-child(7n) { border-right: none; }
+.pcal-cell:hover { background: var(--color-gray-50); }
+.pcal-cell--today { background: rgba(59,130,246,0.04); }
+.pcal-cell--selected {
+  background: var(--color-primary-light) !important;
+  box-shadow: inset 0 0 0 2px var(--color-primary);
+}
+.pcal-cell--empty {
+  background: var(--color-gray-50); cursor: default; opacity: 0.4;
+}
+.pcal-cell--empty:hover { background: var(--color-gray-50); }
+.pcal-cell--no-policy {
+  background: repeating-linear-gradient(
+    -45deg, transparent, transparent 4px,
+    rgba(0,0,0,0.02) 4px, rgba(0,0,0,0.02) 8px
+  );
+}
+.pcal-cell--closed { opacity: 0.55; }
+.pcal-cell-date {
+  font-size: 14px; font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--color-gray-900);
+}
+.pcal-cell--sun .pcal-cell-date { color: #dc2626; }
+.pcal-cell--sat .pcal-cell-date { color: #2563eb; }
+
+/* ─── Cell Content ─── */
+.pcal-cell-price {
+  font-size: 13px; font-weight: 700;
+  color: var(--color-gray-800);
+  margin-bottom: 2px;
+}
+.pcal-cell-settlement {
+  font-size: 11px; color: var(--color-gray-400);
+  margin-bottom: 3px;
+}
+.pcal-cell-stock {
+  font-size: 11px; color: var(--color-gray-500);
+  margin-bottom: 4px;
+}
+.pcal-cell-stock--zero {
+  color: #dc2626; font-weight: 600;
+}
+.pcal-cell-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 600;
+  padding: 1px 6px; border-radius: 3px;
+  line-height: 1.5;
+  border-left: 2.5px solid transparent;
+}
+.pcal-cell-badge--base {
+  color: #475569; background: #f1f5f9; border-left-color: #64748b;
+}
+.pcal-cell-badge--event {
+  color: #92400e; background: #fffbeb; border-left-color: #d97706;
+}
+.pcal-cell-badge--holiday {
+  color: #991b1b; background: #fef2f2; border-left-color: #dc2626;
+}
+.pcal-cell-badge--closed {
+  color: #6b7280; background: #f3f4f6; border-left-color: #d1d5db;
+}
+.pcal-cell-nosale {
+  font-size: 12px; color: #9ca3af;
+  margin-top: 8px;
+}
+
+/* ─── Detail Panel ─── */
+.pcal-detail-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.pcal-detail-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-gray-200);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; flex-wrap: wrap;
+}
+.pcal-detail-title {
+  font-size: 15px; font-weight: 700;
+  color: var(--color-gray-900);
+}
+.pcal-detail-body { padding: 0; }
+
+/* detail table */
+.pcal-detail-table { width: 100%; border-collapse: collapse; }
+.pcal-detail-table th {
+  background: var(--color-gray-50);
+  font-size: 12px; font-weight: 600; color: var(--color-gray-500);
+  padding: 10px 12px; text-align: center;
+  border-bottom: 1px solid var(--color-gray-200);
+  white-space: nowrap;
+}
+.pcal-detail-table td {
+  padding: 10px 12px; text-align: center;
+  font-size: 13px; color: var(--color-gray-700);
+  border-bottom: 1px solid var(--color-gray-100);
+  vertical-align: middle;
+}
+.pcal-detail-table tbody tr:last-child td { border-bottom: none; }
+.pcal-detail-table .td-left { text-align: left; }
+
+/* priority arrow */
+.pcal-priority-arrow {
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px; color: var(--color-gray-300);
+}
+
+/* empty state */
+.pcal-empty {
+  text-align: center; padding: 40px 20px;
+  color: var(--color-gray-400);
+}
+.pcal-empty-icon {
+  font-size: 36px; margin-bottom: 8px; opacity: 0.4;
+}
+.pcal-empty p { font-size: 13px; }
+
+/* ─── Info Banner ─── */
+.pcal-info-banner {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 16px;
+  background: var(--color-primary-light);
+  border: 1px solid rgba(59,130,246,0.2);
+  border-radius: var(--radius-sm);
+  font-size: 12px; color: #1e40af;
+  margin-bottom: 16px;
+}
+.pcal-info-banner svg { flex-shrink: 0; }
+
+/* ─── Period Info ─── */
+.pcal-period-info {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: var(--color-gray-500);
+}
+.pcal-period-badge {
+  display: inline-flex; align-items: center;
+  padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 600;
+}
+.pcal-period-badge--daily {
+  background: #eff6ff; color: #2563eb;
+}
+.pcal-period-badge--bulk {
+  background: #fef3c7; color: #92400e;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 1024px) {
+  .pcal-cell { min-height: 80px; }
+  .pcal-cell-price { font-size: 11px; }
+  .pcal-cell-badge { font-size: 9px; }
+}
+@media (max-width: 768px) {
+  .pcal-cell { min-height: 60px; padding: 3px; }
+  .pcal-cell-date { font-size: 12px; }
+  .pcal-cell-price { font-size: 10px; }
+  .pcal-cell-settlement,
+  .pcal-cell-stock { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- 헤더 + LNB: nav-menu.js 에서 자동 렌더링 -->
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<main class="main">
+  <div class="main__breadcrumb">제휴 관리 &gt; 제휴주차장 관리 &gt; 제휴상품상세 &gt; <span>판매정책 캘린더뷰</span></div>
+  <div class="main__title-bar">
+    <h1 class="main__title">판매정책 캘린더뷰</h1>
+    <div class="btn-group">
+      <span class="status-badge status-badge--active" style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:600;background:#dcfce7;color:#16a34a;">
+        <span style="width:7px;height:7px;border-radius:50%;background:currentColor;"></span>판매중
+      </span>
+      <button type="button" class="btn btn--secondary" onclick="location.href='320_제휴상품상세.html'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        상품상세로 돌아가기
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── 상품 요약 ─── -->
+  <div class="card" style="margin-bottom:16px;">
+    <div class="card__body" style="padding:14px 20px;">
+      <div class="pcal-summary">
+        <div class="pcal-summary__item"><span>주차장</span> <strong>충주휴게소(마산방향)</strong></div>
+        <div class="pcal-summary__divider"></div>
+        <div class="pcal-summary__item"><span>주차권유형</span> <strong>당일권</strong></div>
+        <div class="pcal-summary__divider"></div>
+        <div class="pcal-summary__item"><span>제휴주차장번호</span> <strong>9043</strong></div>
+        <div class="pcal-summary__divider"></div>
+        <div class="pcal-summary__item"><span>정산비율</span> <strong>70%</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── 안내 배너 ─── -->
+  <div class="pcal-info-banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    이벤트 스케줄은 기본 판매정책보다 우선 적용됩니다. 동일 날짜에 여러 이벤트가 겹칠 경우 최근 등록된 이벤트가 우선합니다. 날짜를 클릭하면 상세 적용 내역을 확인할 수 있습니다.
+  </div>
+
+  <!-- ─── 월 네비게이션 + 범례 ─── -->
+  <div class="pcal-month-nav">
+    <button type="button" class="pcal-month-btn" id="btnPrevMonth">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    <span class="pcal-month-label" id="monthLabel">2026년 2월</span>
+    <button type="button" class="pcal-month-btn" id="btnNextMonth">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <input type="month" class="pcal-month-input" id="monthInput" value="2026-02">
+
+    <div class="pcal-legend">
+      <div class="pcal-legend-item"><span class="pcal-legend-dot pcal-legend-dot--base"></span>기본정책</div>
+      <div class="pcal-legend-item"><span class="pcal-legend-dot pcal-legend-dot--event"></span>이벤트</div>
+      <div class="pcal-legend-item"><span class="pcal-legend-dot pcal-legend-dot--holiday"></span>공휴일</div>
+      <div class="pcal-legend-item"><span class="pcal-legend-dot pcal-legend-dot--closed"></span>판매중지</div>
+    </div>
+  </div>
+
+  <!-- ─── 적용 기간 정보 ─── -->
+  <div id="periodInfo" style="margin-bottom:12px;"></div>
+
+  <!-- ─── 캘린더 ─── -->
+  <div class="pcal-calendar-card">
+    <div class="pcal-calendar-grid" id="calendarGrid">
+      <!-- JS에서 렌더링 -->
+    </div>
+  </div>
+
+  <!-- ─── 선택 날짜 상세 ─── -->
+  <div id="detailPanel">
+    <div class="pcal-detail-card">
+      <div class="pcal-empty">
+        <div class="pcal-empty-icon">📅</div>
+        <p>날짜를 선택하면 적용 내역이 표시됩니다.</p>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="footer" id="appFooter"></footer>
+
+<!-- ============================================================
+     JavaScript
+     ============================================================ -->
+<script>
+(function () {
+  'use strict';
+
+  /* ─── Footer ─── */
+  (function () {
+    var footer = document.getElementById('appFooter');
+    var d = new Date(document.lastModified);
+    footer.textContent = '\u00A9 2026. 주차권예매서비스. 최종업데이트 : ' +
+      d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' +
+      String(d.getDate()).padStart(2,'0') + ' ' +
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  })();
+
+  /* ═══════════════════════════════════════════════════════
+     Mock Data — 320 제휴상품상세와 동일한 데이터 구조
+     ═══════════════════════════════════════════════════════ */
+
+  /* ── 기간별 판매정책 ── */
+  var PERIODS = [
+    {
+      id: 1, start: '2026-01-01', end: '2026-06-30', mode: 'daily',
+      daily: {
+        mon: { enabled: true, price: 5000, settlement: 3500, stock: 10 },
+        tue: { enabled: true, price: 5000, settlement: 3500, stock: 10 },
+        wed: { enabled: true, price: 5000, settlement: 3500, stock: 10 },
+        thu: { enabled: true, price: 5000, settlement: 3500, stock: 10 },
+        fri: { enabled: true, price: 5000, settlement: 3500, stock: 10 },
+        sat: { enabled: true, price: 7000, settlement: 4900, stock: 10 },
+        sun: { enabled: true, price: 7000, settlement: 4900, stock: 10 }
+      },
+      holiday: { enabled: true, price: 10000, settlement: 7000, stock: 10 }
+    },
+    {
+      id: 2, start: '2026-07-01', end: '', mode: 'bulk',
+      bulk: {
+        days: ['mon','tue','wed','thu','fri','sat','sun'],
+        price: 6000, settlement: 4200, stock: 15
+      },
+      holiday: { enabled: true, price: 12000, settlement: 8400, stock: 15 }
+    }
+  ];
+
+  /* ── 이벤트 스케줄 ── */
+  var SCHEDULES = [
+    {
+      id: 1, startDate: '2026-03-01', endDate: '2026-03-01',
+      overridePrice: 3000, overrideQuantity: null,
+      memo: '3/1 특가 이벤트 (가격만 변경, 1일)',
+      createdAt: '2026-02-10T09:00:00', createdBy: '관리자A'
+    },
+    {
+      id: 2, startDate: '2026-02-15', endDate: '2026-02-28',
+      overridePrice: 4000, overrideQuantity: 20,
+      memo: '2월 프로모션 (가격+수량 변경)',
+      createdAt: '2026-02-08T14:30:00', createdBy: '담당자C'
+    },
+    {
+      id: 3, startDate: '2026-02-20', endDate: '2026-02-25',
+      overridePrice: 3500, overrideQuantity: 15,
+      memo: 'ID2와 겹침 — 최근 등록이므로 우선 적용',
+      createdAt: '2026-02-12T10:00:00', createdBy: '관리자B'
+    },
+    {
+      id: 4, startDate: '2026-01-01', endDate: '2026-01-15',
+      overridePrice: null, overrideQuantity: 0,
+      memo: '신정 연휴 판매 중지 (수량 0)',
+      createdAt: '2025-12-20T11:00:00', createdBy: '관리자A'
+    },
+    {
+      id: 5, startDate: '2026-02-17', endDate: '2026-02-17',
+      overridePrice: null, overrideQuantity: 5,
+      memo: '오늘 수량 한정 (수량만 변경, 1일)',
+      createdAt: '2026-02-16T16:00:00', createdBy: '담당자C'
+    },
+    {
+      id: 6, startDate: '2026-04-01', endDate: '2026-04-10',
+      overridePrice: 6000, overrideQuantity: 30,
+      memo: '4월 벚꽃 시즌 특가',
+      createdAt: '2026-02-15T09:00:00', createdBy: '관리자A'
+    }
+  ];
+
+  /* ── 공휴일 목록 (Mock) ── */
+  var HOLIDAYS = {
+    '2026-01-01': '신정',
+    '2026-01-28': '설날 연휴',
+    '2026-01-29': '설날',
+    '2026-01-30': '설날 연휴',
+    '2026-03-01': '삼일절',
+    '2026-05-05': '어린이날',
+    '2026-06-06': '현충일'
+  };
+
+  /* ═══════════════════════════════════════════════════════
+     유틸리티 함수
+     ═══════════════════════════════════════════════════════ */
+
+  var DOW_KEYS = ['sun','mon','tue','wed','thu','fri','sat'];
+  var DOW_NAMES = ['일','월','화','수','목','금','토'];
+
+  function formatDate(y, m, d) {
+    return y + '-' + String(m).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+  }
+
+  function getDaysInMonth(y, m) {
+    return new Date(y, m, 0).getDate();
+  }
+
+  function getFirstDayOfWeek(y, m) {
+    return new Date(y, m - 1, 1).getDay();
+  }
+
+  function fmtPrice(v) {
+    if (v === null || v === undefined) return '-';
+    return Number(v).toLocaleString() + '원';
+  }
+
+  function isHoliday(dateStr) {
+    return !!HOLIDAYS[dateStr];
+  }
+
+  function getHolidayName(dateStr) {
+    return HOLIDAYS[dateStr] || '';
+  }
+
+  /* ── 해당 날짜에 적용되는 기간정책 찾기 ── */
+  function findPeriod(dateStr) {
+    for (var i = 0; i < PERIODS.length; i++) {
+      var p = PERIODS[i];
+      var endDate = p.end || '9999-12-31';
+      if (dateStr >= p.start && dateStr <= endDate) return p;
+    }
+    return null;
+  }
+
+  /* ── 기간정책에서 해당 날짜의 기본가격 가져오기 ── */
+  function getBasePolicy(dateStr) {
+    var period = findPeriod(dateStr);
+    if (!period) return null;
+
+    var d = new Date(dateStr + 'T00:00:00');
+    var dow = d.getDay();
+    var dowKey = DOW_KEYS[dow];
+    var holiday = isHoliday(dateStr);
+
+    if (holiday && period.holiday && period.holiday.enabled) {
+      return {
+        type: 'holiday',
+        price: period.holiday.price,
+        settlement: period.holiday.settlement,
+        stock: period.holiday.stock,
+        period: period,
+        holidayName: getHolidayName(dateStr)
+      };
+    }
+
+    if (period.mode === 'daily') {
+      var dayData = period.daily[dowKey];
+      if (!dayData || !dayData.enabled) {
+        return { type: 'closed', price: 0, settlement: 0, stock: 0, period: period };
+      }
+      return {
+        type: 'base',
+        price: dayData.price,
+        settlement: dayData.settlement,
+        stock: dayData.stock,
+        period: period,
+        dow: dowKey
+      };
+    } else {
+      // bulk mode
+      if (period.bulk.days.indexOf(dowKey) === -1) {
+        return { type: 'closed', price: 0, settlement: 0, stock: 0, period: period };
+      }
+      return {
+        type: 'base',
+        price: period.bulk.price,
+        settlement: period.bulk.settlement,
+        stock: period.bulk.stock,
+        period: period,
+        dow: dowKey
+      };
+    }
+  }
+
+  /* ── 이벤트 스케줄 적용 (우선순위: 최근 등록) ── */
+  function getEffectiveSchedule(dateStr) {
+    var matches = SCHEDULES.filter(function (s) {
+      return s.startDate <= dateStr && dateStr <= s.endDate;
+    });
+    if (matches.length === 0) return null;
+    matches.sort(function (a, b) {
+      return b.createdAt.localeCompare(a.createdAt);
+    });
+    return matches[0];
+  }
+
+  /* ── 해당 날짜의 모든 적용 스케줄 (상세 패널용) ── */
+  function getAllSchedulesForDate(dateStr) {
+    return SCHEDULES.filter(function (s) {
+      return s.startDate <= dateStr && dateStr <= s.endDate;
+    }).sort(function (a, b) {
+      return b.createdAt.localeCompare(a.createdAt);
+    });
+  }
+
+  /* ── 최종 적용 정책 계산 ── */
+  function getFinalPolicy(dateStr) {
+    var base = getBasePolicy(dateStr);
+    var event = getEffectiveSchedule(dateStr);
+
+    if (!base && !event) return null;
+    if (!base) base = { type: 'no-policy', price: null, settlement: null, stock: null, period: null };
+
+    var result = {
+      base: base,
+      event: event,
+      hasEvent: !!event,
+      isHoliday: isHoliday(dateStr),
+      holidayName: getHolidayName(dateStr)
+    };
+
+    if (event) {
+      result.price = (event.overridePrice !== null && event.overridePrice !== undefined)
+        ? event.overridePrice : base.price;
+      result.stock = (event.overrideQuantity !== null && event.overrideQuantity !== undefined)
+        ? event.overrideQuantity : base.stock;
+      // settlement 계산 (70% 비율)
+      result.settlement = Math.round(result.price * 0.7);
+    } else {
+      result.price = base.price;
+      result.settlement = base.settlement;
+      result.stock = base.stock;
+    }
+
+    result.isClosed = (result.stock === 0) || (base.type === 'closed' && !event);
+
+    return result;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     캘린더 렌더링
+     ═══════════════════════════════════════════════════════ */
+
+  var currentYear = 2026;
+  var currentMonth = 2;
+  var selectedDate = null;
+
+  var $grid = document.getElementById('calendarGrid');
+  var $monthLabel = document.getElementById('monthLabel');
+  var $monthInput = document.getElementById('monthInput');
+  var $periodInfo = document.getElementById('periodInfo');
+  var $detailPanel = document.getElementById('detailPanel');
+
+  function todayStr() {
+    var d = new Date();
+    return formatDate(d.getFullYear(), d.getMonth() + 1, d.getDate());
+  }
+
+  function renderPeriodInfo() {
+    var sampleDate = formatDate(currentYear, currentMonth, 15);
+    var period = findPeriod(sampleDate);
+
+    if (!period) {
+      $periodInfo.innerHTML =
+        '<div class="pcal-period-info" style="color:#9ca3af;">' +
+        '이 달에 적용되는 판매정책 기간이 없습니다.' +
+        '</div>';
+      return;
+    }
+
+    var endLabel = period.end || '종료일 없음';
+    var modeLabel = period.mode === 'daily' ? '요일별 설정' : '일괄요금 설정';
+    var modeBadgeClass = period.mode === 'daily' ? 'pcal-period-badge--daily' : 'pcal-period-badge--bulk';
+
+    $periodInfo.innerHTML =
+      '<div class="pcal-period-info">' +
+      '<span>적용 기간: <strong>' + period.start + ' ~ ' + endLabel + '</strong></span>' +
+      '<span class="pcal-period-badge ' + modeBadgeClass + '">' + modeLabel + '</span>' +
+      '</div>';
+  }
+
+  function renderCalendar() {
+    var daysInMonth = getDaysInMonth(currentYear, currentMonth);
+    var firstDow = getFirstDayOfWeek(currentYear, currentMonth);
+    var today = todayStr();
+
+    var html = '';
+
+    // 요일 헤더
+    var dowLabels = ['일','월','화','수','목','금','토'];
+    var dowClasses = ['pcal-calendar-dow--sun','','','','','','pcal-calendar-dow--sat'];
+    for (var d = 0; d < 7; d++) {
+      html += '<div class="pcal-calendar-dow ' + dowClasses[d] + '">' + dowLabels[d] + '</div>';
+    }
+
+    // 빈 셀 (이전 달)
+    for (var e = 0; e < firstDow; e++) {
+      html += '<div class="pcal-cell pcal-cell--empty"></div>';
+    }
+
+    // 날짜 셀
+    for (var day = 1; day <= daysInMonth; day++) {
+      var dateStr = formatDate(currentYear, currentMonth, day);
+      var dow = new Date(currentYear, currentMonth - 1, day).getDay();
+      var isToday = (dateStr === today);
+      var isSelected = (day === selectedDate);
+      var policy = getFinalPolicy(dateStr);
+
+      var cellClass = 'pcal-cell';
+      if (isToday) cellClass += ' pcal-cell--today';
+      if (isSelected) cellClass += ' pcal-cell--selected';
+      if (dow === 0) cellClass += ' pcal-cell--sun';
+      if (dow === 6) cellClass += ' pcal-cell--sat';
+      if (!policy) cellClass += ' pcal-cell--no-policy';
+      if (policy && policy.isClosed) cellClass += ' pcal-cell--closed';
+
+      html += '<div class="' + cellClass + '" data-day="' + day + '">';
+      html += '<div class="pcal-cell-date">' + day + '</div>';
+
+      if (!policy) {
+        html += '<div class="pcal-cell-nosale">미설정</div>';
+      } else if (policy.isClosed) {
+        html += '<div class="pcal-cell-nosale">판매중지</div>';
+        html += renderCellBadge(policy);
+      } else {
+        html += '<div class="pcal-cell-price">' + fmtPrice(policy.price) + '</div>';
+        html += '<div class="pcal-cell-settlement">정산 ' + fmtPrice(policy.settlement) + '</div>';
+        html += '<div class="pcal-cell-stock' + (policy.stock === 0 ? ' pcal-cell-stock--zero' : '') + '">' +
+                '수량 ' + policy.stock + '개</div>';
+        html += renderCellBadge(policy);
+      }
+
+      html += '</div>';
+    }
+
+    // 빈 셀 (다음 달)
+    var totalCells = firstDow + daysInMonth;
+    var remainder = totalCells % 7;
+    if (remainder > 0) {
+      for (var r = 0; r < 7 - remainder; r++) {
+        html += '<div class="pcal-cell pcal-cell--empty"></div>';
+      }
+    }
+
+    $grid.innerHTML = html;
+
+    // 월 레이블 업데이트
+    $monthLabel.textContent = currentYear + '년 ' + currentMonth + '월';
+    $monthInput.value = currentYear + '-' + String(currentMonth).padStart(2, '0');
+
+    // 기간 정보 업데이트
+    renderPeriodInfo();
+
+    // 셀 클릭 이벤트
+    var cells = $grid.querySelectorAll('.pcal-cell[data-day]');
+    cells.forEach(function (cell) {
+      cell.addEventListener('click', function () {
+        var day = parseInt(this.getAttribute('data-day'));
+        selectedDate = (selectedDate === day) ? null : day;
+        renderCalendar();
+        renderDetail();
+      });
+    });
+  }
+
+  function renderCellBadge(policy) {
+    if (policy.isClosed) {
+      if (policy.hasEvent) {
+        return '<span class="pcal-cell-badge pcal-cell-badge--closed">중지(이벤트)</span>';
+      }
+      return '<span class="pcal-cell-badge pcal-cell-badge--closed">판매중지</span>';
+    }
+    if (policy.hasEvent && policy.isHoliday) {
+      return '<span class="pcal-cell-badge pcal-cell-badge--event">이벤트</span>';
+    }
+    if (policy.hasEvent) {
+      return '<span class="pcal-cell-badge pcal-cell-badge--event">이벤트</span>';
+    }
+    if (policy.isHoliday) {
+      return '<span class="pcal-cell-badge pcal-cell-badge--holiday">' + policy.holidayName + '</span>';
+    }
+    if (policy.base && policy.base.type === 'base') {
+      var dowIdx = DOW_KEYS.indexOf(policy.base.dow);
+      var isWeekend = (dowIdx === 0 || dowIdx === 6);
+      return '<span class="pcal-cell-badge pcal-cell-badge--base">' + (isWeekend ? '주말' : '평일') + '</span>';
+    }
+    return '';
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     상세 패널 렌더링
+     ═══════════════════════════════════════════════════════ */
+
+  function renderDetail() {
+    if (!selectedDate) {
+      $detailPanel.innerHTML =
+        '<div class="pcal-detail-card">' +
+        '  <div class="pcal-empty">' +
+        '    <div class="pcal-empty-icon">📅</div>' +
+        '    <p>날짜를 선택하면 적용 내역이 표시됩니다.</p>' +
+        '  </div>' +
+        '</div>';
+      return;
+    }
+
+    var dateStr = formatDate(currentYear, currentMonth, selectedDate);
+    var dow = new Date(currentYear, currentMonth - 1, selectedDate).getDay();
+    var dowName = DOW_NAMES[dow];
+    var displayDate = currentYear + '년 ' + currentMonth + '월 ' + selectedDate + '일 (' + dowName + ')';
+    var holiday = isHoliday(dateStr);
+    var holidayName = getHolidayName(dateStr);
+    var base = getBasePolicy(dateStr);
+    var schedules = getAllSchedulesForDate(dateStr);
+    var finalPolicy = getFinalPolicy(dateStr);
+
+    var html = '<div class="pcal-detail-card">';
+    html += '<div class="pcal-detail-header">';
+    html += '<div class="pcal-detail-title">' + displayDate;
+    if (holiday) {
+      html += ' <span style="font-size:12px;color:#dc2626;font-weight:600;margin-left:6px;">(' + holidayName + ')</span>';
+    }
+    html += '</div>';
+
+    if (finalPolicy && !finalPolicy.isClosed) {
+      html += '<div style="font-size:14px;font-weight:700;color:var(--color-primary);">최종 적용: ' + fmtPrice(finalPolicy.price) + ' / ' + finalPolicy.stock + '개</div>';
+    } else if (finalPolicy && finalPolicy.isClosed) {
+      html += '<div style="font-size:14px;font-weight:700;color:#dc2626;">판매중지</div>';
+    }
+
+    html += '</div>';
+    html += '<div class="pcal-detail-body">';
+
+    // 적용 우선순위 테이블
+    html += '<table class="pcal-detail-table">';
+    html += '<thead><tr>';
+    html += '<th style="width:50px;">우선</th>';
+    html += '<th style="width:110px;">구분</th>';
+    html += '<th>판매금액</th>';
+    html += '<th>정산금액</th>';
+    html += '<th>판매수량</th>';
+    html += '<th>적용여부</th>';
+    html += '<th style="width:200px;">비고</th>';
+    html += '</tr></thead><tbody>';
+
+    // 1순위: 이벤트 스케줄
+    if (schedules.length > 0) {
+      schedules.forEach(function (s, idx) {
+        var isEffective = (idx === 0);
+        var priceStr = (s.overridePrice !== null && s.overridePrice !== undefined)
+          ? fmtPrice(s.overridePrice)
+          : '<span style="color:#9ca3af;">기본값 유지</span>';
+        var qtyStr = (s.overrideQuantity !== null && s.overrideQuantity !== undefined)
+          ? s.overrideQuantity + '개'
+          : '<span style="color:#9ca3af;">기본값 유지</span>';
+        var settlementStr = (s.overridePrice !== null && s.overridePrice !== undefined)
+          ? fmtPrice(Math.round(s.overridePrice * 0.7))
+          : '<span style="color:#9ca3af;">-</span>';
+
+        html += '<tr' + (isEffective ? ' style="background:#fffbeb;"' : ' style="opacity:0.5;"') + '>';
+        html += '<td style="font-weight:700;color:#d97706;">' + (idx + 1) + '</td>';
+        html += '<td><span class="pcal-cell-badge pcal-cell-badge--event" style="font-size:11px;">이벤트 #' + s.id + '</span></td>';
+        html += '<td style="font-weight:600;">' + priceStr + '</td>';
+        html += '<td>' + settlementStr + '</td>';
+        html += '<td>' + qtyStr + '</td>';
+        html += '<td>' + (isEffective
+          ? '<span style="color:#16a34a;font-weight:600;">적용</span>'
+          : '<span style="color:#9ca3af;">우선순위 밀림</span>') + '</td>';
+        html += '<td class="td-left" style="font-size:12px;color:var(--color-gray-500);">';
+        html += esc(s.memo) + '<br><span style="font-size:11px;color:#9ca3af;">' + s.startDate + '~' + s.endDate + ' / ' + s.createdBy + '</span>';
+        html += '</td></tr>';
+      });
+    }
+
+    // 구분선
+    if (schedules.length > 0 && base) {
+      html += '<tr><td colspan="7" style="padding:0;"><div class="pcal-priority-arrow">';
+      html += '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>';
+      html += ' <span style="font-size:11px;color:#9ca3af;">이벤트 미적용 시 아래 정책 적용</span>';
+      html += '</div></td></tr>';
+    }
+
+    // 공휴일 기본정책
+    if (holiday && base && base.period && base.period.holiday && base.period.holiday.enabled) {
+      var hol = base.period.holiday;
+      var holApplied = (!schedules.length || schedules.length === 0) && base.type === 'holiday';
+      html += '<tr' + (holApplied ? ' style="background:#fef2f2;"' : '') + '>';
+      html += '<td style="font-weight:700;color:#dc2626;">-</td>';
+      html += '<td><span class="pcal-cell-badge pcal-cell-badge--holiday" style="font-size:11px;">' + holidayName + '</span></td>';
+      html += '<td style="font-weight:600;">' + fmtPrice(hol.price) + '</td>';
+      html += '<td>' + fmtPrice(hol.settlement) + '</td>';
+      html += '<td>' + hol.stock + '개</td>';
+      html += '<td>' + (holApplied
+        ? '<span style="color:#16a34a;font-weight:600;">적용</span>'
+        : '<span style="color:#9ca3af;">이벤트 우선</span>') + '</td>';
+      html += '<td class="td-left" style="font-size:12px;color:var(--color-gray-500);">공휴일 정책</td>';
+      html += '</tr>';
+    }
+
+    // 기본 판매정책
+    if (base && base.period) {
+      var baseApplied = !schedules.length && base.type === 'base';
+      var endLabel = base.period.end || '종료일 없음';
+      var dowLabel = (base.period.mode === 'daily')
+        ? DOW_NAMES[DOW_KEYS.indexOf(base.dow)] + '요일 정책'
+        : '일괄 정책';
+
+      html += '<tr' + (baseApplied ? ' style="background:#f1f5f9;"' : '') + '>';
+      html += '<td style="font-weight:700;color:#64748b;">-</td>';
+      html += '<td><span class="pcal-cell-badge pcal-cell-badge--base" style="font-size:11px;">기본정책</span></td>';
+      if (base.type === 'closed') {
+        html += '<td colspan="3" style="color:#9ca3af;">판매 미설정 (비활성 요일)</td>';
+      } else {
+        html += '<td style="font-weight:600;">' + fmtPrice(base.price) + '</td>';
+        html += '<td>' + fmtPrice(base.settlement) + '</td>';
+        html += '<td>' + base.stock + '개</td>';
+      }
+      html += '<td>' + (baseApplied
+        ? '<span style="color:#16a34a;font-weight:600;">적용</span>'
+        : '<span style="color:#9ca3af;">' + (schedules.length ? '이벤트 우선' : (holiday ? '공휴일 우선' : '-')) + '</span>') + '</td>';
+      html += '<td class="td-left" style="font-size:12px;color:var(--color-gray-500);">' +
+              dowLabel + '<br><span style="font-size:11px;color:#9ca3af;">' + base.period.start + ' ~ ' + endLabel + '</span></td>';
+      html += '</tr>';
+    }
+
+    if (!base && schedules.length === 0) {
+      html += '<tr><td colspan="7" style="padding:24px;color:#9ca3af;text-align:center;">이 날짜에 적용되는 정책이 없습니다.</td></tr>';
+    }
+
+    html += '</tbody></table>';
+    html += '</div></div>';
+
+    $detailPanel.innerHTML = html;
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    var d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  /* ═══════════════════════════════════════════════════════
+     월 네비게이션
+     ═══════════════════════════════════════════════════════ */
+
+  document.getElementById('btnPrevMonth').addEventListener('click', function () {
+    currentMonth--;
+    if (currentMonth < 1) { currentMonth = 12; currentYear--; }
+    selectedDate = null;
+    renderCalendar();
+    renderDetail();
+  });
+
+  document.getElementById('btnNextMonth').addEventListener('click', function () {
+    currentMonth++;
+    if (currentMonth > 12) { currentMonth = 1; currentYear++; }
+    selectedDate = null;
+    renderCalendar();
+    renderDetail();
+  });
+
+  $monthInput.addEventListener('change', function () {
+    var parts = this.value.split('-');
+    if (parts.length === 2) {
+      currentYear = parseInt(parts[0]);
+      currentMonth = parseInt(parts[1]);
+      selectedDate = null;
+      renderCalendar();
+      renderDetail();
+    }
+  });
+
+  /* ─── 초기 렌더링 ─── */
+  renderCalendar();
+  renderDetail();
+
+})();
+</script>
+</body>
+</html>

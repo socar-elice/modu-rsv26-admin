@@ -6,6 +6,7 @@
 <title>제휴상품상세 - 모두의주차장 관리자</title>
 <link rel="stylesheet" href="common.css">
 <script src="nav-menu.js"></script>
+<script src="shared.js"></script>
 <script src="mockup-info.js"></script>
 <style>
 /* ============================================================
@@ -14,44 +15,9 @@
 
 /* Main content max-width override */
 .main { max-width: calc(var(--lnb-w) + 1060px); }
+.pricing-table { max-width: 900px; }
+.price-input { max-width: 110px; height: 34px; padding: 5px 8px; font-size: 13px; }
 
-/* Pricing Section */
-.pricing-table {
-  width: 100%; max-width: 900px;
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 13.5px;
-}
-.pricing-table thead th {
-  background: var(--color-gray-50);
-  padding: 10px 12px;
-  font-size: 12px; font-weight: 600; color: var(--color-gray-500);
-  text-align: center; letter-spacing: 0.03em;
-  border-bottom: 1px solid var(--color-gray-200);
-  white-space: nowrap;
-}
-.pricing-table thead th:first-child { text-align: left; }
-.pricing-table tbody td {
-  padding: 10px 12px;
-  border-bottom: 1px solid var(--color-gray-100);
-  text-align: center;
-  vertical-align: middle;
-}
-.pricing-table tbody tr:last-child td { border-bottom: none; }
-.pricing-table tbody td:first-child {
-  text-align: left; font-weight: 600; color: var(--color-gray-700);
-}
-.price-input {
-  width: 100%; max-width: 110px;
-  height: 34px; padding: 5px 8px;
-  font-size: 13px;
-  border: 1px solid var(--color-gray-300);
-  border-radius: var(--radius-sm);
-  text-align: right; outline: none;
-  transition: border-color var(--transition);
-  background: var(--color-white);
-  color: var(--color-gray-800);
-}
 /* Bulk day selector */
 .bulk-day-selector {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
@@ -67,76 +33,10 @@
   font-size: 12px; color: var(--color-gray-400);
   margin-left: auto;
 }
-/* ─── 일괄요금 인라인 필드 ─── */
-.bulk-inline-fields {
-  display: flex; align-items: flex-end; gap: 20px;
-  padding: 16px;
-}
-.bulk-inline-item {
-  display: flex; flex-direction: column; gap: 6px;
-}
-.bulk-inline-label {
-  font-size: 12px; font-weight: 600; color: var(--color-gray-500);
-}
-.bulk-inline-item .price-input { max-width: 140px; }
-
-.price-input:focus {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
-}
-.price-input[readonly] {
-  background: var(--color-gray-50); color: var(--color-gray-400); cursor: default;
-}
-.price-input:disabled {
-  background: var(--color-gray-100); color: var(--color-gray-300); opacity: 0.7;
-}
-
-/* Mode Selector */
-.mode-selector {
-  display: inline-flex;
-  background: var(--color-white);
-  border: 1px solid var(--color-gray-200);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-.mode-selector__btn {
-  padding: 8px 18px;
-  font-size: 13px; font-weight: 600;
-  color: var(--color-gray-500);
-  background: var(--color-white);
-  border: none; cursor: default;
-  transition: background var(--transition), color var(--transition);
-  border-right: 1px solid var(--color-gray-200);
-  font-family: inherit;
-  display: inline-flex; align-items: center; gap: 6px;
-}
-.mode-selector__btn:last-child { border-right: none; }
-.mode-selector__btn--active {
-  background: var(--color-primary);
-  color: var(--color-white);
-}
-
-/* Status badge */
-.status-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  padding: 4px 12px;
-  border-radius: 999px;
-  font-size: 13px; font-weight: 600;
-  line-height: 1;
-}
-.status-badge--active {
-  background: #dcfce7; color: #16a34a;
-}
-.status-badge--inactive {
-  background: var(--color-gray-100); color: var(--color-gray-500);
-}
-.status-badge__dot {
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: currentColor;
-}
+/* 320 mode-selector: read-only 기본 상태 */
+.mode-selector__btn { cursor: default; padding: 8px 18px; font-size: 13px; }
+.mode-selector__btn:hover { background: var(--color-white); }
+.mode-selector__btn--active:hover { background: var(--color-primary); }
 
 /* Read-only overrides */
 .form-input[readonly],
@@ -210,72 +110,6 @@ textarea.form-input[readonly] {
   display: inline-block; max-width: 150px;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-
-/* Status Badges — Event Schedule */
-.status-badge--scheduled { background: var(--color-primary-light); color: var(--color-primary); }
-.status-badge--ended { background: var(--color-gray-100); color: var(--color-gray-500); }
-
-/* Empty State */
-.empty-state { text-align: center; padding: 48px 20px; color: var(--color-gray-400); }
-.empty-state__text { font-size: 14px; margin-bottom: 16px; }
-
-/* Action buttons (small) */
-.btn--ghost {
-  background: none; border: 1px solid var(--color-gray-300); color: var(--color-gray-600);
-  padding: 5px 12px; font-size: 12px; border-radius: var(--radius-sm);
-  cursor: pointer; transition: all var(--transition); font-family: inherit;
-}
-.btn--ghost:hover { background: var(--color-gray-50); border-color: var(--color-gray-400); }
-.btn--ghost-danger {
-  background: none; border: 1px solid var(--color-danger-border); color: var(--color-danger);
-  padding: 5px 12px; font-size: 12px; border-radius: var(--radius-sm);
-  cursor: pointer; transition: all var(--transition); font-family: inherit;
-}
-.btn--ghost-danger:hover { background: var(--color-danger-light); }
-
-/* Modal */
-.modal-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-  z-index: var(--z-modal); display: flex; align-items: center; justify-content: center;
-  opacity: 0; visibility: hidden; transition: opacity 0.2s, visibility 0.2s;
-}
-.modal-overlay.open { opacity: 1; visibility: visible; }
-.modal-dialog {
-  background: var(--color-white); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
-  width: 90%; max-width: 580px; max-height: 90vh; overflow-y: auto;
-  transform: translateY(20px); transition: transform 0.2s;
-}
-.modal-overlay.open .modal-dialog { transform: translateY(0); }
-.modal__header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 24px; border-bottom: 1px solid var(--color-gray-200);
-}
-.modal__title { font-size: 16px; font-weight: 700; color: var(--color-gray-900); }
-.modal__close {
-  background: none; border: none; cursor: pointer; padding: 4px;
-  color: var(--color-gray-400); transition: color var(--transition);
-}
-.modal__close:hover { color: var(--color-gray-700); }
-.modal__body { padding: 20px 24px; }
-.modal__footer {
-  display: flex; justify-content: flex-end; gap: 8px;
-  padding: 16px 24px; border-top: 1px solid var(--color-gray-200);
-}
-.confirm-dialog { max-width: 420px; }
-.confirm-dialog .modal__body { text-align: center; padding: 32px 24px; }
-.confirm-dialog .modal__body p { font-size: 14px; color: var(--color-gray-700); line-height: 1.6; }
-
-/* Warning box (overlap) */
-.warning-box {
-  background: var(--color-warning-light); border: 1px solid var(--color-warning-border);
-  border-radius: var(--radius-md); padding: 12px 16px;
-  font-size: 13px; color: #92400e; margin-top: 16px;
-}
-.warning-box__title {
-  font-weight: 600; margin-bottom: 6px; display: flex; align-items: center; gap: 6px;
-}
-.warning-box__list { font-size: 12px; margin-top: 8px; padding-left: 16px; }
-.warning-box__list li { margin-bottom: 4px; }
 
 /* ─── Period-based Policy: Split Layout ─── */
 .period-split {
@@ -363,6 +197,10 @@ textarea.form-input[readonly] {
         <span class="status-badge__dot"></span>판매중
       </span>
       <button type="button" class="btn btn--secondary" onclick="handleList()">목록</button>
+      <button type="button" class="btn btn--secondary" onclick="location.href='325_판매정책_캘린더뷰.html'" style="display:inline-flex;align-items:center;gap:5px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        캘린더뷰
+      </button>
       <button type="button" class="btn btn--primary" onclick="handleEdit()">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.5a1.77 1.77 0 0 1 2.5 2.5L5.5 13.5 2 14.5l1-3.5z"/></svg>
         수정하기
@@ -388,7 +226,7 @@ textarea.form-input[readonly] {
           </tr>
           <tr>
             <th>주차장 담당자</th>
-            <td><input type="text" class="form-input" id="parkingManager" value="프레디(프레디)" readonly></td>
+            <td><input type="text" class="form-input" id="parkingManager" value="담당자C" readonly></td>
           </tr>
           <tr>
             <th>주차장 이름</th>
@@ -1372,18 +1210,6 @@ textarea.form-input[readonly] {
 (function () {
   'use strict';
 
-  /* ─── Footer: file last modified date ─── */
-  (function initFooter() {
-    var footer = document.getElementById('appFooter');
-    var lastMod = new Date(document.lastModified);
-    var yyyy = lastMod.getFullYear();
-    var MM = String(lastMod.getMonth() + 1).padStart(2, '0');
-    var dd = String(lastMod.getDate()).padStart(2, '0');
-    var hh = String(lastMod.getHours()).padStart(2, '0');
-    var mm = String(lastMod.getMinutes()).padStart(2, '0');
-    footer.textContent = '© 2026. 주차권예매서비스. 최종업데이트 : ' + yyyy + '.' + MM + '.' + dd + ' ' + hh + ':' + mm;
-  })();
-
   /* ─── 주차권 유형에 따른 섹션 표시 (조회 모드) ─── */
   var LONG_TERM_TYPES = ['기간권', '월단위권', '일할권'];
 
@@ -1511,29 +1337,8 @@ textarea.form-input[readonly] {
     if ($longTermSections) $longTermSections.style.display = 'none';
   }
 
-  /* ─── 예매 설정 토글 ─── */
-  (function () {
-    var radios = document.querySelectorAll('input[name="reservationType"]');
-    var $saleStart = document.getElementById('rowResvSaleStartTime');
-    var $saleEnd = document.getElementById('rowResvSaleEndTime');
-    var $purchaseStart = document.getElementById('rowPurchaseStart');
-    var $purchaseEnd = document.getElementById('rowPurchaseEnd');
-
-    function toggleReservationRows() {
-      var val = document.querySelector('input[name="reservationType"]:checked').value;
-      var isAvailable = (val === 'available');
-      $saleStart.style.display = isAvailable ? 'none' : '';
-      $saleEnd.style.display = isAvailable ? 'none' : '';
-      $purchaseStart.style.display = isAvailable ? '' : 'none';
-      $purchaseEnd.style.display = isAvailable ? '' : 'none';
-    }
-
-    radios.forEach(function (r) {
-      r.addEventListener('change', toggleReservationRows);
-    });
-
-    toggleReservationRows();
-  })();
+  /* ─── 예매 설정 토글 (shared.js) ─── */
+  Shared.initReservationTypeToggle();
 
   /* ─── 요금 모드 표시: 기간별 상세영역 내 periodModeSelector로 이동됨 ─── */
 
@@ -1618,19 +1423,6 @@ textarea.form-input[readonly] {
   }
   updateLtMsgType();
 
-  /* ─── Toast ─── */
-  var $toastContainer = document.getElementById('toastContainer');
-  function showToast(message, type) {
-    var toast = document.createElement('div');
-    toast.className = 'toast toast--' + (type || 'success');
-    toast.innerHTML = '<span>' + message + '</span>';
-    $toastContainer.appendChild(toast);
-    setTimeout(function () {
-      toast.classList.add('toast--out');
-      setTimeout(function () { toast.remove(); }, 260);
-    }, 3000);
-  }
-
   /* ─── Edit (수정하기) ─── */
   window.handleEdit = function () {
     showToast('수정 페이지로 이동합니다.', 'success');
@@ -1663,7 +1455,7 @@ textarea.form-input[readonly] {
         startDate: '2026-02-15', endDate: '2026-02-28',
         overridePrice: 4000, overrideQuantity: 20,
         memo: '2월 프로모션 (가격+수량 변경)',
-        createdAt: '2026-02-08T14:30:00', createdBy: '프레디'
+        createdAt: '2026-02-08T14:30:00', createdBy: '담당자C'
       },
       {
         id: 3, productId: 'PROD-001',
@@ -1684,7 +1476,7 @@ textarea.form-input[readonly] {
         startDate: '2026-02-17', endDate: '2026-02-17',
         overridePrice: null, overrideQuantity: 5,
         memo: '오늘 수량 한정 (수량만 변경, 1일)',
-        createdAt: '2026-02-16T16:00:00', createdBy: '프레디'
+        createdAt: '2026-02-16T16:00:00', createdBy: '담당자C'
       },
       {
         id: 6, productId: 'PROD-001',
@@ -2045,7 +1837,7 @@ textarea.form-input[readonly] {
           overrideQuantity: qv !== '' ? parseInt(qv, 10) : null,
           memo: $memo.value,
           createdAt: new Date().toISOString(),
-          createdBy: '프레디'
+          createdBy: '담당자C'
         });
         showToast('이벤트 스케줄이 등록되었습니다.', 'success');
       }
