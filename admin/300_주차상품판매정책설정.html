@@ -89,6 +89,105 @@
   color: var(--color-white);
 }
 .mode-selector__btn--active:hover { background: var(--color-primary-hover); }
+
+/* User Input Info Section */
+.user-input-mode {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  color: var(--color-gray-700);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: border-color var(--transition);
+}
+.user-input-mode:hover { border-color: var(--color-gray-400); }
+.user-input-mode svg { flex-shrink: 0; }
+
+.ui-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 13.5px;
+}
+.ui-table thead th {
+  padding: 10px 12px;
+  font-size: 12px; font-weight: 600; color: var(--color-gray-500);
+  text-align: center; letter-spacing: 0.02em;
+  border-bottom: 1px solid var(--color-gray-200);
+  background: var(--color-gray-50);
+}
+.ui-table tbody td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-gray-100);
+  vertical-align: middle;
+}
+.ui-table tbody tr:last-child td { border-bottom: none; }
+.ui-table .ui-text-input {
+  width: 100%; height: 36px; padding: 6px 10px;
+  font-size: 13px; font-family: inherit;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  outline: none; background: var(--color-white);
+  color: var(--color-gray-800);
+  transition: border-color var(--transition);
+}
+.ui-table .ui-text-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.10);
+}
+.ui-table .ui-text-input::placeholder { color: var(--color-gray-400); }
+.ui-table .ui-select {
+  height: 36px; padding: 6px 10px;
+  font-size: 13px; font-family: inherit;
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  background: var(--color-white);
+  color: var(--color-gray-700);
+  cursor: pointer; appearance: auto;
+  outline: none;
+  transition: border-color var(--transition);
+}
+.ui-table .ui-select:focus {
+  border-color: var(--color-primary);
+}
+.ui-table .ui-delete-btn {
+  padding: 5px 12px;
+  font-size: 12px; font-weight: 500; font-family: inherit;
+  color: var(--color-gray-500);
+  background: var(--color-white);
+  border: 1px solid var(--color-gray-200);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.ui-table .ui-delete-btn:hover {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+  background: var(--color-danger-light);
+}
+.ui-empty-row td {
+  text-align: center; padding: 32px 12px !important;
+  color: var(--color-gray-400); font-size: 13px;
+}
+.ui-add-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 12px;
+  padding: 8px 16px;
+  font-size: 13px; font-weight: 600; font-family: inherit;
+  color: var(--color-gray-600);
+  background: var(--color-white);
+  border: 1px dashed var(--color-gray-300);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.ui-add-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
 </style>
 </head>
 <body>
@@ -152,7 +251,8 @@
                   <option value="오후권">오후권</option>
                   <option value="야간권">야간권</option>
                   <option value="심야권">심야권</option>
-                  <option value="시간권">시간권</option>
+                  <option value="시간권(시간대)">시간권(시간대)</option>
+                  <option value="시간권(입차기준)">시간권(입차기준)</option>
                   <option value="연박권">연박권</option>
                 </optgroup>
                 <optgroup label="──── 장기권 ────">
@@ -164,6 +264,10 @@
                   <option value="단기권">단기권</option>
                 </optgroup>
               </select>
+              <div id="hourTypeInfo" style="display:none; margin-top:8px;">
+                <span id="hourTypeLabel" style="display:inline-block; padding:3px 10px; border-radius:var(--radius-sm); font-size:12px; font-weight:600;"></span>
+                <span id="hourTypeDesc" style="font-size:12px; color:var(--color-gray-500); margin-left:8px;"></span>
+              </div>
             </td>
           </tr>
           <tr id="rowUnit" style="display:none;">
@@ -232,13 +336,13 @@
           <tr id="rowParkingStartTime">
             <th>주차가능 시작시간</th>
             <td>
-              <input type="time" step="1" class="form-input form-input--md" id="parkingStartTime" value="00:00:00">
+              <input type="time" class="form-input form-input--md" id="parkingStartTime" value="00:00">
             </td>
           </tr>
           <tr id="rowParkingEndTime">
             <th>주차가능 종료시간</th>
             <td>
-              <input type="time" step="1" class="form-input form-input--md" id="parkingEndTime" value="23:59:00">
+              <input type="time" class="form-input form-input--md" id="parkingEndTime" value="23:59">
             </td>
           </tr>
           <tr id="rowKeywords">
@@ -495,9 +599,15 @@
     </div>
 
     <!-- 옵션 가격정책 -->
-    <div class="card">
-      <div class="card__header"><h3>옵션 가격정책</h3></div>
-      <div class="card__body" style="padding:0;">
+    <div class="card" id="sectionOptionPricing">
+      <div class="card__header" id="optionPricingHeader" style="cursor:pointer; user-select:none; display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h3 style="margin:0;">옵션 가격정책</h3>
+          <span id="optionPricingBadge" style="display:none; padding:2px 8px; border-radius:var(--radius-sm); font-size:11px; font-weight:600; background:var(--color-gray-100); color:var(--color-gray-400);">준비중입니다. 지금은 상품유형 단기권만 설정 가능합니다.</span>
+        </div>
+        <svg id="optionPricingChevron" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--color-gray-400)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition:transform 0.2s;"><polyline points="5 7 9 11 13 7"/></svg>
+      </div>
+      <div class="card__body" id="optionPricingBody" style="padding:0;">
         <table class="pricing-table" id="optionPricingTable">
           <thead>
             <tr>
@@ -537,6 +647,38 @@
       </div>
     </div>
 
+    <!-- ─── 고객 추가정보 입력 ─── -->
+    <div class="card" id="sectionUserInput">
+      <div class="card__header" style="display:flex; align-items:center; justify-content:space-between;">
+        <div style="display:flex; align-items:center; gap:8px;">
+          <h3 style="margin:0;">고객 추가정보 입력</h3>
+          <span id="userInputBadge" style="display:none; padding:2px 8px; border-radius:var(--radius-sm); font-size:11px; font-weight:600; background:var(--color-gray-100); color:var(--color-gray-400);">준비중입니다. 지금은 상품유형 단기권만 설정 가능합니다.</span>
+        </div>
+        <select class="user-input-mode" id="userInputModeSelect">
+          <option value="self">직접 등록</option>
+          <option value="airport">공항 템플릿</option>
+        </select>
+      </div>
+      <div class="card__body" style="padding:16px 24px 20px;">
+        <table class="ui-table" id="userInputTable">
+          <thead>
+            <tr>
+              <th style="width:22%; text-align:left;">제목</th>
+              <th style="width:34%; text-align:left;">설명문구</th>
+              <th style="width:16%;">입력유형</th>
+              <th style="width:16%;">필수여부</th>
+              <th style="width:12%;"></th>
+            </tr>
+          </thead>
+          <tbody id="userInputTbody">
+            <tr class="ui-empty-row" id="userInputEmptyRow">
+              <td colspan="5">데이터가 없습니다</td>
+            </tr>
+          </tbody>
+        </table>
+        <button type="button" class="ui-add-btn" id="btnAddUserInput">+ 정보 항목추가</button>
+      </div>
+    </div>
 
     <!-- ─── 안내메시지 설정 (일반권/단기권) ─── -->
     <div class="card">
@@ -962,18 +1104,19 @@
 
   /* ─── 주차권 유형별 기본값 ─── */
   var TICKET_TYPE_DEFAULTS = {
-    '당일권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 1, maxDays: 1 },
-    '주간권':   { startTime: '05:00:00', endTime: '22:00:00', minDays: 1, maxDays: 7 },
-    '오전권':   { startTime: '00:00:00', endTime: '12:00:00', minDays: 1, maxDays: 1 },
-    '오후권':   { startTime: '12:00:00', endTime: '23:59:00', minDays: 1, maxDays: 1 },
-    '야간권':   { startTime: '18:00:00', endTime: '23:59:00', minDays: 1, maxDays: 1 },
-    '심야권':   { startTime: '19:00:00', endTime: '07:00:00', minDays: 1, maxDays: 1 },
-    '시간권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 1, maxDays: 1 },
-    '연박권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 2, maxDays: 14 },
-    '단기권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 1, maxDays: 30 },
-    '기간권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 30, maxDays: 365 },
-    '월단위권': { startTime: '00:00:00', endTime: '23:59:00', minDays: 30, maxDays: 365 },
-    '일할권':   { startTime: '00:00:00', endTime: '23:59:00', minDays: 1, maxDays: 30 }
+    '당일권':   { startTime: '00:00', endTime: '23:59', minDays: 1, maxDays: 1 },
+    '주간권':   { startTime: '05:00', endTime: '22:00', minDays: 1, maxDays: 7 },
+    '오전권':   { startTime: '00:00', endTime: '12:00', minDays: 1, maxDays: 1 },
+    '오후권':   { startTime: '12:00', endTime: '23:59', minDays: 1, maxDays: 1 },
+    '야간권':   { startTime: '18:00', endTime: '23:59', minDays: 1, maxDays: 1 },
+    '심야권':   { startTime: '19:00', endTime: '07:00', minDays: 1, maxDays: 1 },
+    '시간권(시간대)':   { startTime: '00:00', endTime: '23:59', minDays: 1, maxDays: 1 },
+    '시간권(입차기준)': { startTime: '00:00', endTime: '23:59', minDays: 1, maxDays: 1 },
+    '연박권':   { startTime: '00:00', endTime: '23:59', minDays: 2, maxDays: 14 },
+    '단기권':   { startTime: '00:00', endTime: '23:59', minDays: 1, maxDays: 30 },
+    '기간권':   { startTime: '00:00', endTime: '23:59', minDays: 30, maxDays: 365 },
+    '월단위권': { startTime: '00:00', endTime: '23:59', minDays: 30, maxDays: 365 },
+    '일할권':   { startTime: '00:00', endTime: '23:59', minDays: 1, maxDays: 30 }
   };
 
   var LONG_TERM_TYPES = ['기간권', '월단위권', '일할권'];
@@ -1052,16 +1195,71 @@
       if (row) row.style.display = isLongTerm ? '' : 'none';
     });
 
-    /* 시간권 → 이용가능 시간, 연박권 → 이용일 수 */
+    /* 시간권 → 이용가능 시간 + 타입 표시, 연박권 → 이용일 수 */
     var $rowHourAmount = document.getElementById('rowHourAmount');
+    var $hourTypeInfo = document.getElementById('hourTypeInfo');
     var $rowStayDays = document.getElementById('rowStayDays');
-    if ($rowHourAmount) $rowHourAmount.style.display = (typeName === '시간권') ? '' : 'none';
+    var isHourTicket = (typeName === '시간권(시간대)' || typeName === '시간권(입차기준)');
+    if ($rowHourAmount) $rowHourAmount.style.display = isHourTicket ? '' : 'none';
+    if ($hourTypeInfo) $hourTypeInfo.style.display = isHourTicket ? '' : 'none';
     if ($rowStayDays) $rowStayDays.style.display = (typeName === '연박권') ? '' : 'none';
+
+    /* 시간권 타입별 안내 (드롭박스 아래) */
+    var $hourTypeLabel = document.getElementById('hourTypeLabel');
+    var $hourTypeDesc = document.getElementById('hourTypeDesc');
+    if (isHourTicket && $hourTypeLabel && $hourTypeDesc) {
+      if (typeName === '시간권(시간대)') {
+        $hourTypeLabel.textContent = '시간대 지정';
+        $hourTypeLabel.style.background = 'var(--color-primary)';
+        $hourTypeLabel.style.color = '#fff';
+        $hourTypeDesc.textContent = '주차가능 시작~종료시간 범위 내에서 설정된 시간만큼 이용 가능';
+      } else {
+        $hourTypeLabel.textContent = '입차기준 카운트';
+        $hourTypeLabel.style.background = '#f59e0b';
+        $hourTypeLabel.style.color = '#fff';
+        $hourTypeDesc.textContent = '입차 시점부터 설정된 시간만큼 자동 카운트 (주차가능시간 무관)';
+      }
+    }
+
+    /* 시간권(입차기준)은 주차가능 시작/종료시간 불필요 → 숨김 */
+    if (typeName === '시간권(입차기준)') {
+      shortTermRows.forEach(function (row) {
+        if (row) row.style.display = 'none';
+      });
+    }
 
     /* 일반권/단기권 전용 행 (정기권에서 숨김) */
     nonLongTermRows.forEach(function (row) {
       if (row) row.style.display = isLongTerm ? 'none' : '';
     });
+
+    /* 옵션 가격정책 → 단기권만 활성, 나머지 비활성 + "준비중" 배지 */
+    var $optionBadge = document.getElementById('optionPricingBadge');
+    if ($optionBadge) {
+      $optionBadge.style.display = isShortTerm ? 'none' : 'inline-block';
+    }
+    var $optionTable = document.getElementById('optionPricingTable');
+    if ($optionTable) {
+      $optionTable.style.opacity = isShortTerm ? '' : '0.45';
+      $optionTable.querySelectorAll('input').forEach(function (inp) {
+        inp.disabled = !isShortTerm;
+      });
+    }
+
+    /* 고객 추가정보 입력 → 단기권만 활성, 나머지 비활성 + "준비중" 배지 */
+    var $userInputBadge = document.getElementById('userInputBadge');
+    if ($userInputBadge) {
+      $userInputBadge.style.display = isShortTerm ? 'none' : 'inline-block';
+    }
+    var $userInputBody = document.querySelector('#sectionUserInput .card__body');
+    if ($userInputBody) {
+      $userInputBody.style.opacity = isShortTerm ? '' : '0.45';
+      $userInputBody.style.pointerEvents = isShortTerm ? '' : 'none';
+    }
+    var $userInputModeSelectEl = document.getElementById('userInputModeSelect');
+    if ($userInputModeSelectEl) {
+      $userInputModeSelectEl.disabled = !isShortTerm;
+    }
 
     /* 공휴일 판매정책 → 장기권 숨김 */
     var $holidaySection = document.getElementById('sectionHolidayPricing');
@@ -1183,6 +1381,18 @@
         inp.disabled = !toggle.checked;
       });
     });
+  });
+
+  /* ─── 옵션 가격정책 아코디언 ─── */
+  var $optionHeader = document.getElementById('optionPricingHeader');
+  var $optionBody = document.getElementById('optionPricingBody');
+  var $optionChevron = document.getElementById('optionPricingChevron');
+  var optionExpanded = true;
+
+  $optionHeader.addEventListener('click', function () {
+    optionExpanded = !optionExpanded;
+    $optionBody.style.display = optionExpanded ? '' : 'none';
+    $optionChevron.style.transform = optionExpanded ? '' : 'rotate(-90deg)';
   });
 
 
@@ -1368,6 +1578,113 @@
   $gnTicketNotice.addEventListener('input', updateGnTemplate);
   if ($gnPosition) $gnPosition.addEventListener('input', updateGnTemplate);
   updateGnTemplate();
+
+  /* ═══════════════════════════════════════════════════════
+     고객 추가정보 입력 JS
+     ═══════════════════════════════════════════════════════ */
+  var $userInputModeSelect = document.getElementById('userInputModeSelect');
+  var $userInputTbody = document.getElementById('userInputTbody');
+  var $userInputEmptyRow = document.getElementById('userInputEmptyRow');
+  var $btnAddUserInput = document.getElementById('btnAddUserInput');
+
+  var AIRPORT_TEMPLATE = [
+    { title: '차량모델',    placeholder: '차량모델을 입력하세요(예: 그랜저)',   type: 'text', required: true },
+    { title: '출국 항공편', placeholder: '출국 항공편을 입력하세요(예: AJ123)', type: 'text', required: true },
+    { title: '입국 항공편', placeholder: '입국 항공편을 입력하세요(예: AJ123)', type: 'text', required: true },
+    { title: '입국 터미널', placeholder: '입국 터미널을 입력하세요(예: T1, T2)', type: 'text', required: true }
+  ];
+
+  var userInputFields = [];
+
+  function renderUserInputTable() {
+    /* 기존 행 삭제 (빈 행 제외) */
+    var rows = $userInputTbody.querySelectorAll('tr:not(#userInputEmptyRow)');
+    rows.forEach(function (r) { r.remove(); });
+
+    if (userInputFields.length === 0) {
+      $userInputEmptyRow.style.display = '';
+      return;
+    }
+    $userInputEmptyRow.style.display = 'none';
+
+    userInputFields.forEach(function (field, idx) {
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><input type="text" class="ui-text-input" value="' + escAttr(field.title) + '" data-idx="' + idx + '" data-key="title" placeholder="제목을 입력하세요"></td>' +
+        '<td><input type="text" class="ui-text-input" value="' + escAttr(field.placeholder) + '" data-idx="' + idx + '" data-key="placeholder" placeholder="설명문구를 입력하세요"></td>' +
+        '<td style="text-align:center;"><select class="ui-select" data-idx="' + idx + '" data-key="type">' +
+          '<option value="text"' + (field.type === 'text' ? ' selected' : '') + '>텍스트입력</option>' +
+          '<option value="tel"' + (field.type === 'tel' ? ' selected' : '') + '>숫자입력</option>' +
+        '</select></td>' +
+        '<td style="text-align:center;"><select class="ui-select" data-idx="' + idx + '" data-key="required">' +
+          '<option value="true"' + (field.required ? ' selected' : '') + '>필수입력</option>' +
+          '<option value="false"' + (!field.required ? ' selected' : '') + '>선택입력</option>' +
+        '</select></td>' +
+        '<td style="text-align:center;"><button type="button" class="ui-delete-btn" data-idx="' + idx + '">삭제</button></td>';
+      $userInputTbody.appendChild(tr);
+    });
+  }
+
+  function escAttr(str) {
+    return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  /* 모드 변경 */
+  $userInputModeSelect.addEventListener('change', function () {
+    var mode = $userInputModeSelect.value;
+    if (mode === 'airport') {
+      userInputFields = AIRPORT_TEMPLATE.map(function (t) {
+        return { title: t.title, placeholder: t.placeholder, type: t.type, required: t.required };
+      });
+    } else {
+      userInputFields = [];
+    }
+    renderUserInputTable();
+  });
+
+  /* 항목 추가 */
+  $btnAddUserInput.addEventListener('click', function () {
+    userInputFields.push({ title: '', placeholder: '', type: 'text', required: true });
+    $userInputEmptyRow.style.display = 'none';
+    renderUserInputTable();
+    /* 새로 추가된 행의 제목 input에 포커스 */
+    var lastInput = $userInputTbody.querySelector('tr:last-child .ui-text-input');
+    if (lastInput) lastInput.focus();
+  });
+
+  /* 이벤트 위임: 입력 변경 & 삭제 */
+  $userInputTbody.addEventListener('input', function (e) {
+    var el = e.target;
+    var idx = parseInt(el.getAttribute('data-idx'), 10);
+    var key = el.getAttribute('data-key');
+    if (isNaN(idx) || !key || !userInputFields[idx]) return;
+    userInputFields[idx][key] = el.value;
+  });
+
+  $userInputTbody.addEventListener('change', function (e) {
+    var el = e.target;
+    var idx = parseInt(el.getAttribute('data-idx'), 10);
+    var key = el.getAttribute('data-key');
+    if (isNaN(idx) || !key || !userInputFields[idx]) return;
+    if (key === 'required') {
+      userInputFields[idx][key] = el.value === 'true';
+    } else {
+      userInputFields[idx][key] = el.value;
+    }
+  });
+
+  $userInputTbody.addEventListener('click', function (e) {
+    var btn = e.target.closest('.ui-delete-btn');
+    if (!btn) return;
+    var idx = parseInt(btn.getAttribute('data-idx'), 10);
+    if (isNaN(idx)) return;
+    userInputFields.splice(idx, 1);
+    renderUserInputTable();
+  });
+
+  /* 초기 렌더 */
+  renderUserInputTable();
+
 
   /* ─── Toast ─── */
   function showToast(message, type) {

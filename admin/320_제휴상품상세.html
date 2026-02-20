@@ -312,7 +312,8 @@ textarea.form-input[readonly] {
                   <option value="오후권">오후권</option>
                   <option value="야간권">야간권</option>
                   <option value="심야권">심야권</option>
-                  <option value="시간권">시간권</option>
+                  <option value="시간권(시간대)">시간권(시간대)</option>
+                  <option value="시간권(입차기준)">시간권(입차기준)</option>
                   <option value="연박권">연박권</option>
                 </optgroup>
                 <optgroup label="──── 장기권 ────">
@@ -324,6 +325,10 @@ textarea.form-input[readonly] {
                   <option value="단기권">단기권</option>
                 </optgroup>
               </select>
+              <div id="hourTypeInfo" style="display:none; margin-top:8px;">
+                <span id="hourTypeLabel" style="display:inline-block; padding:3px 10px; border-radius:var(--radius-sm); font-size:12px; font-weight:600;"></span>
+                <span id="hourTypeDesc" style="font-size:12px; color:var(--color-gray-500); margin-left:8px;"></span>
+              </div>
             </td>
           </tr>
           <tr id="rowUnit" style="display:none;">
@@ -1251,9 +1256,36 @@ textarea.form-input[readonly] {
     });
 
     var $rowHourAmount = document.getElementById('rowHourAmount');
+    var $hourTypeInfo = document.getElementById('hourTypeInfo');
     var $rowStayDays = document.getElementById('rowStayDays');
-    if ($rowHourAmount) $rowHourAmount.style.display = (typeName === '시간권') ? '' : 'none';
+    var isHourTicket = (typeName === '시간권(시간대)' || typeName === '시간권(입차기준)');
+    if ($rowHourAmount) $rowHourAmount.style.display = isHourTicket ? '' : 'none';
+    if ($hourTypeInfo) $hourTypeInfo.style.display = isHourTicket ? '' : 'none';
     if ($rowStayDays) $rowStayDays.style.display = (typeName === '연박권') ? '' : 'none';
+
+    /* 시간권 타입별 안내 (드롭박스 아래) */
+    var $hourTypeLabel = document.getElementById('hourTypeLabel');
+    var $hourTypeDesc = document.getElementById('hourTypeDesc');
+    if (isHourTicket && $hourTypeLabel && $hourTypeDesc) {
+      if (typeName === '시간권(시간대)') {
+        $hourTypeLabel.textContent = '시간대 지정';
+        $hourTypeLabel.style.background = 'var(--color-primary)';
+        $hourTypeLabel.style.color = '#fff';
+        $hourTypeDesc.textContent = '주차가능 시작~종료시간 범위 내에서 설정된 시간만큼 이용 가능';
+      } else {
+        $hourTypeLabel.textContent = '입차기준 카운트';
+        $hourTypeLabel.style.background = '#f59e0b';
+        $hourTypeLabel.style.color = '#fff';
+        $hourTypeDesc.textContent = '입차 시점부터 설정된 시간만큼 자동 카운트 (주차가능시간 무관)';
+      }
+    }
+
+    /* 시간권(입차기준)은 주차가능 시작/종료시간 불필요 → 숨김 */
+    if (typeName === '시간권(입차기준)') {
+      shortTermRows.forEach(function (row) {
+        if (row) row.style.display = 'none';
+      });
+    }
 
     nonLongTermRows.forEach(function (row) {
       if (row) row.style.display = isLongTerm ? 'none' : '';
