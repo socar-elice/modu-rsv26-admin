@@ -352,19 +352,6 @@ textarea.form-input[readonly] {
               </div>
             </td>
           </tr>
-          <tr id="rowReservationType">
-            <th>예매 설정</th>
-            <td>
-              <div class="inline-field" style="gap:20px;">
-                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                  <input type="radio" name="reservationType" value="available" checked disabled style="accent-color:var(--color-primary);"> 예매가능
-                </label>
-                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                  <input type="radio" name="reservationType" value="unavailable" disabled style="accent-color:var(--color-primary);"> 예매불가
-                </label>
-              </div>
-            </td>
-          </tr>
           <tr id="rowResvSaleStartTime" style="display:none;">
             <th>판매 시작시간</th>
             <td>
@@ -378,19 +365,19 @@ textarea.form-input[readonly] {
             </td>
           </tr>
           <tr id="rowPurchaseStart">
-            <th>이용일 시작일 기준<br>구매가능 시작</th>
+            <th>이용시작일 기준<br>구매가능 시작</th>
             <td>
               <div class="inline-field">
                 <input type="text" inputmode="numeric" class="form-input form-input--sm" id="startDeadlineValue" value="0" readonly>
                 <span class="unit-label">일 전</span>
                 <input type="time" class="form-input" id="startDeadlineTime" value="00:00" readonly style="width:200px;">
-                <span class="unit-label">시 까지</span>
+                <span class="unit-label">부터</span>
               </div>
-              <div class="text-hint mt-1">0 이상의 정수를 입력하세요. 예) 0일 전 00:00 = 이용시작 직전까지 예매 가능</div>
+              <div class="form-helper" id="startDeadlineHelper" style="font-size:13px; color:var(--color-primary);"></div>
             </td>
           </tr>
           <tr id="rowPurchaseEnd">
-            <th>이용일 시작일 기준<br>구매 마감</th>
+            <th>이용시작일 기준<br>구매 마감</th>
             <td>
               <div class="inline-field">
                 <input type="text" inputmode="numeric" class="form-input form-input--sm" id="deadlineValue" value="0" readonly>
@@ -398,7 +385,7 @@ textarea.form-input[readonly] {
                 <input type="time" class="form-input" id="deadlineTime" value="00:00" readonly style="width:200px;">
                 <span class="unit-label">시 까지</span>
               </div>
-              <div class="text-hint mt-1">0 이상의 정수를 입력하세요. 예) 0일 전 00:00 = 이용시작 직전까지 예매 가능</div>
+              <div class="form-helper" id="deadlineHelper" style="font-size:13px; color:var(--color-primary);"></div>
             </td>
           </tr>
           <tr id="rowEntryDeadline" style="display:none;">
@@ -408,6 +395,10 @@ textarea.form-input[readonly] {
                 <span class="unit-label">입차예정시간</span>
                 <input type="number" class="form-input form-input--sm" id="entryDeadlineHours" min="0" value="0" readonly>
                 <span class="unit-label">시간 전 까지</span>
+              </div>
+              <div class="form-helper" id="entryDeadlineHelper" style="font-size:13px; color:var(--color-primary);"></div>
+              <div class="form-helper" style="font-size:12px; color:var(--color-gray-500); margin-top:4px;">
+                이용시작일 기준 구매 마감일과 비교하여 더 뒤의 시간까지 구매가능합니다.
               </div>
             </td>
           </tr>
@@ -1244,7 +1235,6 @@ textarea.form-input[readonly] {
   ];
   var nonLongTermRows = [
     document.getElementById('rowKeywords'),
-    document.getElementById('rowReservationType'),
     document.getElementById('rowResvSaleStartTime'),
     document.getElementById('rowResvSaleEndTime'),
     document.getElementById('rowPurchaseStart'),
@@ -1344,8 +1334,43 @@ textarea.form-input[readonly] {
     if ($longTermSections) $longTermSections.style.display = 'none';
   }
 
-  /* ─── 예매 설정 토글 (shared.js) ─── */
-  Shared.initReservationTypeToggle();
+  /* ─── 구매가능 시작/마감 도움말 (300과 동일) ─── */
+  var $startDeadlineHelper = document.getElementById('startDeadlineHelper');
+  var $deadlineHelper = document.getElementById('deadlineHelper');
+  var $entryDeadlineHelper = document.getElementById('entryDeadlineHelper');
+  var $startDeadlineValue = document.getElementById('startDeadlineValue');
+  var $startDeadlineTime = document.getElementById('startDeadlineTime');
+  var $deadlineValue = document.getElementById('deadlineValue');
+  var $deadlineTime = document.getElementById('deadlineTime');
+  var $entryDeadlineHours = document.getElementById('entryDeadlineHours');
+
+  function buildHelperText(days, time, suffix) {
+    var d = parseInt(days, 10) || 0;
+    var t = time || '00:00';
+    var dayLabel = d === 0 ? '이용당일' : '이용시작 ' + d + '일 전';
+    return dayLabel + ' ' + t + ' ' + suffix;
+  }
+
+  (function renderHelpers() {
+    var startDays = parseInt($startDeadlineValue.value, 10) || 0;
+    var startTag = startDays > 0
+      ? '<span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:700;color:#16a34a;background:#dcfce7;border:1px solid #bbf7d0;margin-right:6px;">예매가능</span>'
+      : '<span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:700;color:#a16207;background:#fefce8;border:1px solid #fde68a;margin-right:6px;">예매불가</span>';
+    if ($startDeadlineHelper) {
+      $startDeadlineHelper.innerHTML = startTag + buildHelperText(
+        $startDeadlineValue.value, $startDeadlineTime.value, '부터 구매가능합니다.'
+      );
+    }
+    if ($deadlineHelper) {
+      $deadlineHelper.textContent = buildHelperText(
+        $deadlineValue.value, $deadlineTime.value, '까지 구매가능합니다.'
+      );
+    }
+    if ($entryDeadlineHelper) {
+      var h = parseInt($entryDeadlineHours.value, 10) || 0;
+      $entryDeadlineHelper.textContent = '입차예정시간 ' + h + '시간 전 까지 구매가능합니다.';
+    }
+  })();
 
   /* ─── 요금 모드 표시: 기간별 상세영역 내 periodModeSelector로 이동됨 ─── */
 
