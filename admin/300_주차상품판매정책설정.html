@@ -146,10 +146,10 @@
   </div>
 
   <!-- ─── Section 1: 기본 정보 ─── -->
-  <div class="card" id="sectionBasic" style="border:1.5px solid #7dd3fc; box-shadow:0 0 0 1px #bae6fd, var(--shadow-sm);">
-    <div class="card__header" style="background:#f0f9ff;">
+  <div class="card" id="sectionBasic" style="border:1.5px solid #c4b5fd; box-shadow:0 0 0 1px #ddd6fe, var(--shadow-sm);">
+    <div class="card__header" style="background:#f5f3ff;">
       <h3>기본 정보</h3>
-      <span style="margin-left:auto;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#0284c7;background:#e0f2fe;border:1px solid #7dd3fc;letter-spacing:0.5px;">MVP</span>
+      <span style="margin-left:auto;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#7c3aed;background:#ede9fe;border:1px solid #c4b5fd;letter-spacing:0.5px;">MVP</span>
     </div>
     <div class="card__body">
       <table class="form-table">
@@ -264,16 +264,16 @@
               <input type="time" step="1" class="form-input form-input--md" id="saleEndTime" value="23:59:00">
             </td>
           </tr>
-          <tr id="rowParkingStartTime">
-            <th>주차가능 시작시간</th>
+          <tr id="rowUsageStartTime">
+            <th>이용가능 시작시간</th>
             <td>
-              <input type="time" class="form-input form-input--md" id="parkingStartTime" value="00:00">
+              <input type="time" class="form-input form-input--md" id="usageStartTime" value="00:00">
             </td>
           </tr>
-          <tr id="rowParkingEndTime">
-            <th>주차가능 종료시간</th>
+          <tr id="rowUsageEndTime">
+            <th>이용가능 종료시간</th>
             <td>
-              <input type="time" class="form-input form-input--md" id="parkingEndTime" value="23:59">
+              <input type="time" class="form-input form-input--md" id="usageEndTime" value="23:59">
             </td>
           </tr>
           <tr id="rowKeywords">
@@ -289,64 +289,55 @@
               </div>
             </td>
           </tr>
-          <tr id="rowReservationType">
-            <th>예매 설정</th>
-            <td>
-              <div class="inline-field" style="gap:20px;">
-                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                  <input type="radio" name="reservationType" value="unavailable" checked style="accent-color:var(--color-primary);"> 예매불가
-                </label>
-                <label style="display:flex; align-items:center; gap:6px; cursor:pointer;">
-                  <input type="radio" name="reservationType" value="available" style="accent-color:var(--color-primary);"> 예매가능
-                </label>
-              </div>
-            </td>
-          </tr>
-          <tr id="rowResvSaleStartTime" style="display:none;">
-            <th>판매 시작시간</th>
-            <td>
-              <input type="time" class="form-input form-input--md" id="resvSaleStartTime" value="00:00">
-            </td>
-          </tr>
-          <tr id="rowResvSaleEndTime" style="display:none;">
-            <th>판매 종료시간</th>
-            <td>
-              <input type="time" class="form-input form-input--md" id="resvSaleEndTime" value="23:59">
-            </td>
-          </tr>
           <tr id="rowPurchaseStart">
-            <th>이용일 시작일 기준<br>구매가능 시작</th>
+            <th>이용시작일 기준<br>구매가능 시작</th>
             <td>
               <div class="inline-field">
                 <input type="text" inputmode="numeric" class="form-input form-input--sm" id="startDeadlineValue" value="0" placeholder="0" autocomplete="off">
                 <span class="unit-label">일 전</span>
-                <input type="time" class="form-input" id="startDeadlineTime" value="00:00" style="width:200px;">
-                <span class="unit-label">시 까지</span>
+                <input type="text" class="form-input" id="startDeadlineTime" value="00:00" placeholder="HH:MM" maxlength="5" pattern="[0-2][0-9]:[0-5][0-9]" style="width:100px; text-align:center;">
+                <span class="unit-label">부터</span>
               </div>
               <div class="form-error" id="errStartDeadline" style="display:none">
                 <span id="errStartDeadlineMsg"></span>
               </div>
-              <div class="form-helper">
-                0 이상의 정수를 입력하세요. 예) 0일 전 00:00 = 이용시작 직전까지 예매 가능
+              <div class="form-helper" id="startDeadlineHelper" style="font-size:13px; color:var(--color-primary);">
+                이용당일 00:00 부터 구매가능합니다.
               </div>
             </td>
           </tr>
           <tr id="rowPurchaseEnd">
-            <th>이용일 시작일 기준<br>구매 마감</th>
+            <th>이용시작일 기준<br>구매 마감</th>
             <td>
               <div class="inline-field">
                 <input type="text" inputmode="numeric" class="form-input form-input--sm" id="deadlineValue" value="0" placeholder="0" autocomplete="off">
                 <span class="unit-label">일 전</span>
-                <input type="time" class="form-input" id="deadlineTime" value="00:00" style="width:200px;">
+                <input type="text" class="form-input" id="deadlineTime" value="00:00" placeholder="HH:MM" maxlength="5" pattern="[0-2][0-9]:[0-5][0-9]" style="width:100px; text-align:center;">
                 <span class="unit-label">시 까지</span>
               </div>
               <div class="form-error" id="errDeadline" style="display:none">
                 <span id="errDeadlineMsg"></span>
               </div>
-              <div class="form-helper" id="deadlineHelper">
-                0 이상의 정수를 입력하세요. 예) 0일 전 00:00 = 이용시작 직전까지 예매 가능
+              <div class="form-helper" id="deadlineHelper" style="font-size:13px; color:var(--color-primary);">
+                이용당일 00:00 까지 구매가능합니다.
               </div>
               <div id="summaryArea"></div>
+            </td>
+          </tr>
+          <tr id="rowEntryDeadline" style="display:none;">
+            <th>입차예정시간 기준<br>구매 마감</th>
+            <td>
+              <div class="inline-field">
+                <span class="unit-label">입차예정시간</span>
+                <input type="number" class="form-input form-input--sm" id="entryDeadlineHours" min="0" value="0" placeholder="0">
+                <span class="unit-label">시간 전 까지</span>
+              </div>
+              <div class="form-helper" id="entryDeadlineHelper" style="font-size:13px; color:var(--color-primary);">
+                입차예정시간 0시간 전 까지 구매가능합니다.
+              </div>
+              <div class="form-helper" style="font-size:12px; color:var(--color-gray-500); margin-top:4px;">
+                이용시작일 기준 구매 마감일과 비교하여 더 뒤의 시간까지 구매가능합니다.
+              </div>
             </td>
           </tr>
           <tr id="rowAirport">
@@ -406,10 +397,9 @@
       </div>
     </div>
 
-    <div class="card" style="border:1.5px solid #c4b5fd; box-shadow:0 0 0 1px #ddd6fe, var(--shadow-sm);">
-      <div class="card__header" style="background:#f5f3ff;">
+    <div class="card">
+      <div class="card__header">
         <h3>기본 판매정책</h3>
-        <span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#7c3aed;background:#ede9fe;border:1px solid #c4b5fd;letter-spacing:0.5px;">3차</span>
         <div class="mode-selector" id="pricingModeSelector" style="margin: 0 0 0 auto;">
           <button type="button" class="mode-selector__btn mode-selector__btn--active" data-mode="daily">요일별 설정</button>
           <button type="button" class="mode-selector__btn" data-mode="bulk">일괄요금 설정</button>
@@ -547,8 +537,8 @@
     </div>
 
     <!-- 공휴일 판매정책 -->
-    <div class="card" id="sectionHolidayPricing" style="border:1.5px solid #c4b5fd; box-shadow:0 0 0 1px #ddd6fe, var(--shadow-sm);">
-      <div class="card__header" style="background:#f5f3ff;"><h3>공휴일 판매정책</h3><span style="margin-left:auto;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#7c3aed;background:#ede9fe;border:1px solid #c4b5fd;letter-spacing:0.5px;">3차</span></div>
+    <div class="card" id="sectionHolidayPricing">
+      <div class="card__header"><h3>공휴일 판매정책</h3></div>
       <div class="card__body" style="padding:0;">
         <table class="pricing-table" id="holidayPricingTable">
           <thead>
@@ -1030,9 +1020,77 @@
   /* ─── DOM refs (purchase start) ─── */
   var $startDeadlineValue = document.getElementById('startDeadlineValue');
   var $startDeadlineTime  = document.getElementById('startDeadlineTime');
+  var $errStartDeadline   = document.getElementById('errStartDeadline');
+  var $errStartDeadlineMsg = document.getElementById('errStartDeadlineMsg');
 
-  /* ─── 예매 설정 토글 (shared.js) ─── */
-  Shared.initReservationTypeToggle();
+  /* ─── DOM refs (entry deadline) ─── */
+  var $entryDeadlineHours  = document.getElementById('entryDeadlineHours');
+  var $entryDeadlineHelper = document.getElementById('entryDeadlineHelper');
+
+  /* ─── 도움말 동적 갱신 ─── */
+  var $startDeadlineHelper = document.getElementById('startDeadlineHelper');
+
+  function buildHelperText(days, time, suffix) {
+    var d = parseInt(days, 10) || 0;
+    var t = time || '00:00';
+    var dayLabel = d === 0 ? '이용당일' : '이용시작 ' + d + '일 전';
+    return dayLabel + ' ' + t + ' ' + suffix;
+  }
+
+  function updateHelpers() {
+    var startDays = parseInt($startDeadlineValue.value, 10) || 0;
+    var startTag = startDays > 0
+      ? '<span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:700;color:#16a34a;background:#dcfce7;border:1px solid #bbf7d0;margin-right:6px;">예매가능</span>'
+      : '<span style="display:inline-block;padding:1px 6px;border-radius:3px;font-size:11px;font-weight:700;color:#a16207;background:#fefce8;border:1px solid #fde68a;margin-right:6px;">예매불가</span>';
+    $startDeadlineHelper.innerHTML = startTag + buildHelperText(
+      $startDeadlineValue.value, $startDeadlineTime.value, '부터 구매가능합니다.'
+    );
+    $deadlineHelper.textContent = buildHelperText(
+      $deadlineValue.value, $deadlineTime.value, '까지 구매가능합니다.'
+    );
+  }
+
+  /* ─── 구매 마감이 구매가능 시작보다 앞설 수 없음 검증 ─── */
+  function validateDeadlineOrder() {
+    var startDays = parseInt($startDeadlineValue.value, 10) || 0;
+    var endDays   = parseInt($deadlineValue.value, 10) || 0;
+    var startTime = $startDeadlineTime.value || '00:00';
+    var endTime   = $deadlineTime.value || '00:00';
+
+    var invalid = false;
+    if (startDays < endDays) {
+      invalid = true;
+    } else if (startDays === endDays && startTime < endTime) {
+      invalid = true;
+    }
+
+    if (invalid) {
+      $errDeadline.style.display = '';
+      $errDeadlineMsg.textContent = '구매 마감은 구매가능 시작보다 앞선 시간으로 설정할 수 없습니다.';
+    } else {
+      $errDeadline.style.display = 'none';
+      $errDeadlineMsg.textContent = '';
+    }
+  }
+
+  function onDeadlineChange() {
+    updateHelpers();
+    validateDeadlineOrder();
+  }
+
+  [$startDeadlineValue, $startDeadlineTime, $deadlineValue, $deadlineTime].forEach(function (el) {
+    el.addEventListener('input', onDeadlineChange);
+    el.addEventListener('change', onDeadlineChange);
+  });
+  onDeadlineChange();
+
+  /* 입차예정시간 기준 구매 마감 도움말 갱신 */
+  function updateEntryDeadlineHelper() {
+    var h = parseInt($entryDeadlineHours.value, 10) || 0;
+    $entryDeadlineHelper.textContent = '입차예정시간 ' + h + '시간 전 까지 구매가능합니다.';
+  }
+  $entryDeadlineHours.addEventListener('input', updateEntryDeadlineHelper);
+  $entryDeadlineHours.addEventListener('change', updateEntryDeadlineHelper);
 
   /* ─── 주차권 유형별 기본값 ─── */
   var TICKET_TYPE_DEFAULTS = {
@@ -1060,18 +1118,23 @@
   var $ticketName = document.getElementById('ticketName');
   var $parkingStartTime = document.getElementById('parkingStartTime');
   var $parkingEndTime = document.getElementById('parkingEndTime');
+  var $usageStartTime = document.getElementById('usageStartTime');
+  var $usageEndTime = document.getElementById('usageEndTime');
   var $saleStartDate = document.getElementById('saleStartDate');
   var $saleEndDate = document.getElementById('saleEndDate');
 
   /* 단기권 템플릿 영역 (일반권에도 동일 적용) */
   var shortTermRows = [
     document.getElementById('rowParkingStartTime'),
-    document.getElementById('rowParkingEndTime')
+    document.getElementById('rowParkingEndTime'),
+    document.getElementById('rowUsageStartTime'),
+    document.getElementById('rowUsageEndTime')
   ];
 
   var shortTermOnlyRows = [
     document.getElementById('rowMinDays'),
     document.getElementById('rowMaxDays'),
+    document.getElementById('rowEntryDeadline'),
     document.getElementById('sectionMinPrice')
   ];
 
@@ -1082,6 +1145,8 @@
     /* 기본값 적용 */
     $parkingStartTime.value = defaults.startTime;
     $parkingEndTime.value = defaults.endTime;
+    if ($usageStartTime) $usageStartTime.value = defaults.startTime;
+    if ($usageEndTime) $usageEndTime.value = defaults.endTime;
     $minDays.value = defaults.minDays;
     $maxDays.value = defaults.maxDays;
 

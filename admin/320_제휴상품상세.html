@@ -209,9 +209,10 @@ textarea.form-input[readonly] {
   </div>
 
   <!-- ─── Section 1: 기본 정보 ─── -->
-  <div class="card" id="sectionBasic">
-    <div class="card__header">
+  <div class="card" id="sectionBasic" style="border:1.5px solid #c4b5fd; box-shadow:0 0 0 1px #ddd6fe, var(--shadow-sm);">
+    <div class="card__header" style="background:#f5f3ff;">
       <h3>기본 정보</h3>
+      <span style="margin-left:auto;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#7c3aed;background:#ede9fe;border:1px solid #c4b5fd;letter-spacing:0.5px;">MVP</span>
     </div>
     <div class="card__body">
       <table class="form-table">
@@ -398,6 +399,16 @@ textarea.form-input[readonly] {
                 <span class="unit-label">시 까지</span>
               </div>
               <div class="text-hint mt-1">0 이상의 정수를 입력하세요. 예) 0일 전 00:00 = 이용시작 직전까지 예매 가능</div>
+            </td>
+          </tr>
+          <tr id="rowEntryDeadline" style="display:none;">
+            <th>입차예정시간 기준<br>구매 마감</th>
+            <td>
+              <div class="inline-field">
+                <span class="unit-label">입차예정시간</span>
+                <input type="number" class="form-input form-input--sm" id="entryDeadlineHours" min="0" value="0" readonly>
+                <span class="unit-label">시간 전 까지</span>
+              </div>
             </td>
           </tr>
           <tr id="rowAirport">
