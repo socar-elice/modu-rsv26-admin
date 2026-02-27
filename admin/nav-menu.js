@@ -58,11 +58,11 @@
       ],
     },
     {
-      id: 'partner', label: '제휴 관리', badge: '변경',
+      id: 'partner', label: '제휴 관리', badge: 'MVP',
       children: [
         { label: '제휴주차장 관리', href: '#' },
-        { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true, badge: '변경' },
-        { label: '제휴상품상세', href: '320_제휴상품상세.html', indent: true, badge: '변경' },
+        { label: '제휴상품생성하기', href: '300_주차상품판매정책설정.html', indent: true, badge: 'MVP' },
+        { label: '제휴상품상세', href: '320_제휴상품상세.html', indent: true, badge: 'MVP' },
         { label: '판매정책 캘린더뷰', href: '325_판매정책_캘린더뷰.html', indent: true, badge: '변경' },
         { label: '월주차 현황', href: '#' },
         { label: '월주차 신청', href: '#' },
@@ -179,7 +179,8 @@
       var openClass = groupHasActive ? ' open' : '';
 
       html += '<div class="lnb__group">';
-      var groupBadgeHTML = group.badge ? ' <span class="lnb__badge">' + group.badge + '</span>' : '';
+      var groupBadgeCls = 'lnb__badge' + (group.badge === '변경' ? ' lnb__badge--low' : '');
+      var groupBadgeHTML = group.badge ? ' <span class="' + groupBadgeCls + '">' + group.badge + '</span>' : '';
       html += '  <div class="lnb__group-label' + openClass + '" onclick="window.__toggleLnbGroup(this)">';
       html += '    ' + group.label + groupBadgeHTML + ' <span class="arrow">▼</span>';
       html += '  </div>';
@@ -191,7 +192,8 @@
         var activeClass = isActive ? ' lnb__item--active' : '';
         var indentStyle = item.indent ? ' style="padding-left:48px;"' : '';
 
-        var badgeHTML = item.badge ? ' <span class="lnb__badge">' + item.badge + '</span>' : '';
+        var badgeCls = 'lnb__badge' + (item.badge === '변경' ? ' lnb__badge--low' : '');
+        var badgeHTML = item.badge ? ' <span class="' + badgeCls + '">' + item.badge + '</span>' : '';
         html += '<a class="lnb__item' + activeClass + '" href="' + item.href + '"' + indentStyle + '>' + item.label + badgeHTML + '</a>';
       }
 

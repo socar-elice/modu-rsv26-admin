@@ -146,9 +146,10 @@
   </div>
 
   <!-- ─── Section 1: 기본 정보 ─── -->
-  <div class="card" id="sectionBasic">
-    <div class="card__header">
+  <div class="card" id="sectionBasic" style="border:1.5px solid #7dd3fc; box-shadow:0 0 0 1px #bae6fd, var(--shadow-sm);">
+    <div class="card__header" style="background:#f0f9ff;">
       <h3>기본 정보</h3>
+      <span style="margin-left:auto;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#0284c7;background:#e0f2fe;border:1px solid #7dd3fc;letter-spacing:0.5px;">MVP</span>
     </div>
     <div class="card__body">
       <table class="form-table">
@@ -314,40 +315,36 @@
             </td>
           </tr>
           <tr id="rowPurchaseStart">
-            <th>이용일 시작일 기준<br>구매가능 시작일</th>
+            <th>이용일 시작일 기준<br>구매가능 시작</th>
             <td>
               <div class="inline-field">
-                <div class="segment" id="startUnitSegment">
-                  <button type="button" class="segment__btn segment__btn--active" data-unit="hour">시간</button>
-                  <button type="button" class="segment__btn" data-unit="day">일</button>
-                </div>
                 <input type="text" inputmode="numeric" class="form-input form-input--sm" id="startDeadlineValue" value="0" placeholder="0" autocomplete="off">
-                <span class="unit-label" id="startUnitLabel">시간 전까지</span>
+                <span class="unit-label">일 전</span>
+                <input type="time" class="form-input" id="startDeadlineTime" value="00:00" style="width:200px;">
+                <span class="unit-label">시 까지</span>
               </div>
               <div class="form-error" id="errStartDeadline" style="display:none">
                 <span id="errStartDeadlineMsg"></span>
               </div>
               <div class="form-helper">
-                0 이상의 정수를 입력하세요. 예) 0 = 이용시작 직전까지 예매 가능
+                0 이상의 정수를 입력하세요. 예) 0일 전 00:00 = 이용시작 직전까지 예매 가능
               </div>
             </td>
           </tr>
           <tr id="rowPurchaseEnd">
-            <th>이용일 시작일 기준<br>구매가능 마감일</th>
+            <th>이용일 시작일 기준<br>구매 마감</th>
             <td>
               <div class="inline-field">
-                <div class="segment" id="unitSegment">
-                  <button type="button" class="segment__btn segment__btn--active" data-unit="hour">시간</button>
-                  <button type="button" class="segment__btn" data-unit="day">일</button>
-                </div>
                 <input type="text" inputmode="numeric" class="form-input form-input--sm" id="deadlineValue" value="0" placeholder="0" autocomplete="off">
-                <span class="unit-label" id="unitLabel">시간 전까지</span>
+                <span class="unit-label">일 전</span>
+                <input type="time" class="form-input" id="deadlineTime" value="00:00" style="width:200px;">
+                <span class="unit-label">시 까지</span>
               </div>
               <div class="form-error" id="errDeadline" style="display:none">
                 <span id="errDeadlineMsg"></span>
               </div>
               <div class="form-helper" id="deadlineHelper">
-                0 이상의 정수를 입력하세요. 예) 0 = 이용시작 직전까지 예매 가능
+                0 이상의 정수를 입력하세요. 예) 0일 전 00:00 = 이용시작 직전까지 예매 가능
               </div>
               <div id="summaryArea"></div>
             </td>
@@ -409,9 +406,10 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="card__header">
+    <div class="card" style="border:1.5px solid #c4b5fd; box-shadow:0 0 0 1px #ddd6fe, var(--shadow-sm);">
+      <div class="card__header" style="background:#f5f3ff;">
         <h3>기본 판매정책</h3>
+        <span style="padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#7c3aed;background:#ede9fe;border:1px solid #c4b5fd;letter-spacing:0.5px;">3차</span>
         <div class="mode-selector" id="pricingModeSelector" style="margin: 0 0 0 auto;">
           <button type="button" class="mode-selector__btn mode-selector__btn--active" data-mode="daily">요일별 설정</button>
           <button type="button" class="mode-selector__btn" data-mode="bulk">일괄요금 설정</button>
@@ -549,8 +547,8 @@
     </div>
 
     <!-- 공휴일 판매정책 -->
-    <div class="card" id="sectionHolidayPricing">
-      <div class="card__header"><h3>공휴일 판매정책</h3></div>
+    <div class="card" id="sectionHolidayPricing" style="border:1.5px solid #c4b5fd; box-shadow:0 0 0 1px #ddd6fe, var(--shadow-sm);">
+      <div class="card__header" style="background:#f5f3ff;"><h3>공휴일 판매정책</h3><span style="margin-left:auto;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:700;color:#7c3aed;background:#ede9fe;border:1px solid #c4b5fd;letter-spacing:0.5px;">3차</span></div>
       <div class="card__body" style="padding:0;">
         <table class="pricing-table" id="holidayPricingTable">
           <thead>
@@ -1014,7 +1012,6 @@
 
   /* ─── State ─── */
   var state = {
-    deadlineUnit: 'hour',
     deadlineValue: '0',
     settlementRate: 70
   };
@@ -1023,48 +1020,16 @@
   var $settlementRate = document.getElementById('settlementRate');
 
   /* ─── DOM refs (deadline) ─── */
-  var $unitSegment    = document.getElementById('unitSegment');
   var $deadlineValue  = document.getElementById('deadlineValue');
-  var $unitLabel      = document.getElementById('unitLabel');
+  var $deadlineTime   = document.getElementById('deadlineTime');
   var $errDeadline    = document.getElementById('errDeadline');
   var $errDeadlineMsg = document.getElementById('errDeadlineMsg');
   var $deadlineHelper = document.getElementById('deadlineHelper');
   var $summaryArea    = document.getElementById('summaryArea');
 
-  var UNIT_KR = { hour: '시간', day: '일' };
-
-  /* ─── Unit Segment (시간/일 토글) ─── */
-  $unitSegment.addEventListener('click', function (e) {
-    var btn = e.target.closest('.segment__btn');
-    if (!btn) return;
-    var newUnit = btn.getAttribute('data-unit');
-    if (newUnit === state.deadlineUnit) return;
-    state.deadlineUnit = newUnit;
-    $unitSegment.querySelectorAll('.segment__btn').forEach(function (b) {
-      b.classList.remove('segment__btn--active');
-    });
-    btn.classList.add('segment__btn--active');
-    $unitLabel.textContent = UNIT_KR[newUnit] + ' 전까지';
-  });
-
-  /* ─── Unit Segment: 구매가능 시작일 (시간/일 토글) ─── */
-  var $startUnitSegment = document.getElementById('startUnitSegment');
+  /* ─── DOM refs (purchase start) ─── */
   var $startDeadlineValue = document.getElementById('startDeadlineValue');
-  var $startUnitLabel = document.getElementById('startUnitLabel');
-  var startDeadlineUnit = 'hour';
-
-  $startUnitSegment.addEventListener('click', function (e) {
-    var btn = e.target.closest('.segment__btn');
-    if (!btn) return;
-    var newUnit = btn.getAttribute('data-unit');
-    if (newUnit === startDeadlineUnit) return;
-    startDeadlineUnit = newUnit;
-    $startUnitSegment.querySelectorAll('.segment__btn').forEach(function (b) {
-      b.classList.remove('segment__btn--active');
-    });
-    btn.classList.add('segment__btn--active');
-    $startUnitLabel.textContent = UNIT_KR[newUnit] + ' 전까지';
-  });
+  var $startDeadlineTime  = document.getElementById('startDeadlineTime');
 
   /* ─── 예매 설정 토글 (shared.js) ─── */
   Shared.initReservationTypeToggle();

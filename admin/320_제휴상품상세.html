@@ -377,31 +377,27 @@ textarea.form-input[readonly] {
             </td>
           </tr>
           <tr id="rowPurchaseStart">
-            <th>이용일 시작일 기준<br>구매가능 시작일</th>
+            <th>이용일 시작일 기준<br>구매가능 시작</th>
             <td>
               <div class="inline-field">
-                <div class="segment" id="startUnitSegment">
-                  <button type="button" class="segment__btn segment__btn--active" data-unit="day" style="min-width:52px;" disabled>일</button>
-                  <button type="button" class="segment__btn" data-unit="hour" style="min-width:52px;" disabled>시간</button>
-                </div>
                 <input type="text" inputmode="numeric" class="form-input form-input--sm" id="startDeadlineValue" value="0" readonly>
-                <span class="unit-label" id="startUnitLabel">일 전까지</span>
+                <span class="unit-label">일 전</span>
+                <input type="time" class="form-input" id="startDeadlineTime" value="00:00" readonly style="width:200px;">
+                <span class="unit-label">시 까지</span>
               </div>
-              <div class="text-hint mt-1">0 이상의 정수를 입력하세요. 예) 0 = 이용시작 직전까지 예매 가능</div>
+              <div class="text-hint mt-1">0 이상의 정수를 입력하세요. 예) 0일 전 00:00 = 이용시작 직전까지 예매 가능</div>
             </td>
           </tr>
           <tr id="rowPurchaseEnd">
-            <th>이용일 시작일 기준<br>구매가능 마감일</th>
+            <th>이용일 시작일 기준<br>구매 마감</th>
             <td>
               <div class="inline-field">
-                <div class="segment" id="unitSegment">
-                  <button type="button" class="segment__btn segment__btn--active" data-unit="day" style="min-width:52px;" disabled>일</button>
-                  <button type="button" class="segment__btn" data-unit="hour" style="min-width:52px;" disabled>시간</button>
-                </div>
                 <input type="text" inputmode="numeric" class="form-input form-input--sm" id="deadlineValue" value="0" readonly>
-                <span class="unit-label" id="unitLabel">일 전까지</span>
+                <span class="unit-label">일 전</span>
+                <input type="time" class="form-input" id="deadlineTime" value="00:00" readonly style="width:200px;">
+                <span class="unit-label">시 까지</span>
               </div>
-              <div class="text-hint mt-1">0 이상의 정수를 입력하세요. 예) 0 = 이용시작 직전까지 예매 가능</div>
+              <div class="text-hint mt-1">0 이상의 정수를 입력하세요. 예) 0일 전 00:00 = 이용시작 직전까지 예매 가능</div>
             </td>
           </tr>
           <tr id="rowAirport">

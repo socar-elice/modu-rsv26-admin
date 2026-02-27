@@ -248,6 +248,11 @@ body {
   vertical-align: middle;
   letter-spacing: 0.02em;
 }
+.lnb__badge--low {
+  background: #64748b;
+  font-weight: 500;
+  opacity: 0.85;
+}
 
 /* Nav item — Flat (alias) */
 .lnb-item {
